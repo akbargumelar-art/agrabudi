@@ -2,7 +2,7 @@ import { customerCategorySchema } from '@agrabudi/contracts';
 import { DataNotice, EmptyState, cn } from '@agrabudi/ui';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { categoryLabel, ProductTile } from '@/components/catalog';
+import { categoryLabel, ProductCard } from '@/components/catalog';
 import { SectionUnavailable } from '@/components/Notices';
 import { PageIntro, pageBodyClass } from '@/components/PageIntro';
 import { load } from '@/data';
@@ -70,7 +70,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           <ul className="grid gap-4 tablet:grid-cols-2 desktop:grid-cols-4">
             {visible.map((product) => (
               <li key={product.id}>
-                <ProductTile product={product} />
+                <ProductCard product={product} />
               </li>
             ))}
           </ul>

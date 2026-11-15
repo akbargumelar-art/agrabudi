@@ -8,7 +8,7 @@ type MainNavProps = {
   items: NavItem[];
   currentPath: string;
   LinkComponent?: LinkComponent;
-  /** `dark` untuk header Publik, `light` untuk aplikasi kerja. */
+  /** `light` untuk tiga aplikasi; `dark` tersedia untuk kebutuhan khusus. */
   tone?: 'dark' | 'light';
   actions?: ReactNode;
   label?: string;
@@ -31,7 +31,8 @@ export function MainNav({
   return (
     <header
       className={cn(
-        dark ? 'on-dark bg-ink-900 text-white' : 'border-b border-surface-100 bg-surface-0',
+        'sticky top-0 z-30 shadow-raised',
+        dark ? 'on-dark bg-ink-900 text-white' : 'bg-surface-0',
       )}
     >
       <div className={cn(containerClass, 'flex min-h-14 items-center gap-6 tablet:min-h-16')}>
@@ -46,11 +47,13 @@ export function MainNav({
                     href={item.href}
                     aria-current={active ? 'page' : undefined}
                     className={cn(
-                      'inline-flex min-h-16 items-center border-b-2 px-3 text-sm font-medium whitespace-nowrap',
-                      active && 'border-brand-red font-semibold',
-                      !active && 'border-transparent',
+                      'inline-flex min-h-16 items-center border-b-[3px] px-3 text-sm font-semibold whitespace-nowrap',
+                      active ? 'border-brand-red' : 'border-transparent',
                       dark && (active ? 'text-white' : 'text-ink-300 hover:text-white'),
-                      !dark && (active ? 'text-ink-900' : 'text-ink-700 hover:text-ink-900'),
+                      !dark &&
+                        (active
+                          ? 'text-brand-red-strong'
+                          : 'text-ink-900 hover:text-brand-red-strong'),
                     )}
                   >
                     {item.label}

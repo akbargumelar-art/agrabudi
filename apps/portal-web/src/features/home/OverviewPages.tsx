@@ -1,6 +1,7 @@
-import { EmptyState, PageHeader } from '@agrabudi/ui';
+import { EmptyState, IconBadge, PageHeader, cardClass, cn, type IconComponent } from '@agrabudi/ui';
+import { CardSim, ClipboardList, Wifi } from 'lucide-react';
 import { Link } from 'react-router';
-import { sections } from '../../registry';
+import { sections, type SectionId } from '../../registry';
 
 type Shortcut = { to: string; label: string; note: string };
 
@@ -22,6 +23,12 @@ function ShortcutList({ items }: { items: Shortcut[] }) {
   );
 }
 
+const sectionIcon: Record<SectionId, IconComponent> = {
+  telkomsel: CardSim,
+  indihome: Wifi,
+  admin: ClipboardList,
+};
+
 export function DashboardPage() {
   return (
     <div className="flex flex-col gap-6">
@@ -29,13 +36,25 @@ export function DashboardPage() {
         title="Dashboard"
         description="Pintu masuk ke unit bisnis dan pengelolaan operasional."
       />
-      <ShortcutList
-        items={sections.map((section) => ({
-          to: section.home,
-          label: section.label,
-          note: section.description,
-        }))}
-      />
+      <ul className="grid gap-3 tablet:grid-cols-3">
+        {sections.map((section) => (
+          <li key={section.id}>
+            <Link
+              to={section.home}
+              className={cn(cardClass, 'flex h-full items-center gap-4 p-5 hover:border-brand-red')}
+            >
+              <IconBadge
+                icon={sectionIcon[section.id]}
+                tone={section.id === 'admin' ? 'navy' : 'red'}
+              />
+              <span>
+                <span className="block font-semibold">{section.label}</span>
+                <span className="block text-sm text-ink-700">{section.description}</span>
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
       <EmptyState
         title="Ringkasan belum tersedia"
         description="Ringkasan target, order, dan aktivitas tampil setelah login dan sumber datanya tersedia. Tidak ada angka contoh di halaman ini."

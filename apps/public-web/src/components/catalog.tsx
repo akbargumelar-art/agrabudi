@@ -1,5 +1,6 @@
 import type { CustomerCategory, CustomerProduct } from '@agrabudi/contracts';
-import { formatRupiah } from '@agrabudi/ui';
+import { MediaPlaceholder, cardClass, cn, formatRupiah, type IconComponent } from '@agrabudi/ui';
+import { CardSim, Router, Speaker, Ticket } from 'lucide-react';
 import Link from 'next/link';
 
 export const categoryLabel: Record<CustomerCategory, string> = {
@@ -7,6 +8,13 @@ export const categoryLabel: Record<CustomerCategory, string> = {
   voucher: 'Voucher',
   orbit: 'Orbit',
   soundbox: 'Soundbox',
+};
+
+export const categoryIcon: Record<CustomerCategory, IconComponent> = {
+  perdana: CardSim,
+  voucher: Ticket,
+  orbit: Router,
+  soundbox: Speaker,
 };
 
 export function ProductPrice({ priceRupiah }: { priceRupiah: number | null }) {
@@ -19,18 +27,28 @@ export function ProductPrice({ priceRupiah }: { priceRupiah: number | null }) {
   );
 }
 
-/** Satu produk di daftar katalog pelanggan. Seluruh petak adalah tautan ke detail. */
-export function ProductTile({ product }: { product: CustomerProduct }) {
+/** Kartu produk katalog pelanggan. Seluruh kartu adalah tautan ke detail. */
+export function ProductCard({ product }: { product: CustomerProduct }) {
   return (
     <Link
       href={`/produk/${product.slug}`}
-      className="flex h-full flex-col gap-2 border-t-2 border-ink-900 bg-surface-0 p-4 hover:border-brand-red"
+      className={cn(cardClass, 'flex h-full flex-col overflow-hidden hover:border-ink-300')}
     >
-      <span className="text-xs font-medium text-ink-700">{categoryLabel[product.category]}</span>
-      <span className="font-display text-lg font-bold">{product.name}</span>
-      <span className="text-sm text-ink-700">{product.summary}</span>
-      <span className="mt-auto pt-2">
-        <ProductPrice priceRupiah={product.priceRupiah} />
+      <MediaPlaceholder
+        label={`Foto ${product.name} belum tersedia`}
+        icon={categoryIcon[product.category]}
+        tone={product.category === 'perdana' || product.category === 'voucher' ? 'red' : 'navy'}
+        className="aspect-4/3"
+      />
+      <span className="flex flex-1 flex-col gap-1.5 p-4">
+        <span className="self-start rounded-full bg-surface-50 px-2.5 py-0.5 text-xs font-medium text-ink-700">
+          {categoryLabel[product.category]}
+        </span>
+        <span className="font-display text-lg font-bold">{product.name}</span>
+        <span className="text-sm text-ink-700">{product.summary}</span>
+        <span className="mt-auto pt-3">
+          <ProductPrice priceRupiah={product.priceRupiah} />
+        </span>
       </span>
     </Link>
   );

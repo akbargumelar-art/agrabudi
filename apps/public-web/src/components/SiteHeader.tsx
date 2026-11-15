@@ -1,6 +1,6 @@
 'use client';
 
-import { AppSwitcher, MainNav, Wordmark, type NavItem } from '@agrabudi/ui';
+import { AppSwitcher, MainNav, Wordmark, buttonClass, cn, type NavItem } from '@agrabudi/ui';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { appUrls } from '@/lib/env';
@@ -23,19 +23,29 @@ export function SiteHeader() {
     <>
       <AppSwitcher active="public" urls={appUrls} />
       <MainNav
-        tone="dark"
         brand={
           <Link
             href="/"
             aria-label="Agrabudi Komunika, ke Home"
             className="inline-flex min-h-11 items-center"
           >
-            <Wordmark tone="dark" />
+            <Wordmark />
           </Link>
         }
         items={mainItems}
         currentPath={pathname}
         LinkComponent={NextLink}
+        actions={
+          <Link
+            href="/kontak"
+            className={cn(
+              buttonClass({ variant: 'secondary', size: 'sm' }),
+              'tablet:hidden desktop:inline-flex',
+            )}
+          >
+            Hubungi Kami
+          </Link>
+        }
       />
     </>
   );

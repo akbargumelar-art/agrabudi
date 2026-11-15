@@ -21,13 +21,18 @@ type BottomNavProps = {
   accent?: 'brand' | 'console';
 };
 
-const activeClass = {
-  brand: 'border-brand-red font-semibold text-brand-red-strong',
-  console: 'border-console font-semibold text-console',
+const activeText = {
+  brand: 'font-semibold text-brand-red-strong',
+  console: 'font-semibold text-console',
 } as const;
 
-const itemClass =
-  'flex min-h-14 w-full flex-col items-center justify-center gap-0.5 border-t-2 px-1 text-xs';
+const activePill = {
+  brand: 'bg-brand-red-soft',
+  console: 'bg-console-soft',
+} as const;
+
+const itemClass = 'flex min-h-16 w-full flex-col items-center justify-center gap-0.5 px-1 text-xs';
+const pillClass = 'flex h-7 w-14 items-center justify-center rounded-full';
 
 export function BottomNav({
   items,
@@ -43,7 +48,7 @@ export function BottomNav({
     <nav
       aria-label={label}
       data-bottom-nav
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-surface-100 bg-surface-0 pb-[env(safe-area-inset-bottom)] tablet:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 rounded-t-panel bg-surface-0 pb-[env(safe-area-inset-bottom)] shadow-raised-up tablet:hidden"
     >
       <ul
         className="grid"
@@ -59,12 +64,11 @@ export function BottomNav({
                   onClick={item.onPress}
                   aria-haspopup="dialog"
                   aria-expanded={item.expanded}
-                  className={cn(
-                    itemClass,
-                    item.expanded ? activeClass[accent] : 'border-transparent text-ink-700',
-                  )}
+                  className={cn(itemClass, item.expanded ? activeText[accent] : 'text-ink-700')}
                 >
-                  <Icon aria-hidden className="size-5" />
+                  <span className={cn(pillClass, item.expanded && activePill[accent])}>
+                    <Icon aria-hidden className="size-5" />
+                  </span>
                   <span>{item.label}</span>
                 </button>
               </li>
@@ -76,12 +80,11 @@ export function BottomNav({
               <LinkComponent
                 href={item.href}
                 aria-current={active ? 'page' : undefined}
-                className={cn(
-                  itemClass,
-                  active ? activeClass[accent] : 'border-transparent text-ink-700',
-                )}
+                className={cn(itemClass, active ? activeText[accent] : 'text-ink-700')}
               >
-                <Icon aria-hidden className="size-5" />
+                <span className={cn(pillClass, active && activePill[accent])}>
+                  <Icon aria-hidden className="size-5" />
+                </span>
                 <span>{item.label}</span>
               </LinkComponent>
             </li>

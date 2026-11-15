@@ -14,7 +14,7 @@ export function PendingContent({
   return (
     <div
       data-pending-content
-      className="rounded-panel border border-dashed border-ink-300 bg-surface-50 p-5"
+      className="rounded-panel border border-dashed border-ink-300 bg-surface-50 p-6"
     >
       <p className="text-sm font-semibold text-ink-900">{what} belum diisi</p>
       <p className="mt-1 max-w-prose text-sm text-ink-700">

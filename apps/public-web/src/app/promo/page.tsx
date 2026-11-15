@@ -1,6 +1,6 @@
-import { DataNotice, EmptyState, formatDate } from '@agrabudi/ui';
+import { DataNotice, EmptyState } from '@agrabudi/ui';
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import { ProgramCard } from '@/components/listings';
 import { SectionUnavailable } from '@/components/Notices';
 import { PageIntro, pageBodyClass } from '@/components/PageIntro';
 import { load } from '@/data';
@@ -28,26 +28,10 @@ export default async function ProgramsPage() {
             description="Program tampil setelah diterbitkan Admin program."
           />
         ) : (
-          <ul className="divide-y divide-surface-100 border-y border-surface-100">
-            {programs.data.map((program) => (
-              <li
-                key={program.id}
-                className="grid gap-1 py-5 tablet:grid-cols-[16rem_minmax(0,1fr)] tablet:gap-8"
-              >
-                <p className="text-sm text-ink-700">
-                  {formatDate(program.startsAt)} sampai {formatDate(program.endsAt)}
-                </p>
-                <div>
-                  <h2 className="text-xl font-bold">
-                    <Link
-                      href={`/promo/${program.slug}`}
-                      className="inline-flex min-h-11 items-center underline decoration-brand-red decoration-2 underline-offset-4"
-                    >
-                      {program.title}
-                    </Link>
-                  </h2>
-                  <p className="max-w-prose text-sm text-ink-700">{program.summary}</p>
-                </div>
+          <ul className="grid gap-4 tablet:grid-cols-2">
+            {programs.data.map((program, index) => (
+              <li key={program.id}>
+                <ProgramCard program={program} tone={index % 2 === 0 ? 'red' : 'navy'} />
               </li>
             ))}
           </ul>

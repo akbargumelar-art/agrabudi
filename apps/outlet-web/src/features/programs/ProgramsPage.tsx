@@ -23,11 +23,11 @@ export function ProgramsPage() {
               description="Program baru muncul di sini setelah diterbitkan Admin program."
             />
           ) : (
-            <ul className="divide-y divide-surface-100 border-y border-surface-100">
+            <ul className="divide-y divide-surface-100 overflow-hidden rounded-panel border border-surface-100">
               {envelope.data.map((program) => (
                 <li
                   key={program.id}
-                  className="grid gap-1 py-4 tablet:grid-cols-[14rem_minmax(0,1fr)] tablet:gap-6"
+                  className="grid gap-1 px-5 py-4 tablet:grid-cols-[14rem_minmax(0,1fr)] tablet:gap-6"
                 >
                   <p className="text-sm text-ink-700">
                     {formatDate(program.startsAt)} sampai {formatDate(program.endsAt)}

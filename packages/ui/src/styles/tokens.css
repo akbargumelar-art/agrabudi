@@ -14,15 +14,16 @@
   --color-brand-red-strong: #a80d20;
   --color-brand-red-soft: #fdebed;
 
-  --color-ink-900: #0a1a2f;
-  --color-ink-800: #14273f;
-  --color-ink-700: #33445c;
-  --color-ink-500: #5f6f86;
-  --color-ink-300: #c2cad5;
+  --color-ink-900: #0c1c3c;
+  --color-ink-800: #172b55;
+  --color-ink-700: #3a4a68;
+  --color-ink-500: #64728b;
+  --color-ink-300: #c4ccda;
+  --color-ink-soft: #eaf0fa;
 
   --color-surface-0: #ffffff;
-  --color-surface-50: #f3f4f6;
-  --color-surface-100: #e7eaee;
+  --color-surface-50: #f5f6f9;
+  --color-surface-100: #e8ebf1;
 
   /* Aksen console Administrator Web: sengaja bukan merah supaya tidak tertukar dengan Portal. */
   --color-console: #24566b;
@@ -40,8 +41,14 @@
   --font-display: 'Montserrat', ui-sans-serif, system-ui, sans-serif;
   --font-sans: 'Poppins', ui-sans-serif, system-ui, sans-serif;
 
-  --radius-control: 0.5rem;
-  --radius-panel: 0.75rem;
+  /* Kontrol form, kartu/panel, dan banner besar. Tombol selalu berbentuk pil. */
+  --radius-control: 0.75rem;
+  --radius-panel: 1.25rem;
+  --radius-banner: 1.75rem;
+
+  /* Hanya untuk elemen yang melayang di atas isi: header menempel dan navigasi bawah. */
+  --shadow-raised: 0 10px 30px -18px rgb(12 28 60 / 0.45);
+  --shadow-raised-up: 0 -10px 30px -18px rgb(12 28 60 / 0.45);
 
   /* <768 smartphone, 768-1199 tablet, >=1200 desktop (PRD 2.2). */
   --breakpoint-*: initial;
