@@ -1,0 +1,4 @@
+{
+  "extends": "@agrabudi/config/tsconfig/base.json",
+  "include": ["src"]
+}
