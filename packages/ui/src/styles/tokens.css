@@ -1,0 +1,50 @@
+/*
+ * Design token Agrabudi. Satu-satunya sumber warna, huruf, radius, dan breakpoint
+ * untuk empat aplikasi (PRD AS-07).
+ *
+ * STATUS WARNA: SEMENTARA. Nilai hex di bawah belum dicocokkan dengan logo resmi
+ * (keputusan terbuka T-4 / D-09). Ganti di file ini saja setelah logo tersedia.
+ */
+@theme {
+  /* Palet bawaan Tailwind dimatikan supaya tidak ada warna di luar token. */
+  --color-*: initial;
+
+  --color-white: #ffffff;
+  --color-brand-red: #d5122b;
+  --color-brand-red-strong: #a80d20;
+  --color-brand-red-soft: #fdebed;
+
+  --color-ink-900: #0a1a2f;
+  --color-ink-800: #14273f;
+  --color-ink-700: #33445c;
+  --color-ink-500: #5f6f86;
+  --color-ink-300: #c2cad5;
+
+  --color-surface-0: #ffffff;
+  --color-surface-50: #f3f4f6;
+  --color-surface-100: #e7eaee;
+
+  /* Aksen console Administrator Web: sengaja bukan merah supaya tidak tertukar dengan Portal. */
+  --color-console: #24566b;
+  --color-console-soft: #e6eff2;
+
+  --color-success: #17714a;
+  --color-success-soft: #e4f3eb;
+  --color-warning: #855600;
+  --color-warning-soft: #fcf2d8;
+  --color-danger: #b3261e;
+  --color-danger-soft: #fbe8e6;
+  --color-info: #1c5ca4;
+  --color-info-soft: #e5eef9;
+
+  --font-display: 'Montserrat', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+
+  --radius-control: 0.5rem;
+  --radius-panel: 0.75rem;
+
+  /* <768 smartphone, 768-1199 tablet, >=1200 desktop (PRD 2.2). */
+  --breakpoint-*: initial;
+  --breakpoint-tablet: 48rem;
+  --breakpoint-desktop: 75rem;
+}

@@ -1,0 +1,3 @@
+@import 'tailwindcss';
+@import '@agrabudi/ui/styles.css';
+@source '../../../../packages/ui/src';
