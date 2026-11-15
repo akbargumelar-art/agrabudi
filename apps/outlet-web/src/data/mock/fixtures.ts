@@ -2,9 +2,11 @@ import {
   outletCatalogSchema,
   outletOrderSchema,
   programSchema,
+  rewardHandoverSchema,
   type OutletCatalog,
   type OutletOrder,
   type Program,
+  type RewardHandover,
 } from '@agrabudi/contracts';
 
 /**
@@ -146,3 +148,57 @@ export const mockPrograms: Program[] = [
     status: 'published',
   },
 ].map((program) => programSchema.parse(program));
+
+/** Nama outlet, hadiah, dan tanggal rekaan. Foto sengaja kosong: tidak ada foto orang sungguhan di data contoh. */
+export const mockHandovers: RewardHandover[] = [
+  {
+    id: 'serah-contoh-5',
+    programTitle: 'Program Mitra Contoh 1',
+    rewardName: 'Hadiah Contoh A',
+    outletName: 'Outlet Contoh Lima',
+    tap: 'TAP Contoh 1',
+    receiverName: 'Penerima Contoh',
+    handedOverAt: '2026-11-12',
+    photoUrl: null,
+  },
+  {
+    id: 'serah-contoh-4',
+    programTitle: 'Program Mitra Contoh 1',
+    rewardName: 'Hadiah Contoh B',
+    outletName: 'Outlet Contoh Empat',
+    tap: 'TAP Contoh 2',
+    receiverName: null,
+    handedOverAt: '2026-11-09',
+    photoUrl: null,
+  },
+  {
+    id: 'serah-contoh-3',
+    programTitle: 'Program Mitra Contoh 2',
+    rewardName: 'Hadiah Contoh A',
+    outletName: 'Outlet Contoh Tiga',
+    tap: null,
+    receiverName: 'Penerima Contoh',
+    handedOverAt: '2026-11-05',
+    photoUrl: null,
+  },
+  {
+    id: 'serah-contoh-2',
+    programTitle: 'Program Mitra Contoh 2',
+    rewardName: 'Hadiah Contoh C',
+    outletName: 'Outlet Contoh Dua',
+    tap: 'TAP Contoh 1',
+    receiverName: 'Penerima Contoh',
+    handedOverAt: '2026-10-28',
+    photoUrl: null,
+  },
+  {
+    id: 'serah-contoh-1',
+    programTitle: 'Program Mitra Contoh 1',
+    rewardName: 'Hadiah Contoh B',
+    outletName: 'Outlet Contoh Satu',
+    tap: 'TAP Contoh 3',
+    receiverName: null,
+    handedOverAt: '2026-10-20',
+    photoUrl: null,
+  },
+].map((handover) => rewardHandoverSchema.parse(handover));

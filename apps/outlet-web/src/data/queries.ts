@@ -35,3 +35,10 @@ export function useProgram(slug: string) {
     queryFn: async () => (await getAdapter()).getProgram(slug),
   });
 }
+
+export function useRewardHandovers() {
+  return useQuery({
+    queryKey: ['outlet', 'reward-handovers'],
+    queryFn: async () => (await getAdapter()).listRewardHandovers(),
+  });
+}

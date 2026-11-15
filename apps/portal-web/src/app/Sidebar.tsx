@@ -1,14 +1,11 @@
+import type { StaffSession } from '@agrabudi/contracts';
 import { cn } from '@agrabudi/ui';
 import { Link } from 'react-router';
-import {
-  findModuleRoute,
-  findSection,
-  sections,
-  type ModuleGroup,
-  type Section,
-} from '../registry';
+import { visibleSections } from '../auth/access';
+import { findModuleRoute, findSection, type ModuleGroup, type Section } from '../registry';
 
 const linkClass = 'flex min-h-9 items-center rounded-control px-3 text-sm';
+const activeClass = 'bg-brand-red-soft font-semibold text-brand-red-strong';
 
 function GroupItem({
   section,
@@ -28,12 +25,7 @@ function GroupItem({
         <Link
           to={groupPath}
           aria-current={inGroup ? 'page' : undefined}
-          className={cn(
-            linkClass,
-            inGroup
-              ? 'bg-brand-red-soft font-semibold text-brand-red-strong'
-              : 'text-ink-700 hover:bg-surface-50',
-          )}
+          className={cn(linkClass, inGroup ? activeClass : 'text-ink-700 hover:bg-surface-50')}
         >
           {group.label}
         </Link>
@@ -64,9 +56,7 @@ function GroupItem({
                   aria-current={active ? 'page' : undefined}
                   className={cn(
                     linkClass,
-                    active
-                      ? 'bg-brand-red-soft font-semibold text-brand-red-strong'
-                      : 'text-ink-700 hover:bg-surface-50',
+                    active ? activeClass : 'text-ink-700 hover:bg-surface-50',
                   )}
                 >
                   {leaf.label}
@@ -80,25 +70,26 @@ function GroupItem({
   );
 }
 
-/** Sidebar modul untuk layar desktop. Di layar lebih kecil modul dibuka dari "Semua Menu". */
-export function Sidebar({ pathname }: { pathname: string }) {
+/** Sidebar modul untuk desktop. Hanya memuat bagian dan menu yang boleh dilihat sesi ini. */
+export function Sidebar({ pathname, session }: { pathname: string; session: StaffSession }) {
   // Alias (mis. Database Pelanggan) disorot di modul tujuannya.
   const resolved = findModuleRoute(pathname)?.aliasOf ?? pathname;
   const activeSection = findSection(resolved);
+  const visible = visibleSections(session);
 
   return (
     <nav aria-label="Modul Portal" className="flex flex-col gap-2">
-      {sections.map((section) => (
+      {visible.map(({ section, groups }) => (
         <details
           key={section.id}
-          open={activeSection?.id === section.id}
+          open={activeSection?.id === section.id || visible.length === 1}
           className="rounded-panel border border-surface-100"
         >
-          <summary className="flex min-h-11 cursor-pointer items-center px-3 font-display text-sm font-bold text-ink-900">
+          <summary className="flex min-h-11 cursor-pointer items-center px-4 font-display text-sm font-bold text-ink-900">
             {section.label}
           </summary>
           <ul className="flex flex-col gap-0.5 px-1 pb-2">
-            {section.groups.map((group) => (
+            {groups.map((group) => (
               <GroupItem key={group.slug} section={section} group={group} pathname={resolved} />
             ))}
           </ul>

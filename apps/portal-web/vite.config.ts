@@ -3,7 +3,12 @@ import react from '@vitejs/plugin-react';
 import { loadEnv } from 'vite';
 import { defineConfig } from 'vitest/config';
 
-const REQUIRED_ENV = ['VITE_APP_URL_PUBLIC', 'VITE_APP_URL_OUTLET', 'VITE_APP_URL_PORTAL'];
+const REQUIRED_ENV = [
+  'VITE_APP_URL_PUBLIC',
+  'VITE_APP_URL_OUTLET',
+  'VITE_APP_URL_PORTAL',
+  'VITE_DATA_SOURCE',
+];
 
 export default defineConfig(({ command, mode }) => {
   // Build tanpa URL aplikasi digagalkan,

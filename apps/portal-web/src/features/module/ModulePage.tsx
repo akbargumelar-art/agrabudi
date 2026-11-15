@@ -1,20 +1,38 @@
-import { EmptyState, PageHeader, StatusBadge, buttonClass } from '@agrabudi/ui';
+import { EmptyState, ErrorState, PageHeader, StatusBadge, buttonClass } from '@agrabudi/ui';
 import { Link, Navigate, useLocation } from 'react-router';
+import { accessModeLabel, routeAccess, scopePhrase, visibleSections } from '../../auth/access';
+import { useSession } from '../../auth/SessionContext';
 import { findModuleRoute, findSection } from '../../registry';
+
+function AccessDenied() {
+  return (
+    <ErrorState
+      title="Akses ditolak"
+      description="Akun Anda tidak punya izin membuka menu ini. Bila seharusnya punya, hubungi pengelola akses."
+      action={
+        <Link to="/menu" className={buttonClass({ variant: 'secondary', size: 'sm' })}>
+          Buka menu yang tersedia
+        </Link>
+      }
+    />
+  );
+}
 
 /**
  * Halaman kerangka satu modul Portal. Sengaja tanpa tabel dan angka contoh:
  * kolom, rumus, dan aksi tiap modul menunggu kamus data yang disahkan
- * (PRD 2.8, AS-10). Yang ditampilkan hanya nama menu dan perilaku inti dari PRD.
+ * (PRD 2.8, AS-10). Yang ditampilkan hanya nama menu, perilaku inti, dan hak akses sesi.
  */
 export function ModulePage() {
   const { pathname } = useLocation();
+  const session = useSession();
   const route = findModuleRoute(pathname);
   const section = findSection(pathname);
 
   if (!route) {
     if (section && (pathname === section.prefix || pathname === `${section.prefix}/`)) {
-      return <Navigate to={section.home} replace />;
+      const entry = visibleSections(session).find((item) => item.section.id === section.id);
+      return entry ? <Navigate to={entry.entryPath} replace /> : <AccessDenied />;
     }
     return (
       <EmptyState
@@ -28,6 +46,9 @@ export function ModulePage() {
       />
     );
   }
+
+  const access = routeAccess(session, route);
+  if (!access) return <AccessDenied />;
 
   if (route.aliasOf) {
     return <Navigate to={route.aliasOf} replace />;
@@ -67,6 +88,10 @@ export function ModulePage() {
       <dl className="grid gap-x-6 gap-y-1 text-sm tablet:grid-cols-[10rem_minmax(0,1fr)]">
         <dt className="text-ink-700">Perilaku inti</dt>
         <dd className="max-w-prose">{route.group.behavior}</dd>
+        <dt className="text-ink-700">Hak akses Anda</dt>
+        <dd data-testid="hak-akses">
+          {accessModeLabel[access]}. Cakupan data: {scopePhrase(session)}.
+        </dd>
       </dl>
 
       {children ? (

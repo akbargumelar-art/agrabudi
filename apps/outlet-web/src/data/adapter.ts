@@ -1,4 +1,10 @@
-import type { DataEnvelope, OutletCatalog, OutletOrder, Program } from '@agrabudi/contracts';
+import type {
+  DataEnvelope,
+  OutletCatalog,
+  OutletOrder,
+  Program,
+  RewardHandover,
+} from '@agrabudi/contracts';
 
 /**
  * Pintu data aplikasi Outlet. Halaman hanya mengenal antarmuka ini, sehingga
@@ -10,6 +16,8 @@ export interface OutletDataAdapter {
   getOrder(id: string): Promise<DataEnvelope<OutletOrder | null>>;
   listPrograms(): Promise<DataEnvelope<Program[]>>;
   getProgram(slug: string): Promise<DataEnvelope<Program | null>>;
+  /** Dokumentasi penyerahan hadiah program, terbaru lebih dulu. */
+  listRewardHandovers(): Promise<DataEnvelope<RewardHandover[]>>;
 }
 
 export class DataUnavailableError extends Error {

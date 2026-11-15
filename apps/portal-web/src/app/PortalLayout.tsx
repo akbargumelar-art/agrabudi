@@ -4,6 +4,7 @@ import {
   MainNav,
   Wordmark,
   bottomNavOffsetClass,
+  buttonClass,
   cn,
   containerClass,
   type BottomNavItem,
@@ -12,6 +13,8 @@ import {
 import { Activity, ChartColumn, House, LayoutGrid, UserRound } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { Link, Outlet, useLocation } from 'react-router';
+import { roleLabel } from '../auth/access';
+import { useSession, useSessionApi } from '../auth/SessionContext';
 import { sections } from '../registry';
 import { appUrls } from './env';
 import { RouterLink } from './RouterLink';
@@ -26,7 +29,7 @@ const mainItems: NavItem[] = [
   { label: 'Aktivitas', href: '/aktivitas' },
   { label: 'Laporan', href: '/laporan' },
   { label: 'Semua Menu', href: '/menu', alsoActiveOn: modulePrefixes },
-  { label: 'Akun', href: '/akun', alsoActiveOn: ['/login'] },
+  { label: 'Akun', href: '/akun' },
 ];
 
 /** Bottom navigation Portal (PRD 2.2). */
@@ -35,11 +38,13 @@ const bottomItems: BottomNavItem[] = [
   { label: 'Aktivitas', href: '/aktivitas', icon: Activity },
   { label: 'Laporan', href: '/laporan', icon: ChartColumn },
   { label: 'Lainnya', href: '/menu', alsoActiveOn: modulePrefixes, icon: LayoutGrid },
-  { label: 'Akun', href: '/akun', alsoActiveOn: ['/login'], icon: UserRound },
+  { label: 'Akun', href: '/akun', icon: UserRound },
 ];
 
 export function PortalLayout() {
   const { pathname } = useLocation();
+  const session = useSession();
+  const { signOut } = useSessionApi();
   const mainRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -69,6 +74,25 @@ export function PortalLayout() {
         items={mainItems}
         currentPath={pathname}
         LinkComponent={RouterLink}
+        actions={
+          <>
+            <Link
+              to="/akun"
+              data-testid="peran-aktif"
+              className="hidden text-right text-xs leading-tight tablet:block"
+            >
+              <span className="block font-semibold text-ink-900">{roleLabel(session)}</span>
+              <span className="block text-ink-700">{session.displayName}</span>
+            </Link>
+            <button
+              type="button"
+              onClick={signOut}
+              className={buttonClass({ variant: 'secondary', size: 'sm' })}
+            >
+              Keluar
+            </button>
+          </>
+        }
       />
       <StageNotice />
       <div
@@ -78,7 +102,7 @@ export function PortalLayout() {
         )}
       >
         <aside className="hidden py-6 desktop:block">
-          <Sidebar pathname={pathname} />
+          <Sidebar pathname={pathname} session={session} />
         </aside>
         <main
           id="konten"

@@ -85,7 +85,8 @@ test('pengalih aplikasi membuka Outlet dan Portal di URL dari environment', asyn
     .getByRole('navigation', { name: 'Pindah aplikasi' })
     .getByRole('link', { name: 'Portal' })
     .click();
-  await expect(page).toHaveURL(`${baseUrls.portal}/`);
+  // Portal selalu dibuka di halaman masuk bila belum ada sesi.
+  await expect(page).toHaveURL(`${baseUrls.portal}/login`);
   await expectActiveApp(page, 'Portal');
 
   await page

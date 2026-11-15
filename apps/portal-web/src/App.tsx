@@ -1,7 +1,10 @@
 import { EmptyState, buttonClass } from '@agrabudi/ui';
 import { Link, Route, Routes } from 'react-router';
 import { PortalLayout } from './app/PortalLayout';
-import { AccountPage, LoginPage } from './features/account/AccountPages';
+import { LoginPage } from './auth/LoginPage';
+import { RequireSession } from './auth/RequireSession';
+import { SessionProvider } from './auth/SessionContext';
+import { AccountPage } from './features/account/AccountPages';
 import { ActivityPage, DashboardPage, ReportsPage } from './features/home/OverviewPages';
 import { AllMenuPage } from './features/menu/AllMenuPage';
 import { ModulePage } from './features/module/ModulePage';
@@ -22,24 +25,32 @@ function NotFoundPage() {
 }
 
 /**
- * Route Portal operasional (PRD 4.3). Modul di bawah /telkomsel, /indihome, dan /admin
- * dicocokkan lewat route registry. /web-admin bukan bagian dari bundle ini.
+ * Route Portal operasional (PRD 4.3). Halaman pertama adalah login; semua halaman lain
+ * berada di balik sesi dan menunya mengikuti peran. /web-admin bukan bagian dari bundle ini.
  */
 export function App() {
   return (
-    <Routes>
-      <Route element={<PortalLayout />}>
-        <Route index element={<DashboardPage />} />
-        <Route path="aktivitas" element={<ActivityPage />} />
-        <Route path="laporan" element={<ReportsPage />} />
-        <Route path="menu" element={<AllMenuPage />} />
-        <Route path="akun" element={<AccountPage />} />
+    <SessionProvider>
+      <Routes>
         <Route path="login" element={<LoginPage />} />
-        {sections.map((section) => (
-          <Route key={section.id} path={`${section.prefix.slice(1)}/*`} element={<ModulePage />} />
-        ))}
-        <Route path="*" element={<NotFoundPage />} />
-      </Route>
-    </Routes>
+        <Route element={<RequireSession />}>
+          <Route element={<PortalLayout />}>
+            <Route index element={<DashboardPage />} />
+            <Route path="aktivitas" element={<ActivityPage />} />
+            <Route path="laporan" element={<ReportsPage />} />
+            <Route path="menu" element={<AllMenuPage />} />
+            <Route path="akun" element={<AccountPage />} />
+            {sections.map((section) => (
+              <Route
+                key={section.id}
+                path={`${section.prefix.slice(1)}/*`}
+                element={<ModulePage />}
+              />
+            ))}
+            <Route path="*" element={<NotFoundPage />} />
+          </Route>
+        </Route>
+      </Routes>
+    </SessionProvider>
   );
 }

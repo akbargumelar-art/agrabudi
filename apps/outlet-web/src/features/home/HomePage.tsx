@@ -17,6 +17,7 @@ import { Calculator, ChevronRight, Megaphone, ReceiptText, ShoppingCart } from '
 import { Link } from 'react-router';
 import { useOrders, usePrograms } from '../../data/queries';
 import { OrderStatusBadge } from '../orders/status';
+import { WinnerSlider } from './WinnerSlider';
 
 const tasks: Array<{ to: string; label: string; note: string; icon: IconComponent }> = [
   {
@@ -69,6 +70,8 @@ export function HomePage() {
           </div>
         </div>
       </section>
+
+      <WinnerSlider />
 
       <ul className="grid grid-cols-2 gap-3 desktop:grid-cols-4 desktop:gap-4">
         {tasks.map((task) => (

@@ -17,4 +17,5 @@ export const apiAdapter: OutletDataAdapter = {
   getOrder: async () => notConnected(),
   listPrograms: async () => notConnected(),
   getProgram: async () => notConnected(),
+  listRewardHandovers: async () => notConnected(),
 };

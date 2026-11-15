@@ -1,16 +1,18 @@
 import { PageHeader } from '@agrabudi/ui';
 import { Link } from 'react-router';
-import { sections } from '../../registry';
+import { roleLabel, visibleSections } from '../../auth/access';
+import { useSession } from '../../auth/SessionContext';
 
-/** "Semua Menu": seluruh modul dari registry. Di HP dan tablet ini pengganti sidebar. */
+/** "Semua Menu": modul yang boleh dilihat sesi ini. Di HP dan tablet ini pengganti sidebar. */
 export function AllMenuPage() {
+  const session = useSession();
   return (
     <div className="flex flex-col gap-8">
       <PageHeader
         title="Semua Menu"
-        description="Seluruh modul Portal. Setelah login aktif, daftar ini mengikuti izin akun."
+        description={`Menu yang tersedia untuk ${roleLabel(session)}.`}
       />
-      {sections.map((section) => (
+      {visibleSections(session).map(({ section, groups }) => (
         <section key={section.id} aria-labelledby={`bagian-${section.id}`}>
           <h2
             id={`bagian-${section.id}`}
@@ -20,7 +22,7 @@ export function AllMenuPage() {
           </h2>
           <p className="mt-2 text-sm text-ink-700">{section.description}</p>
           <ul className="mt-4 grid gap-x-8 gap-y-5 tablet:grid-cols-2 desktop:grid-cols-3">
-            {section.groups.map((group) => {
+            {groups.map((group) => {
               const groupPath = `${section.prefix}/${group.slug}`;
               return (
                 <li key={group.slug}>

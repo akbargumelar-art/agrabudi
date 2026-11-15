@@ -1,6 +1,6 @@
 import type { DataEnvelope } from '@agrabudi/contracts';
 import type { OutletDataAdapter } from '../adapter';
-import { mockCatalog, mockOrders, mockPrograms } from './fixtures';
+import { mockCatalog, mockHandovers, mockOrders, mockPrograms } from './fixtures';
 
 /** Setiap respons mock membawa `source: "mock"` supaya UI wajib melabelinya. */
 function asMock<T>(data: T): DataEnvelope<T> {
@@ -20,4 +20,5 @@ export const mockAdapter: OutletDataAdapter = {
   getOrder: async (id) => asMock(mockOrders.find((order) => order.id === id) ?? null),
   listPrograms: async () => asMock(mockPrograms),
   getProgram: async (slug) => asMock(mockPrograms.find((program) => program.slug === slug) ?? null),
+  listRewardHandovers: async () => asMock(mockHandovers),
 };

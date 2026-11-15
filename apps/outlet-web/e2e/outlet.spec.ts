@@ -171,3 +171,27 @@ test('menu aktif mengikuti halaman', async ({ page }) => {
     : page.getByRole('navigation', { name: 'Menu utama' });
   await expect(nav.locator('[aria-current="page"]')).toHaveText('ABKShop');
 });
+
+test('slider pemenang program: kartu, detail penyerahan, dan tombol jeda', async ({ page }) => {
+  await page.goto(base);
+  const slider = page.getByRole('group', { name: 'Pemenang program' });
+  await expect(slider.getByRole('button', { name: /Hadiah Contoh/ })).toHaveCount(5);
+  await expect(page.locator('[data-mock-label]').first()).toBeVisible();
+
+  // Geser otomatis selalu bisa dijeda.
+  await slider.getByRole('button', { name: 'Pemenang program: jeda geser otomatis' }).click();
+  await expect(
+    slider.getByRole('button', { name: 'Pemenang program: lanjutkan geser otomatis' }),
+  ).toHaveAttribute('aria-pressed', 'true');
+
+  await slider.getByRole('button', { name: /Outlet Contoh Lima/ }).click();
+  const dialog = page.getByRole('dialog', { name: 'Penyerahan Hadiah Contoh A' });
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText('Program Mitra Contoh 1');
+  await expect(dialog).toContainText('TAP Contoh 1');
+  // Koordinat lokasi dan nama petugas tidak ditampilkan ke sesama mitra.
+  await expect(dialog).not.toContainText(/koordinat|surveyor|lokasi/i);
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+  await expectNoPageOverflow(page, '/ setelah slider');
+});
