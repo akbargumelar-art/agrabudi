@@ -18,14 +18,14 @@ const routes = [
   '/tentang/kantor',
   '/kontak',
   '/produk',
-  '/produk/perdana-contoh-1',
+  '/produk/perdana-internet-15gb',
   '/indihome',
   '/promo',
-  '/promo/promo-contoh-1',
+  '/promo/bonus-kuota-perdana-baru',
   '/digipos',
   '/karir',
-  '/karir/posisi-contoh-1',
-  '/karir/posisi-contoh-1/lamar',
+  '/karir/salesforce-mobile-kota-cirebon',
+  '/karir/salesforce-mobile-kota-cirebon/lamar',
 ];
 
 test('semua route Publik tampil tanpa overflow dan tanpa error', async ({ page }) => {
@@ -49,7 +49,7 @@ test('bar aplikasi lebih kecil dari menu utama dan garis aktifnya merah', async 
   const borderColor = await active.evaluate(
     (element) => getComputedStyle(element).borderBottomColor,
   );
-  expect(borderColor).toBe('rgb(213, 18, 43)');
+  expect(borderColor).toBe('rgb(207, 33, 27)');
 
   if (!isPhone(page)) {
     const switcherSize = await active.evaluate((element) =>
@@ -105,35 +105,50 @@ test('data contoh selalu berlabel', async ({ page }) => {
   await expect(page.locator('[data-mock-label]').first()).toBeVisible();
 });
 
-test('isi institusional yang belum disahkan tidak diisi karangan', async ({ page }) => {
+test('halaman perusahaan berisi data contoh berlabel', async ({ page }) => {
   for (const route of ['/tentang', '/tentang/area', '/tentang/kantor', '/kontak']) {
     await page.goto(base + route);
-    await expect(page.locator('[data-pending-content]').first(), route).toBeVisible();
+    await expect(page.locator('[data-mock-label]').first(), route).toBeVisible();
   }
+  await page.goto(`${base}/tentang/area`);
+  await expect(page.getByRole('main')).toContainText('Kabupaten Kuningan');
 });
 
 test('filter kategori produk hanya menampilkan kategori itu', async ({ page }) => {
   await page.goto(`${base}/produk?kategori=voucher`);
   const tiles = page.locator('main ul li a[href^="/produk/"]');
-  await expect(tiles).toHaveCount(1);
-  await expect(tiles.first()).toContainText('Voucher Contoh 1');
+  await expect(tiles).toHaveCount(2);
+  await expect(tiles.first()).toContainText('Voucher Data');
   await expect(
     page.getByRole('navigation', { name: 'Kategori produk' }).locator('[aria-current="page"]'),
   ).toHaveText('Voucher');
   await page.goto(`${base}/produk?kategori=tidak-ada`);
-  await expect(page.locator('main ul li a[href^="/produk/"]')).toHaveCount(5);
+  await expect(page.locator('main ul li a[href^="/produk/"]')).toHaveCount(8);
 });
 
-test('lowongan tutup menolak lamaran baru; form yang belum aktif tidak bisa dikirim', async ({
+test('lowongan tutup menolak lamaran; form lamaran memeriksa isian lalu memberi nomor referensi', async ({
   page,
 }) => {
-  await page.goto(`${base}/karir/posisi-contoh-3/lamar`);
+  await page.goto(`${base}/karir/supervisor-direct-sales/lamar`);
   await expect(page.getByText('Lowongan ini sudah ditutup')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Kirim lamaran' })).toHaveCount(0);
 
-  await page.goto(`${base}/karir/posisi-contoh-1/lamar`);
-  await expect(page.getByRole('button', { name: 'Kirim lamaran' })).toBeDisabled();
-  await expect(page.getByText('Pengiriman lamaran belum aktif')).toBeVisible();
+  await page.goto(`${base}/karir/salesforce-mobile-kota-cirebon/lamar`);
+  await page.getByRole('button', { name: 'Kirim lamaran' }).click();
+  await expect(page.locator('[data-demo-success]')).toHaveCount(0);
+
+  await page.getByLabel('Nama lengkap').fill('Pelamar Uji');
+  await page.getByLabel('Email').fill('pelamar@contoh.test');
+  await page.getByLabel('Nomor HP').fill('081234567890');
+  await page.getByLabel('CV').setInputFiles({
+    name: 'cv.pdf',
+    mimeType: 'application/pdf',
+    buffer: Buffer.from('%PDF-1.4 contoh'),
+  });
+  await page.getByRole('checkbox').check();
+  await page.getByRole('button', { name: 'Kirim lamaran' }).click();
+  await expect(page.locator('[data-demo-success]')).toBeVisible();
+  await expect(page.locator('[data-demo-reference]')).toHaveText(/^LMR-\d{6}-\d{4}$/);
 });
 
 test('alamat yang tidak ada menghasilkan 404', async ({ page }) => {
@@ -171,4 +186,35 @@ test('smartphone: target sentuh navigasi minimal 44 px', async ({ page }) => {
     expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
     expect(box?.width ?? 0).toBeGreaterThanOrEqual(44);
   }
+});
+
+test('menu utama yang tidak muat digeser dengan panah, tanpa scrollbar', async ({ page }) => {
+  test.skip(isPhone(page), 'Menu utama hanya tampil dari lebar tablet.');
+  await page.goto(base);
+  const nav = page.getByRole('navigation', { name: 'Menu utama' });
+  const track = nav.locator('ul');
+  const prev = nav.getByRole('button', { name: 'Geser menu ke kiri' });
+  const next = nav.getByRole('button', { name: 'Geser menu ke kanan' });
+
+  expect(await track.evaluate((element) => getComputedStyle(element).scrollbarWidth)).toBe('none');
+  const overflows = await track.evaluate(
+    (element) => element.scrollWidth > element.clientWidth + 1,
+  );
+  if (!overflows) {
+    await expect(prev).toBeHidden();
+    await expect(next).toBeHidden();
+    return;
+  }
+
+  // Panah hanya ada di sisi yang masih punya menu tersembunyi.
+  await expect(prev).toBeHidden();
+  await expect(next).toBeVisible();
+  await next.click();
+  await expect(prev).toBeVisible();
+  await expect.poll(() => track.evaluate((element) => element.scrollLeft)).toBeGreaterThan(0);
+  await expectNoPageOverflow(page, 'menu utama digeser');
+
+  // Menu aktif digeser ke dalam pandangan saat halamannya dibuka.
+  await page.goto(`${base}/karir`);
+  await expect(nav.locator('[aria-current="page"]')).toBeInViewport();
 });

@@ -2,7 +2,7 @@ import { DataNotice, buttonClass } from '@agrabudi/ui';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { categoryLabel, ProductPrice } from '@/components/catalog';
+import { categoryLabel, ProductImage, ProductPrice } from '@/components/catalog';
 import { SectionUnavailable } from '@/components/Notices';
 import { PageIntro, pageBodyClass } from '@/components/PageIntro';
 import { load } from '@/data';
@@ -45,7 +45,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
       <div className={pageBodyClass}>
         <div className="grid gap-10 desktop:grid-cols-[minmax(0,1fr)_22rem] desktop:items-start">
           <section aria-labelledby="ketentuan">
-            <p className="text-sm text-ink-700">Kategori: {categoryLabel[detail.category]}</p>
+            <ProductImage
+              product={detail}
+              className="aspect-4/3 w-full max-w-xl rounded-panel border border-surface-100"
+            />
+            <p className="mt-6 text-sm text-ink-700">Kategori: {categoryLabel[detail.category]}</p>
             <h2 id="ketentuan" className="mt-6 text-xl font-bold">
               Ketentuan
             </h2>

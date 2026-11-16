@@ -1,3 +1,4 @@
+export * from './assets/logo';
 export * from './components/AppSwitcher';
 export * from './components/AsyncView';
 export * from './components/BottomNav';

@@ -1,11 +1,12 @@
 import { admin } from './admin';
 import { indihome } from './indihome';
 import { telkomsel } from './telkomsel';
+import { website } from './website';
 import type { ModuleRoute, Section } from './types';
 
 export type { ModuleGroup, ModuleLeaf, ModuleRoute, Section, SectionId } from './types';
 
-export const sections: Section[] = [telkomsel, indihome, admin];
+export const sections: Section[] = [telkomsel, indihome, admin, website];
 
 function buildRoutes(): ModuleRoute[] {
   const routes: ModuleRoute[] = [];

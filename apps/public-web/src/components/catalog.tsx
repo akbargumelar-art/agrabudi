@@ -27,6 +27,34 @@ export function ProductPrice({ priceRupiah }: { priceRupiah: number | null }) {
   );
 }
 
+/** Gambar produk, atau tempat gambar berlabel bila belum diunggah. */
+export function ProductImage({
+  product,
+  className,
+}: {
+  product: CustomerProduct;
+  className?: string;
+}) {
+  if (product.imageUrl) {
+    return (
+      <img
+        src={product.imageUrl}
+        alt={`Gambar ${product.name}`}
+        loading="lazy"
+        className={cn('object-cover', className)}
+      />
+    );
+  }
+  return (
+    <MediaPlaceholder
+      label={`Foto ${product.name} belum tersedia`}
+      icon={categoryIcon[product.category]}
+      tone={product.category === 'perdana' || product.category === 'voucher' ? 'red' : 'ink'}
+      className={className}
+    />
+  );
+}
+
 /** Kartu produk katalog pelanggan. Seluruh kartu adalah tautan ke detail. */
 export function ProductCard({ product }: { product: CustomerProduct }) {
   return (
@@ -34,12 +62,7 @@ export function ProductCard({ product }: { product: CustomerProduct }) {
       href={`/produk/${product.slug}`}
       className={cn(cardClass, 'flex h-full flex-col overflow-hidden hover:border-ink-300')}
     >
-      <MediaPlaceholder
-        label={`Foto ${product.name} belum tersedia`}
-        icon={categoryIcon[product.category]}
-        tone={product.category === 'perdana' || product.category === 'voucher' ? 'red' : 'navy'}
-        className="aspect-4/3"
-      />
+      <ProductImage product={product} className="aspect-4/3 w-full" />
       <span className="flex flex-1 flex-col gap-1.5 p-4">
         <span className="self-start rounded-full bg-surface-50 px-2.5 py-0.5 text-xs font-medium text-ink-700">
           {categoryLabel[product.category]}

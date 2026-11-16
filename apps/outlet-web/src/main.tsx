@@ -4,7 +4,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
 import { App } from './App';
-import { CartProvider } from './features/abkshop/CartContext';
+import { SessionProvider } from './auth/SessionContext';
 import './styles.css';
 
 const queryClient = new QueryClient({
@@ -22,9 +22,9 @@ createRoot(root).render(
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <ToastProvider>
-          <CartProvider>
+          <SessionProvider>
             <App />
-          </CartProvider>
+          </SessionProvider>
         </ToastProvider>
       </BrowserRouter>
     </QueryClientProvider>

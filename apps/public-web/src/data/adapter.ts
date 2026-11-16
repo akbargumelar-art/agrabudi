@@ -1,6 +1,9 @@
 import type {
+  CompanyProfile,
   CustomerProduct,
   DataEnvelope,
+  DigiposInfo,
+  IndihomeInfo,
   IndihomePackage,
   Program,
   SiteBanner,
@@ -20,6 +23,10 @@ export interface PublicDataAdapter {
   getVacancy(slug: string): Promise<DataEnvelope<Vacancy | null>>;
   listIndihomePackages(): Promise<DataEnvelope<IndihomePackage[]>>;
   listBanners(page: string): Promise<DataEnvelope<SiteBanner[]>>;
+  /** Profil, area, kantor, dan kanal kontak (isi milik Admin Web). */
+  getCompanyProfile(): Promise<DataEnvelope<CompanyProfile>>;
+  getIndihomeInfo(): Promise<DataEnvelope<IndihomeInfo>>;
+  getDigiposInfo(): Promise<DataEnvelope<DigiposInfo>>;
 }
 
 export class DataUnavailableError extends Error {

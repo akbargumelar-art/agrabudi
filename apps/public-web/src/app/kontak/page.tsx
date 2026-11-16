@@ -1,16 +1,22 @@
-import { Button, Field, Input, Textarea } from '@agrabudi/ui';
+import { DataNotice, Field, Select, Textarea } from '@agrabudi/ui';
 import type { Metadata } from 'next';
-import { InactiveFormNote, PendingContent } from '@/components/Notices';
+import { ChannelList } from '@/components/company';
+import { DemoForm } from '@/components/DemoForm';
+import { NameField, PhoneField } from '@/components/FormFields';
+import { SectionUnavailable } from '@/components/Notices';
 import { PageIntro, pageBodyClass } from '@/components/PageIntro';
+import { load } from '@/data';
 
 export const metadata: Metadata = { title: 'Hubungi Kami' };
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const company = await load((adapter) => adapter.getCompanyProfile());
   return (
     <>
       <PageIntro
         title="Hubungi Kami"
         description="Kanal resmi untuk pertanyaan pelanggan, mitra, dan umum."
+        aside={company.ok ? <DataNotice meta={company.meta} /> : null}
       />
       <div className={pageBodyClass}>
         <div className="grid gap-10 desktop:grid-cols-2">
@@ -19,38 +25,51 @@ export default function ContactPage() {
               Kanal resmi
             </h2>
             <div className="mt-4">
-              <PendingContent what="Nomor telepon, WhatsApp, email, dan jam layanan" />
+              {company.ok ? (
+                <ChannelList channels={company.data.channels} />
+              ) : (
+                <SectionUnavailable
+                  title="Kanal kontak tidak dapat dimuat"
+                  message={company.message}
+                />
+              )}
             </div>
           </section>
           <section aria-labelledby="form-kontak">
             <h2 id="form-kontak" className="text-xl font-bold">
               Kirim pesan
             </h2>
-            <form className="mt-4 flex flex-col gap-4" aria-describedby="catatan-kontak">
-              <Field label="Nama" htmlFor="kontak-nama">
-                <Input id="kontak-nama" name="name" autoComplete="name" disabled />
-              </Field>
-              <Field label="Nomor HP" htmlFor="kontak-hp">
-                <Input
-                  id="kontak-hp"
-                  name="phone"
-                  type="tel"
-                  inputMode="tel"
-                  autoComplete="tel"
-                  disabled
-                />
-              </Field>
-              <Field label="Pesan" htmlFor="kontak-pesan">
-                <Textarea id="kontak-pesan" name="message" disabled />
-              </Field>
-              <Button type="submit" disabled>
-                Kirim pesan
-              </Button>
-              <InactiveFormNote id="catatan-kontak">
-                Pengiriman pesan belum aktif. Form ini menyala setelah layanan penerima pesan
-                tersedia.
-              </InactiveFormNote>
-            </form>
+            <div className="mt-4">
+              <DemoForm
+                refPrefix="PSN"
+                submitLabel="Kirim pesan"
+                successTitle="Pesan terkirim"
+                successText="Tim kami membalas lewat nomor HP yang Anda isi pada jam kerja."
+              >
+                <NameField id="kontak-nama" />
+                <PhoneField id="kontak-hp" />
+                <Field label="Keperluan" htmlFor="kontak-topik">
+                  <Select id="kontak-topik" name="topic" required defaultValue="">
+                    <option value="" disabled>
+                      Pilih keperluan
+                    </option>
+                    <option value="produk">Produk dan harga</option>
+                    <option value="indihome">IndiHome</option>
+                    <option value="mitra">Menjadi mitra outlet</option>
+                    <option value="lainnya">Lainnya</option>
+                  </Select>
+                </Field>
+                <Field label="Pesan" htmlFor="kontak-pesan">
+                  <Textarea
+                    id="kontak-pesan"
+                    name="message"
+                    required
+                    minLength={10}
+                    maxLength={1000}
+                  />
+                </Field>
+              </DemoForm>
+            </div>
           </section>
         </div>
       </div>

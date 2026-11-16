@@ -1,49 +1,102 @@
+import { DataNotice } from '@agrabudi/ui';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { PendingContent } from '@/components/Notices';
+import { OfficeList } from '@/components/company';
+import { SectionUnavailable } from '@/components/Notices';
 import { PageIntro, pageBodyClass } from '@/components/PageIntro';
+import { load } from '@/data';
 
 export const metadata: Metadata = { title: 'Tentang Kami' };
 
-const sections = [
-  { id: 'profil', title: 'Profil perusahaan', what: 'Profil perusahaan' },
-  { id: 'sejarah', title: 'Sejarah', what: 'Sejarah perusahaan' },
-  { id: 'visi-misi', title: 'Visi dan misi', what: 'Visi dan misi' },
-];
+const linkClass =
+  'inline-flex min-h-11 items-center font-semibold underline decoration-brand-red decoration-2 underline-offset-4';
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const company = await load((adapter) => adapter.getCompanyProfile());
   return (
     <>
-      <PageIntro title="Tentang Kami" description="PT Agrabudi Komunika." />
+      <PageIntro
+        title="Tentang Kami"
+        description="PT Agrabudi Komunika."
+        aside={company.ok ? <DataNotice meta={company.meta} /> : null}
+      />
       <div className={pageBodyClass}>
-        {sections.map((section) => (
-          <section
-            key={section.id}
-            aria-labelledby={section.id}
-            className="grid gap-4 tablet:grid-cols-[16rem_minmax(0,1fr)] tablet:gap-8"
-          >
-            <h2 id={section.id} className="text-xl font-bold">
-              {section.title}
-            </h2>
-            <PendingContent what={section.what} />
-          </section>
-        ))}
+        {!company.ok ? (
+          <SectionUnavailable
+            title="Profil perusahaan tidak dapat dimuat"
+            message={company.message}
+          />
+        ) : (
+          <>
+            <section
+              aria-labelledby="profil"
+              className="grid gap-4 tablet:grid-cols-[16rem_minmax(0,1fr)] tablet:gap-8"
+            >
+              <h2 id="profil" className="text-xl font-bold">
+                Profil perusahaan
+              </h2>
+              <div className="flex max-w-prose flex-col gap-3">
+                {company.data.about.map((text) => (
+                  <p key={text}>{text}</p>
+                ))}
+              </div>
+            </section>
+            <section
+              aria-labelledby="sejarah"
+              className="grid gap-4 tablet:grid-cols-[16rem_minmax(0,1fr)] tablet:gap-8"
+            >
+              <h2 id="sejarah" className="text-xl font-bold">
+                Sejarah
+              </h2>
+              <div className="flex max-w-prose flex-col gap-3">
+                {company.data.history.map((text) => (
+                  <p key={text}>{text}</p>
+                ))}
+              </div>
+            </section>
+            <section
+              aria-labelledby="visi-misi"
+              className="grid gap-4 tablet:grid-cols-[16rem_minmax(0,1fr)] tablet:gap-8"
+            >
+              <h2 id="visi-misi" className="text-xl font-bold">
+                Visi dan misi
+              </h2>
+              <div className="max-w-prose">
+                <p className="font-semibold">{company.data.vision}</p>
+                <ul className="mt-3 list-disc space-y-1.5 pl-5">
+                  {company.data.missions.map((mission) => (
+                    <li key={mission}>{mission}</li>
+                  ))}
+                </ul>
+              </div>
+            </section>
+            <section aria-labelledby="kantor-kami">
+              <h2 id="kantor-kami" className="text-xl font-bold">
+                Kantor kami
+              </h2>
+              <div className="mt-4">
+                <OfficeList offices={company.data.offices} />
+              </div>
+            </section>
+          </>
+        )}
         <nav aria-label="Halaman terkait" className="border-t border-surface-100 pt-6">
           <ul className="flex flex-wrap gap-x-6">
-            {[
-              { href: '/tentang/area', label: 'Area layanan' },
-              { href: '/tentang/kantor', label: 'Lokasi kantor' },
-              { href: '/kontak', label: 'Hubungi Kami' },
-            ].map((link) => (
-              <li key={link.href}>
-                <Link
-                  href={link.href}
-                  className="inline-flex min-h-11 items-center font-semibold underline decoration-brand-red decoration-2 underline-offset-4"
-                >
-                  {link.label}
-                </Link>
-              </li>
-            ))}
+            <li>
+              <Link href="/tentang/area" className={linkClass}>
+                Area layanan
+              </Link>
+            </li>
+            <li>
+              <Link href="/tentang/kantor" className={linkClass}>
+                Lokasi kantor
+              </Link>
+            </li>
+            <li>
+              <Link href="/kontak" className={linkClass}>
+                Hubungi Kami
+              </Link>
+            </li>
           </ul>
         </nav>
       </div>

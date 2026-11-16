@@ -12,6 +12,8 @@ export const vacancySchema = z.object({
   location: z.string(),
   summary: z.string(),
   requirements: z.array(z.string()),
+  /** Jenis kerja, mis. "Penuh waktu" atau "Kontrak". */
+  employmentType: z.string(),
   closesAt: z.iso.date(),
   status: vacancyStatusSchema,
 });

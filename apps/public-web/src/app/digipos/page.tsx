@@ -1,67 +1,85 @@
-import { Button, Field, Input, Textarea } from '@agrabudi/ui';
+import { DataNotice, Field, Input } from '@agrabudi/ui';
 import type { Metadata } from 'next';
-import { InactiveFormNote, PendingContent } from '@/components/Notices';
+import { DemoForm } from '@/components/DemoForm';
+import { AddressField, NameField, PhoneField } from '@/components/FormFields';
+import { SectionUnavailable } from '@/components/Notices';
 import { PageIntro, pageBodyClass } from '@/components/PageIntro';
+import { load } from '@/data';
 
 export const metadata: Metadata = { title: 'Daftar Digipos' };
 
-export default function DigiposPage() {
+export default async function DigiposPage() {
+  const info = await load((adapter) => adapter.getDigiposInfo());
   return (
     <>
-      <PageIntro title="Daftar Digipos" description="Pendaftaran outlet sebagai mitra Digipos." />
+      <PageIntro
+        title="Daftar Digipos"
+        description="Pendaftaran outlet sebagai mitra Digipos."
+        aside={info.ok ? <DataNotice meta={info.meta} /> : null}
+      />
       <div className={pageBodyClass}>
         <div className="grid gap-10 desktop:grid-cols-2">
-          <section aria-labelledby="syarat-digipos">
-            <h2 id="syarat-digipos" className="text-xl font-bold">
-              Syarat pendaftaran
-            </h2>
-            <div className="mt-4">
-              <PendingContent
-                what="Syarat dan informasi pendaftaran"
-                owner="Admin layanan Digipos"
+          <div className="flex flex-col gap-10">
+            {info.ok ? (
+              <>
+                <section aria-labelledby="syarat-digipos">
+                  <h2 id="syarat-digipos" className="text-xl font-bold">
+                    Syarat pendaftaran
+                  </h2>
+                  <ul className="mt-4 list-disc space-y-1.5 pl-5">
+                    {info.data.requirements.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </section>
+                <section aria-labelledby="langkah-digipos">
+                  <h2 id="langkah-digipos" className="text-xl font-bold">
+                    Langkah pendaftaran
+                  </h2>
+                  <ol className="mt-4 flex flex-col gap-3">
+                    {info.data.steps.map((step, index) => (
+                      <li key={step} className="flex items-start gap-3">
+                        <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-red-soft text-sm font-bold text-brand-red-strong">
+                          {index + 1}
+                        </span>
+                        <span className="pt-1">{step}</span>
+                      </li>
+                    ))}
+                  </ol>
+                </section>
+              </>
+            ) : (
+              <SectionUnavailable
+                title="Informasi Digipos tidak dapat dimuat"
+                message={info.message}
               />
-            </div>
-            <p className="mt-4 max-w-prose text-sm text-ink-700">
-              Setelah form dikirim, Anda mendapat nomor referensi untuk memantau status. Pendaftaran
-              diverifikasi petugas; akun Digipos tidak aktif otomatis.
-            </p>
-          </section>
+            )}
+          </div>
           <section aria-labelledby="form-digipos">
             <h2 id="form-digipos" className="text-xl font-bold">
               Form pendaftaran
             </h2>
-            <form className="mt-4 flex flex-col gap-4" aria-describedby="catatan-digipos">
-              <Field label="Nama outlet" htmlFor="digipos-outlet">
-                <Input id="digipos-outlet" name="outletName" autoComplete="organization" disabled />
-              </Field>
-              <Field label="Nama pemilik" htmlFor="digipos-pemilik">
-                <Input id="digipos-pemilik" name="ownerName" autoComplete="name" disabled />
-              </Field>
-              <Field label="Nomor HP" htmlFor="digipos-hp">
-                <Input
-                  id="digipos-hp"
-                  name="phone"
-                  type="tel"
-                  inputMode="tel"
-                  autoComplete="tel"
-                  disabled
-                />
-              </Field>
-              <Field label="Alamat outlet" htmlFor="digipos-alamat">
-                <Textarea
-                  id="digipos-alamat"
-                  name="address"
-                  autoComplete="street-address"
-                  disabled
-                />
-              </Field>
-              <Button type="submit" disabled>
-                Kirim pendaftaran
-              </Button>
-              <InactiveFormNote id="catatan-digipos">
-                Pendaftaran belum aktif. Kolom form final ditentukan Admin layanan Digipos.
-              </InactiveFormNote>
-            </form>
+            <div className="mt-4">
+              <DemoForm
+                refPrefix="DGP"
+                submitLabel="Kirim pendaftaran"
+                successTitle="Pendaftaran terkirim"
+                successText="Simpan nomor referensi ini. Petugas akan menghubungi Anda untuk verifikasi."
+              >
+                <Field label="Nama outlet" htmlFor="digipos-outlet">
+                  <Input
+                    id="digipos-outlet"
+                    name="outletName"
+                    autoComplete="organization"
+                    required
+                    maxLength={80}
+                  />
+                </Field>
+                <NameField id="digipos-pemilik" label="Nama pemilik" />
+                <PhoneField id="digipos-hp" />
+                <AddressField id="digipos-alamat" label="Alamat outlet" />
+              </DemoForm>
+            </div>
           </section>
         </div>
       </div>

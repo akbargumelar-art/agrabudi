@@ -31,7 +31,7 @@ export default async function ProgramsPage() {
           <ul className="grid gap-4 tablet:grid-cols-2">
             {programs.data.map((program, index) => (
               <li key={program.id}>
-                <ProgramCard program={program} tone={index % 2 === 0 ? 'red' : 'navy'} />
+                <ProgramCard program={program} tone={index % 2 === 0 ? 'red' : 'ink'} />
               </li>
             ))}
           </ul>

@@ -1,116 +1,74 @@
-import { staffSessionSchema, type StaffSession } from '@agrabudi/contracts';
-import { AuthUnavailableError, type AuthAdapter, type DemoAccount } from './adapter';
+import {
+  staffProfileUpdateSchema,
+  staffSessionSchema,
+  type BusinessUnit,
+  type DataScope,
+  type StaffPermission,
+  type StaffRole,
+  type StaffSession,
+} from '@agrabudi/contracts';
+import { personByUsername } from '../data/mock/org';
+import { InvalidCredentialsError, type AuthAdapter } from './adapter';
 
 /**
- * AKUN CONTOH untuk kerangka tampilan. Bukan akun sungguhan, tanpa kata sandi,
- * dan tidak ikut ke build dengan sumber data `api` (PRD 4.15 butir 2).
+ * AKUN CONTOH untuk kerangka tampilan. Bukan akun sungguhan dan tidak ikut ke build
+ * dengan sumber data `api` (PRD 4.15 butir 2). Kata sandinya sama untuk semua akun
+ * contoh dan hanya berlaku di mock; akun sungguhan dibuat pengelola akses di server.
  */
-function account(session: StaffSession, summary: string): DemoAccount {
-  return { session: staffSessionSchema.parse(session), summary };
+export const DEMO_PASSWORD = 'contoh123';
+
+function account(
+  username: string,
+  role: StaffRole,
+  unit: BusinessUnit | null,
+  scope: DataScope,
+  label: string,
+  permissions: StaffPermission[] = [],
+): StaffSession {
+  return staffSessionSchema.parse({
+    accountId: `contoh-${username}`,
+    username,
+    displayName: personByUsername(username)?.name ?? `Akun contoh ${label}`,
+    email: `${username}@contoh.invalid`,
+    phone: null,
+    role,
+    unit,
+    scope,
+    permissions,
+  });
 }
 
-const demoAccounts: DemoAccount[] = [
-  account(
-    {
-      accountId: 'contoh-admin-mobile',
-      displayName: 'Akun contoh Admin Mobile',
-      role: 'admin',
-      unit: 'mobile',
-      scope: 'cluster',
-      // Izin Karir dan Pengguna dititipkan sementara di akun ini sampai pemiliknya diputuskan.
-      permissions: ['career.manage', 'user.manage'],
-    },
-    'Kelola dan unggah data Telkomsel serta data Outlet.',
-  ),
-  account(
-    {
-      accountId: 'contoh-admin-household',
-      displayName: 'Akun contoh Admin Household',
-      role: 'admin',
-      unit: 'household',
-      scope: 'cluster',
-      permissions: [],
-    },
-    'Kelola dan unggah data IndiHome.',
-  ),
-  account(
-    {
-      accountId: 'contoh-manager',
-      displayName: 'Akun contoh Manager',
-      role: 'manager',
-      unit: null,
-      scope: 'cluster',
-      permissions: [],
-    },
-    'Lihat data Telkomsel dan IndiHome satu cluster.',
-  ),
-  account(
-    {
-      accountId: 'contoh-supervisor-mobile',
-      displayName: 'Akun contoh Supervisor Mobile',
-      role: 'supervisor',
-      unit: 'mobile',
-      scope: 'team',
-      permissions: [],
-    },
-    'Lihat data Telkomsel tim sendiri.',
-  ),
-  account(
-    {
-      accountId: 'contoh-supervisor-household',
-      displayName: 'Akun contoh Supervisor Household',
-      role: 'supervisor',
-      unit: 'household',
-      scope: 'team',
-      permissions: [],
-    },
-    'Lihat data IndiHome tim sendiri.',
-  ),
-  account(
-    {
-      accountId: 'contoh-salesforce-mobile',
-      displayName: 'Akun contoh Salesforce Mobile',
-      role: 'salesforce',
-      unit: 'mobile',
-      scope: 'self',
-      permissions: [],
-    },
-    'Lihat data Telkomsel milik sendiri.',
-  ),
-  account(
-    {
-      accountId: 'contoh-salesforce-household',
-      displayName: 'Akun contoh Salesforce Household',
-      role: 'salesforce',
-      unit: 'household',
-      scope: 'self',
-      permissions: [],
-    },
-    'Lihat data IndiHome milik sendiri.',
-  ),
-  account(
-    {
-      accountId: 'contoh-salesforce-direct',
-      displayName: 'Akun contoh Salesforce Direct Sales',
-      role: 'salesforce',
-      unit: 'direct_sales',
-      scope: 'self',
-      permissions: [],
-    },
-    'Lihat data Direct to Customer milik sendiri.',
-  ),
+export const demoAccounts: StaffSession[] = [
+  account('adminweb', 'web_admin', null, 'site', 'Admin Web'),
+  // Izin Karir dan Pengguna dititipkan sementara di Admin Mobile sampai pemiliknya diputuskan.
+  account('adminmobile', 'admin', 'mobile', 'cluster', 'Admin Mobile', [
+    'career.manage',
+    'user.manage',
+  ]),
+  account('adminhousehold', 'admin', 'household', 'cluster', 'Admin Household'),
+  account('manager', 'manager', null, 'cluster', 'Manager'),
+  account('spvmobile', 'supervisor', 'mobile', 'team', 'Supervisor Mobile'),
+  account('spvhousehold', 'supervisor', 'household', 'team', 'Supervisor Household'),
+  account('sfmobile', 'salesforce', 'mobile', 'self', 'Salesforce Mobile'),
+  account('sfhousehold', 'salesforce', 'household', 'self', 'Salesforce Household'),
+  account('sfdirect', 'salesforce', 'direct_sales', 'self', 'Salesforce Direct Sales'),
 ];
 
+/** Perubahan profil di mode kerangka hanya hidup selama halaman terbuka. */
+const profiles = new Map<string, StaffSession>(demoAccounts.map((item) => [item.username, item]));
+
 export const mockAuthAdapter: AuthAdapter = {
-  signIn: async () => {
-    throw new AuthUnavailableError(
-      'Mode kerangka tidak memakai kata sandi. Pilih salah satu akun contoh.',
-    );
+  signIn: async ({ username, password }) => {
+    const found = profiles.get(username.trim().toLowerCase());
+    if (!found || password !== DEMO_PASSWORD) throw new InvalidCredentialsError();
+    return found;
   },
-  demoAccounts,
-  signInAsDemo: async (accountId) => {
-    const found = demoAccounts.find((item) => item.session.accountId === accountId);
-    if (!found) throw new AuthUnavailableError('Akun contoh tidak ditemukan.');
-    return found.session;
+  updateProfile: async (session, update) => {
+    const current = profiles.get(session.username) ?? session;
+    // Hanya tiga kolom ini yang diambil; username, peran, unit, dan cakupan tidak bisa ikut berubah.
+    const { displayName, email, phone } = staffProfileUpdateSchema.parse(update);
+    const next = staffSessionSchema.parse({ ...current, displayName, email, phone });
+    profiles.set(next.username, next);
+    return next;
   },
 };

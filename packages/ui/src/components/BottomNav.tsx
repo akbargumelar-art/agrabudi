@@ -17,21 +17,15 @@ type BottomNavProps = {
   currentPath: string;
   LinkComponent?: LinkComponent;
   label?: string;
-  /** `console` dipakai Administrator Web supaya tidak tertukar dengan aplikasi lain. */
-  accent?: 'brand' | 'console';
+  /** Melayang di atas isi dengan jarak dari tepi layar (dipakai Portal). */
+  floating?: boolean;
 };
 
-const activeText = {
-  brand: 'font-semibold text-brand-red-strong',
-  console: 'font-semibold text-console',
-} as const;
-
-const activePill = {
-  brand: 'bg-brand-red-soft',
-  console: 'bg-console-soft',
-} as const;
+const activeText = 'font-semibold text-brand-red-strong';
+const activePill = 'bg-brand-red-soft';
 
 const itemClass = 'flex min-h-16 w-full flex-col items-center justify-center gap-0.5 px-1 text-xs';
+const floatingItemClass = 'min-h-[3.75rem]';
 const pillClass = 'flex h-7 w-14 items-center justify-center rounded-full';
 
 export function BottomNav({
@@ -39,7 +33,7 @@ export function BottomNav({
   currentPath,
   LinkComponent = AnchorLink,
   label = 'Navigasi bawah',
-  accent = 'brand',
+  floating = false,
 }: BottomNavProps) {
   if (items.length > 5) {
     throw new Error('BottomNav menerima paling banyak lima item.');
@@ -48,7 +42,13 @@ export function BottomNav({
     <nav
       aria-label={label}
       data-bottom-nav
-      className="fixed inset-x-0 bottom-0 z-40 rounded-t-panel bg-surface-0 pb-[env(safe-area-inset-bottom)] shadow-raised-up tablet:hidden"
+      data-floating={floating ? '' : undefined}
+      className={cn(
+        'fixed z-40 bg-surface-0 tablet:hidden',
+        floating
+          ? 'inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] rounded-full border border-surface-100 px-1 shadow-raised'
+          : 'inset-x-0 bottom-0 rounded-t-panel pb-[env(safe-area-inset-bottom)] shadow-raised-up',
+      )}
     >
       <ul
         className="grid"
@@ -64,9 +64,9 @@ export function BottomNav({
                   onClick={item.onPress}
                   aria-haspopup="dialog"
                   aria-expanded={item.expanded}
-                  className={cn(itemClass, item.expanded ? activeText[accent] : 'text-ink-700')}
+                  className={cn(itemClass, floating && floatingItemClass, item.expanded ? activeText : 'text-ink-700')}
                 >
-                  <span className={cn(pillClass, item.expanded && activePill[accent])}>
+                  <span className={cn(pillClass, item.expanded && activePill)}>
                     <Icon aria-hidden className="size-5" />
                   </span>
                   <span>{item.label}</span>
@@ -80,9 +80,9 @@ export function BottomNav({
               <LinkComponent
                 href={item.href}
                 aria-current={active ? 'page' : undefined}
-                className={cn(itemClass, active ? activeText[accent] : 'text-ink-700')}
+                className={cn(itemClass, floating && floatingItemClass, active ? activeText : 'text-ink-700')}
               >
-                <span className={cn(pillClass, active && activePill[accent])}>
+                <span className={cn(pillClass, active && activePill)}>
                   <Icon aria-hidden className="size-5" />
                 </span>
                 <span>{item.label}</span>

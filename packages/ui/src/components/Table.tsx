@@ -20,7 +20,7 @@ export function TableScroll({ label, scrollHint, children }: TableScrollProps) {
         aria-label={label}
         tabIndex={0}
         data-table-scroll
-        className="overflow-x-auto rounded-panel border border-surface-100"
+        className="relative overflow-x-auto rounded-panel border border-surface-100"
       >
         {children}
       </div>

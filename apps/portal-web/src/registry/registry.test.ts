@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { consolePages } from '../console/ConsolePage';
 import { findModuleRoute, findSection, moduleRoutes, sections } from './index';
 
 describe('route registry Portal', () => {
@@ -31,9 +32,15 @@ describe('route registry Portal', () => {
     }
   });
 
-  it('console Administrator Web tidak ada di registry Portal', () => {
-    expect(moduleRoutes.some((route) => route.path.includes('web-admin'))).toBe(false);
-    expect(findSection('/web-admin')).toBeUndefined();
+  it('bagian Website berada di /web-admin dan tiap menunya punya halaman', () => {
+    const website = moduleRoutes.filter((route) => route.section.id === 'website');
+    // Sembilan menu PRD 2.3 ditambah Halaman ABKShop.
+    expect(website).toHaveLength(10);
+    expect(website.every((route) => route.path.startsWith('/web-admin/'))).toBe(true);
+    expect(Object.keys(consolePages).sort()).toEqual(
+      website.map((route) => route.group.slug).sort(),
+    );
+    expect(findSection('/web-admin')?.id).toBe('website');
   });
 
   it('mengenali bagian dari path dan mengabaikan garis miring di akhir', () => {

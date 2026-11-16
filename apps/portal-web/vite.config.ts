@@ -23,6 +23,14 @@ export default defineConfig(({ command, mode }) => {
   return {
     plugins: [react(), tailwindcss()],
     server: { port: 3002, strictPort: true },
-    test: { include: ['src/**/*.test.{ts,tsx}'] },
+    test: {
+      include: ['src/**/*.test.{ts,tsx}'],
+      // Nilai uji saja, bukan bawaan build: build tetap gagal tanpa URL dari environment.
+      env: {
+        VITE_APP_URL_PUBLIC: 'http://localhost:3000',
+        VITE_APP_URL_OUTLET: 'http://localhost:3001',
+        VITE_APP_URL_PORTAL: 'http://localhost:3002',
+      },
+    },
   };
 });

@@ -1,9 +1,8 @@
 import { DataUnavailableError, type OutletDataAdapter } from './adapter';
 
 /**
- * Adapter HTTP belum ada: backend Outlet dibangun di M2-M4.
- * Sampai saat itu setiap permintaan gagal dengan pesan yang jujur,
- * bukan diam-diam memakai data contoh.
+ * Adapter HTTP belum ada: backend Outlet dibangun kemudian. Sampai saat itu setiap
+ * permintaan gagal dengan pesan yang jujur, bukan diam-diam memakai data contoh.
  */
 function notConnected(): never {
   throw new DataUnavailableError(
@@ -12,10 +11,11 @@ function notConnected(): never {
 }
 
 export const apiAdapter: OutletDataAdapter = {
-  getCatalog: async () => notConnected(),
-  listOrders: async () => notConnected(),
-  getOrder: async () => notConnected(),
+  getSiteSettings: async () => notConnected(),
   listPrograms: async () => notConnected(),
   getProgram: async () => notConnected(),
   listRewardHandovers: async () => notConnected(),
+  getOutletProfile: async () => notConnected(),
+  listCuanProducts: async () => notConnected(),
+  getCuanContact: async () => notConnected(),
 };

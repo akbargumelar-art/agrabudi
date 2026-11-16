@@ -14,6 +14,8 @@ export const programSchema = z.object({
   terms: z.array(z.string()),
   startsAt: z.iso.date(),
   endsAt: z.iso.date(),
+  /** `null` berarti gambar belum diunggah. */
+  imageUrl: z.string().nullable(),
   status: contentStatusSchema,
 });
 export type Program = z.infer<typeof programSchema>;

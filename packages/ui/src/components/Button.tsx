@@ -9,7 +9,7 @@ const variantClass: Record<Variant, string> = {
   secondary:
     'border border-ink-300 bg-surface-0 text-ink-900 hover:border-ink-500 disabled:border-surface-100 disabled:bg-surface-50',
   ghost: 'text-ink-700 hover:bg-surface-50 hover:text-ink-900 disabled:bg-transparent',
-  /** Tombol utama di atas latar merah atau navy. */
+  /** Tombol utama di atas latar merah atau gelap. */
   inverse: 'bg-white text-brand-red-strong hover:bg-brand-red-soft',
   'on-dark': 'border border-white/60 text-white hover:border-white hover:bg-white/10',
 };

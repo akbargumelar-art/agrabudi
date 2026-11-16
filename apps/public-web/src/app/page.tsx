@@ -18,8 +18,8 @@ import {
   MapPin,
   Megaphone,
   MessageCircle,
-  ReceiptText,
   ShoppingCart,
+  Trophy,
   Wifi,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -32,15 +32,37 @@ import { appUrls } from '@/lib/env';
 
 const sectionClass = cn(containerClass, 'py-10 tablet:py-14');
 
-function HeroSlide({ tone, children }: { tone: 'red' | 'navy'; children: ReactNode }) {
+function HeroSlide({
+  tone,
+  imageUrl,
+  children,
+}: {
+  tone: 'red' | 'ink';
+  imageUrl?: string | null;
+  children: ReactNode;
+}) {
   return (
     <div
       className={cn(
         'on-dark relative flex min-h-96 items-end overflow-hidden rounded-banner p-6 text-white tablet:min-h-112 tablet:items-center tablet:p-14',
-        tone === 'red' ? 'bg-brand-red' : 'bg-ink-900',
+        tone === 'red' ? 'bg-linear-to-br from-brand-red to-brand-maroon' : 'bg-ink-900',
       )}
     >
-      <SignalRings className="pointer-events-none absolute -right-10 -bottom-10 size-80 text-white opacity-20 tablet:size-136" />
+      {imageUrl ? (
+        <img
+          src={imageUrl}
+          alt=""
+          className="pointer-events-none absolute inset-0 size-full object-cover object-right"
+        />
+      ) : (
+        <SignalRings className="pointer-events-none absolute -right-10 -bottom-10 size-80 text-white opacity-15 tablet:size-136" />
+      )}
+      {imageUrl ? (
+        <span
+          aria-hidden
+          className="absolute inset-0 bg-linear-to-t from-black/60 via-black/25 to-transparent tablet:bg-linear-to-r tablet:from-black/55 tablet:via-black/20"
+        />
+      ) : null}
       <div className="relative max-w-2xl pb-14 tablet:pb-0">{children}</div>
     </div>
   );
@@ -58,18 +80,18 @@ const services: Array<{ href: string; label: string; icon: IconComponent }> = [
 const outletBenefits: Array<{ icon: IconComponent; title: string; note: string }> = [
   {
     icon: ShoppingCart,
-    title: 'Beli paket lewat tabel pemesanan',
-    note: 'Isi jumlah per paket, lihat total, lalu checkout.',
-  },
-  {
-    icon: ReceiptText,
-    title: 'Pantau status pesanan',
-    note: 'Status order dan status pembayaran ditampilkan terpisah.',
+    title: 'Pesan paket lewat ABKShop',
+    note: 'Verifikasi outlet, pilih produk, lalu kirim order.',
   },
   {
     icon: Megaphone,
     title: 'Ikuti promo dan program mitra',
     note: 'Periode dan syarat program dalam satu tempat.',
+  },
+  {
+    icon: Trophy,
+    title: 'Lihat pemenang program',
+    note: 'Dokumentasi penyerahan hadiah ke outlet pemenang.',
   },
 ];
 
@@ -141,15 +163,23 @@ export default async function HomePage() {
     ...heroBanners.map((banner) => ({
       key: banner.id,
       content: (
-        <HeroSlide tone="navy">
+        <HeroSlide tone="ink" imageUrl={banner.imageUrl}>
           {banners.ok ? <DataNotice meta={banners.meta} /> : null}
           <p className="mt-4 font-display text-3xl leading-tight font-extrabold tablet:text-5xl">
             {banner.title}
           </p>
-          <p className="mt-4 max-w-xl text-base text-white/80">
-            Slot banner Home. Gambar dan tautan banner diatur Administrator Web; gambarnya belum
-            tersedia.
-          </p>
+          {banner.subtitle ? (
+            <p className="mt-4 max-w-xl text-base text-white/90 tablet:text-lg">
+              {banner.subtitle}
+            </p>
+          ) : null}
+          {banner.ctaLabel && banner.ctaHref ? (
+            <div className="mt-7">
+              <Link href={banner.ctaHref} className={buttonClass({ variant: 'inverse' })}>
+                {banner.ctaLabel}
+              </Link>
+            </div>
+          ) : null}
         </HeroSlide>
       ),
     })),
@@ -201,7 +231,7 @@ export default async function HomePage() {
             <SectionHeading
               id="mitra-outlet"
               title="Untuk mitra outlet"
-              description="Outlet yang sudah terverifikasi berbelanja dan memantau pesanan lewat aplikasi Outlet."
+              description="Outlet yang sudah terdaftar memesan paket dan mengikuti program lewat aplikasi Outlet."
             />
             <div className="mt-6 flex flex-wrap gap-3">
               <a href={appUrls.outlet} className={buttonClass()}>
@@ -215,7 +245,7 @@ export default async function HomePage() {
           <ul className={cn(cardClass, 'divide-y divide-surface-100')}>
             {outletBenefits.map((benefit) => (
               <li key={benefit.title} className="flex items-center gap-4 p-5">
-                <IconBadge icon={benefit.icon} tone="navy" />
+                <IconBadge icon={benefit.icon} tone="ink" />
                 <span>
                   <span className="block font-semibold">{benefit.title}</span>
                   <span className="block text-sm text-ink-700">{benefit.note}</span>
@@ -284,7 +314,7 @@ export default async function HomePage() {
             <ul className="grid gap-4 tablet:grid-cols-2">
               {programs.data.slice(0, 2).map((program, index) => (
                 <li key={program.id}>
-                  <ProgramCard program={program} tone={index % 2 === 0 ? 'red' : 'navy'} />
+                  <ProgramCard program={program} tone={index % 2 === 0 ? 'red' : 'ink'} />
                 </li>
               ))}
             </ul>

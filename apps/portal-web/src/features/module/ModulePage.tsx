@@ -1,8 +1,11 @@
-import { EmptyState, ErrorState, PageHeader, StatusBadge, buttonClass } from '@agrabudi/ui';
+import { AsyncView, EmptyState, ErrorState, PageHeader, buttonClass } from '@agrabudi/ui';
 import { Link, Navigate, useLocation } from 'react-router';
 import { accessModeLabel, routeAccess, scopePhrase, visibleSections } from '../../auth/access';
 import { useSession } from '../../auth/SessionContext';
+import { consolePages } from '../../console/ConsolePage';
+import { useDataset } from '../../data/queries';
 import { findModuleRoute, findSection } from '../../registry';
+import { DataView } from './DataView';
 
 function AccessDenied() {
   return (
@@ -19,9 +22,9 @@ function AccessDenied() {
 }
 
 /**
- * Halaman kerangka satu modul Portal. Sengaja tanpa tabel dan angka contoh:
- * kolom, rumus, dan aksi tiap modul menunggu kamus data yang disahkan
- * (PRD 2.8, AS-10). Yang ditampilkan hanya nama menu, perilaku inti, dan hak akses sesi.
+ * Halaman satu modul Portal. Data datang dari adapter (contoh atau API) yang sudah
+ * menyaring cakupan sesi. Kolom final tiap modul mengikuti kamus data yang disahkan
+ * (PRD 2.8); di mode contoh angkanya rekaan dan diberi label.
  */
 export function ModulePage() {
   const { pathname } = useLocation();
@@ -54,6 +57,12 @@ export function ModulePage() {
     return <Navigate to={route.aliasOf} replace />;
   }
 
+  // Menu Website punya halamannya sendiri (pengaturan isi website).
+  if (route.section.id === 'website') {
+    const ConsolePage = consolePages[route.group.slug];
+    if (ConsolePage) return <ConsolePage />;
+  }
+
   const groupPath = `${route.section.prefix}/${route.group.slug}`;
   const children = route.leaf ? undefined : route.group.children;
 
@@ -83,7 +92,7 @@ export function ModulePage() {
         </ol>
       </nav>
 
-      <PageHeader title={route.title} aside={<StatusBadge tone="neutral">Kerangka</StatusBadge>} />
+      <PageHeader title={route.title} />
 
       <dl className="grid gap-x-6 gap-y-1 text-sm tablet:grid-cols-[10rem_minmax(0,1fr)]">
         <dt className="text-ink-700">Perilaku inti</dt>
@@ -113,11 +122,26 @@ export function ModulePage() {
           </ul>
         </section>
       ) : (
-        <EmptyState
-          title="Belum ada data untuk ditampilkan"
-          description="Kolom, filter, dan aksi modul ini dibangun setelah kamus datanya disahkan pemilik modul. Portal tidak menampilkan angka contoh."
-        />
+        <ModuleData path={pathname.replace(/\/$/, '')} />
       )}
     </div>
+  );
+}
+
+function ModuleData({ path }: { path: string }) {
+  const dataset = useDataset(path);
+  return (
+    <AsyncView state={dataset} errorTitle="Data modul tidak dapat dimuat" loadingLabel="Memuat data modul">
+      {(envelope) =>
+        envelope.data ? (
+          <DataView key={path} path={path} dataset={envelope.data} meta={envelope.meta} />
+        ) : (
+          <EmptyState
+            title="Belum ada data untuk ditampilkan"
+            description="Kolom, filter, dan aksi modul ini dibangun setelah kamus datanya disahkan pemilik modul."
+          />
+        )
+      }
+    </AsyncView>
   );
 }

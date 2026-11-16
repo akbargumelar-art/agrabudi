@@ -15,3 +15,6 @@ next-env.d.ts
 !.env.development
 
 .DS_Store
+
+# Hasil build pratinjau artifact
+.preview-out/

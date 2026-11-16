@@ -1,20 +1,14 @@
-import type { StaffSession } from '@agrabudi/contracts';
-
-export type DemoAccount = {
-  session: StaffSession;
-  /** Ringkasan singkat apa yang dilihat akun ini. */
-  summary: string;
-};
+import type { StaffProfileUpdate, StaffSession } from '@agrabudi/contracts';
 
 /**
- * Pintu autentikasi Portal. Di produksi sesi dibuat server dan disimpan sebagai
- * cookie HttpOnly; browser tidak pernah menentukan role-nya sendiri (PRD 4.3, 4.6).
+ * Pintu autentikasi Portal. Satu form login untuk semua peran; peran ditentukan server
+ * dari akun, bukan dipilih pengguna. Di produksi sesi adalah cookie HttpOnly dan browser
+ * tidak pernah menentukan perannya sendiri (PRD 4.3, 4.6).
  */
 export interface AuthAdapter {
-  signIn(input: { identifier: string; password: string }): Promise<StaffSession>;
-  /** Hanya terisi pada mock adapter. Build `api` tidak memuat akun contoh. */
-  demoAccounts: DemoAccount[];
-  signInAsDemo(accountId: string): Promise<StaffSession>;
+  signIn(input: { username: string; password: string }): Promise<StaffSession>;
+  /** Mengubah nama, email, dan nomor HP. Username, peran, dan cakupan tidak bisa diubah dari sini. */
+  updateProfile(session: StaffSession, update: StaffProfileUpdate): Promise<StaffSession>;
 }
 
 export class AuthUnavailableError extends Error {
@@ -22,5 +16,14 @@ export class AuthUnavailableError extends Error {
   constructor(message: string) {
     super(message);
     this.name = 'AuthUnavailableError';
+  }
+}
+
+/** Pesan sengaja tidak membedakan username salah dan kata sandi salah. */
+export class InvalidCredentialsError extends Error {
+  readonly code = 'INVALID_CREDENTIALS';
+  constructor() {
+    super('Username atau kata sandi salah.');
+    this.name = 'InvalidCredentialsError';
   }
 }

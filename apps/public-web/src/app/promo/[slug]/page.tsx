@@ -42,6 +42,13 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
         aside={<DataNotice meta={program.meta} />}
       />
       <div className={pageBodyClass}>
+        {detail.imageUrl ? (
+          <img
+            src={detail.imageUrl}
+            alt={`Gambar ${detail.title}`}
+            className="aspect-16/9 w-full max-w-3xl rounded-panel object-cover"
+          />
+        ) : null}
         <p className="max-w-prose text-ink-900">{detail.summary}</p>
         <section aria-labelledby="syarat">
           <h2 id="syarat" className="text-xl font-bold">

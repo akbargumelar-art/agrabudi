@@ -38,7 +38,7 @@ export default async function VacancyPage({ params }: VacancyPageProps) {
     <>
       <PageIntro
         title={detail.title}
-        description={`${detail.unit}, ${detail.location}`}
+        description={`${detail.unit}, ${detail.location}, ${detail.employmentType.toLowerCase()}`}
         back={back}
         aside={<DataNotice meta={vacancy.meta} />}
       />

@@ -16,4 +16,7 @@ export const apiAdapter: PublicDataAdapter = {
   getVacancy: async () => notConnected(),
   listIndihomePackages: async () => notConnected(),
   listBanners: async () => notConnected(),
+  getCompanyProfile: async () => notConnected(),
+  getIndihomeInfo: async () => notConnected(),
+  getDigiposInfo: async () => notConnected(),
 };

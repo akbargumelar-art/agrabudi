@@ -1,33 +1,31 @@
 /*
  * Design token Agrabudi. Satu-satunya sumber warna, huruf, radius, dan breakpoint
- * untuk empat aplikasi (PRD AS-07).
+ * untuk semua aplikasi (PRD AS-07).
  *
- * STATUS WARNA: SEMENTARA. Nilai hex di bawah belum dicocokkan dengan logo resmi
- * (keputusan terbuka T-4 / D-09). Ganti di file ini saja setelah logo tersedia.
+ * Warna diambil dari logo resmi (berkas dari Abay, 15 Nov 2026): merah #cf211b dan
+ * #e62529, marun #96110e dan #790908, emas #e8a340, dan abu tua teks logo #3b3442.
  */
 @theme {
   /* Palet bawaan Tailwind dimatikan supaya tidak ada warna di luar token. */
   --color-*: initial;
 
   --color-white: #ffffff;
-  --color-brand-red: #d5122b;
-  --color-brand-red-strong: #a80d20;
-  --color-brand-red-soft: #fdebed;
+  --color-brand-red: #cf211b;
+  --color-brand-red-strong: #96110e;
+  --color-brand-red-soft: #fdeceb;
+  --color-brand-maroon: #790908;
+  --color-brand-gold: #e8a340;
 
-  --color-ink-900: #0c1c3c;
-  --color-ink-800: #172b55;
-  --color-ink-700: #3a4a68;
-  --color-ink-500: #64728b;
-  --color-ink-300: #c4ccda;
-  --color-ink-soft: #eaf0fa;
+  --color-ink-900: #2e2834;
+  --color-ink-800: #3b3442;
+  --color-ink-700: #57505f;
+  --color-ink-500: #736d7c;
+  --color-ink-300: #cfcbd4;
+  --color-ink-soft: #f1eff4;
 
   --color-surface-0: #ffffff;
-  --color-surface-50: #f5f6f9;
-  --color-surface-100: #e8ebf1;
-
-  /* Aksen console Administrator Web: sengaja bukan merah supaya tidak tertukar dengan Portal. */
-  --color-console: #24566b;
-  --color-console-soft: #e6eff2;
+  --color-surface-50: #f7f6f8;
+  --color-surface-100: #ecebee;
 
   --color-success: #17714a;
   --color-success-soft: #e4f3eb;
@@ -38,7 +36,8 @@
   --color-info: #1c5ca4;
   --color-info-soft: #e5eef9;
 
-  --font-display: 'Montserrat', ui-sans-serif, system-ui, sans-serif;
+  /* Judul dan isi sama-sama Poppins; `font-display` dipertahankan sebagai nama peran. */
+  --font-display: 'Poppins', ui-sans-serif, system-ui, sans-serif;
   --font-sans: 'Poppins', ui-sans-serif, system-ui, sans-serif;
 
   /* Kontrol form, kartu/panel, dan banner besar. Tombol selalu berbentuk pil. */
@@ -47,8 +46,8 @@
   --radius-banner: 1.75rem;
 
   /* Hanya untuk elemen yang melayang di atas isi: header menempel dan navigasi bawah. */
-  --shadow-raised: 0 10px 30px -18px rgb(12 28 60 / 0.45);
-  --shadow-raised-up: 0 -10px 30px -18px rgb(12 28 60 / 0.45);
+  --shadow-raised: 0 10px 30px -18px rgb(46 40 52 / 0.4);
+  --shadow-raised-up: 0 -10px 30px -18px rgb(46 40 52 / 0.4);
 
   /* <768 smartphone, 768-1199 tablet, >=1200 desktop (PRD 2.2). */
   --breakpoint-*: initial;

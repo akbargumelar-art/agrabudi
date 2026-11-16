@@ -54,7 +54,7 @@ const SALESFORCE_HOUSEHOLD = [
 ];
 
 /** Unit bisnis pemilik tiap bagian Portal. */
-const SECTION_UNIT: Record<Exclude<SectionId, 'admin'>, BusinessUnit> = {
+const SECTION_UNIT: Record<'telkomsel' | 'indihome', BusinessUnit> = {
   telkomsel: 'mobile',
   indihome: 'household',
 };
@@ -79,6 +79,8 @@ function unitSectionAccess(
 ): AccessMode | null {
   const sectionUnit = SECTION_UNIT[sectionId];
   switch (session.role) {
+    case 'web_admin':
+      return null;
     case 'admin':
       return session.unit === sectionUnit ? 'manage' : null;
     case 'manager':
@@ -102,6 +104,9 @@ export function groupAccess(
   sectionId: SectionId,
   group: string,
 ): AccessMode | null {
+  // Admin Web hanya mengatur website, dan hanya Admin Web yang boleh mengaturnya.
+  if (sectionId === 'website') return session.role === 'web_admin' ? 'manage' : null;
+  if (session.role === 'web_admin') return null;
   if (sectionId !== 'admin') return unitSectionAccess(session, sectionId, group);
   if (session.role !== 'admin' || session.unit === null) return null;
   const rule = ADMIN_GROUPS[group];
@@ -139,6 +144,8 @@ const UNIT_LABEL: Record<BusinessUnit, string> = {
 export function roleLabel(session: Pick<StaffSession, 'role' | 'unit'>): string {
   const unit = session.unit ? ` ${UNIT_LABEL[session.unit]}` : '';
   switch (session.role) {
+    case 'web_admin':
+      return 'Admin Web';
     case 'admin':
       return `Admin${unit}`;
     case 'manager':
@@ -152,6 +159,8 @@ export function roleLabel(session: Pick<StaffSession, 'role' | 'unit'>): string 
 
 export function scopeLabel(session: Pick<StaffSession, 'scope'>): string {
   switch (session.scope) {
+    case 'site':
+      return 'Isi website';
     case 'cluster':
       return 'Seluruh cluster';
     case 'team':
@@ -164,6 +173,8 @@ export function scopeLabel(session: Pick<StaffSession, 'scope'>): string {
 /** Cakupan data untuk dipakai di tengah kalimat. */
 export function scopePhrase(session: Pick<StaffSession, 'scope'>): string {
   switch (session.scope) {
+    case 'site':
+      return 'isi website, tanpa data bisnis';
     case 'cluster':
       return 'seluruh cluster';
     case 'team':

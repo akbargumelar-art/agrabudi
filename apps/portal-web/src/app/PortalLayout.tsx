@@ -1,56 +1,75 @@
-import {
-  AppSwitcher,
-  BottomNav,
-  MainNav,
-  Wordmark,
-  bottomNavOffsetClass,
-  buttonClass,
-  cn,
-  containerClass,
-  type BottomNavItem,
-  type NavItem,
-} from '@agrabudi/ui';
+import { AppSwitcher, BottomNav, Drawer, Wordmark, cn, logoMark, type BottomNavItem } from '@agrabudi/ui';
 import { Activity, ChartColumn, House, LayoutGrid, UserRound } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router';
-import { roleLabel } from '../auth/access';
 import { useSession, useSessionApi } from '../auth/SessionContext';
-import { sections } from '../registry';
 import { appUrls } from './env';
 import { RouterLink } from './RouterLink';
 import { Sidebar } from './Sidebar';
 import { StageNotice } from './StageNotice';
 
-const modulePrefixes = sections.map((section) => section.prefix);
+const SIDEBAR_KEY = 'abk-portal-sidebar-ciut-v1';
 
-/** Menu utama Portal (PRD 2.2). Modul rinci lewat sidebar atau "Semua Menu". */
-const mainItems: NavItem[] = [
-  { label: 'Dashboard', href: '/' },
-  { label: 'Aktivitas', href: '/aktivitas' },
-  { label: 'Laporan', href: '/laporan' },
-  { label: 'Semua Menu', href: '/menu', alsoActiveOn: modulePrefixes },
-  { label: 'Akun', href: '/akun' },
-];
+/** Pilihan terakhir pengguna; bila belum ada, sidebar terbuka di desktop dan ciut di tablet. */
+function initialCollapsed(): boolean {
+  try {
+    const stored = window.localStorage.getItem(SIDEBAR_KEY);
+    if (stored === '1') return true;
+    if (stored === '0') return false;
+  } catch {
+    // Penyimpanan tidak tersedia: pakai bawaan menurut lebar layar.
+  }
+  return window.innerWidth < 1200;
+}
 
-/** Bottom navigation Portal (PRD 2.2). */
-const bottomItems: BottomNavItem[] = [
-  { label: 'Beranda', href: '/', icon: House },
-  { label: 'Aktivitas', href: '/aktivitas', icon: Activity },
-  { label: 'Laporan', href: '/laporan', icon: ChartColumn },
-  { label: 'Lainnya', href: '/menu', alsoActiveOn: modulePrefixes, icon: LayoutGrid },
-  { label: 'Akun', href: '/akun', icon: UserRound },
-];
-
+/**
+ * Kerangka Portal setelah masuk. Di tablet dan desktop semua navigasi ada di sidebar:
+ * Dashboard, modul sesuai peran, Akun, dan Keluar. Di HP ada menu bawah melayang;
+ * item Menu membuka sidebar yang sama dari kiri.
+ */
 export function PortalLayout() {
   const { pathname } = useLocation();
   const session = useSession();
   const { signOut } = useSessionApi();
   const mainRef = useRef<HTMLElement>(null);
+  const [collapsed, setCollapsed] = useState(initialCollapsed);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    setDrawerOpen(false);
     mainRef.current?.focus({ preventScroll: true });
   }, [pathname]);
+
+  function toggleSidebar() {
+    setCollapsed((value) => {
+      const next = !value;
+      try {
+        window.localStorage.setItem(SIDEBAR_KEY, next ? '1' : '0');
+      } catch {
+        // Penyimpanan tidak tersedia: pilihan berlaku sampai halaman ditutup.
+      }
+      return next;
+    });
+  }
+
+  const bottomItems: BottomNavItem[] = [
+    { label: 'Beranda', href: '/', icon: House },
+    ...(session.role !== 'web_admin'
+      ? [
+          { label: 'Aktivitas', href: '/aktivitas', icon: Activity },
+          { label: 'Laporan', href: '/laporan', icon: ChartColumn },
+        ]
+      : []),
+    { label: 'Menu', icon: LayoutGrid, onPress: () => setDrawerOpen(true), expanded: drawerOpen },
+    { label: 'Akun', href: '/akun', icon: UserRound },
+  ];
+
+  const brand = (
+    <Link to="/" aria-label="Agrabudi Portal, ke Dashboard" className="inline-flex min-h-11 items-center">
+      <Wordmark app="Portal" />
+    </Link>
+  );
 
   return (
     <>
@@ -61,59 +80,54 @@ export function PortalLayout() {
         Lewati ke isi
       </a>
       <AppSwitcher active="portal" urls={appUrls} />
-      <MainNav
-        brand={
-          <Link
-            to="/"
-            aria-label="Agrabudi Portal, ke Dashboard"
-            className="inline-flex min-h-11 items-center"
-          >
-            <Wordmark app="Portal" />
-          </Link>
-        }
-        items={mainItems}
-        currentPath={pathname}
-        LinkComponent={RouterLink}
-        actions={
-          <>
-            <Link
-              to="/akun"
-              data-testid="peran-aktif"
-              className="hidden text-right text-xs leading-tight tablet:block"
-            >
-              <span className="block font-semibold text-ink-900">{roleLabel(session)}</span>
-              <span className="block text-ink-700">{session.displayName}</span>
-            </Link>
-            <button
-              type="button"
-              onClick={signOut}
-              className={buttonClass({ variant: 'secondary', size: 'sm' })}
-            >
-              Keluar
-            </button>
-          </>
-        }
-      />
+      <header className="sticky top-0 z-40 flex items-center border-b border-surface-100 bg-surface-0/95 px-4 py-1.5 backdrop-blur tablet:hidden">
+        {brand}
+      </header>
       <StageNotice />
       <div
         className={cn(
-          containerClass,
-          'desktop:grid desktop:grid-cols-[17rem_minmax(0,1fr)] desktop:gap-8',
+          'mx-auto w-full max-w-[90rem] px-4 tablet:grid tablet:gap-6 tablet:px-6',
+          collapsed
+            ? 'tablet:grid-cols-[2.75rem_minmax(0,1fr)]'
+            : 'tablet:grid-cols-[17.5rem_minmax(0,1fr)]',
         )}
       >
-        <aside className="hidden py-6 desktop:block">
-          <Sidebar pathname={pathname} session={session} />
+        <aside className="hidden py-4 tablet:block">
+          <div className="sticky top-4 flex max-h-[calc(100dvh-2rem)] flex-col gap-3 overflow-y-auto">
+            {collapsed ? (
+              <Link
+                to="/"
+                aria-label="Agrabudi Portal, ke Dashboard"
+                className="inline-flex size-11 items-center justify-center"
+              >
+                <img src={logoMark.src} alt="" width={logoMark.width} height={logoMark.height} className="size-8" />
+              </Link>
+            ) : (
+              <div className="px-1">{brand}</div>
+            )}
+            <Sidebar
+              pathname={pathname}
+              session={session}
+              collapsed={collapsed}
+              onToggle={toggleSidebar}
+              onSignOut={signOut}
+            />
+          </div>
         </aside>
-        <main
-          id="konten"
-          ref={mainRef}
-          tabIndex={-1}
-          className={cn('min-w-0 py-6 outline-none', bottomNavOffsetClass)}
-        >
+        <main id="konten" ref={mainRef} tabIndex={-1} className="min-w-0 pt-6 pb-[calc(6.5rem+env(safe-area-inset-bottom))] outline-none tablet:pb-6">
           <Outlet />
         </main>
       </div>
-      <BottomNav items={bottomItems} currentPath={pathname} LinkComponent={RouterLink} />
+      <BottomNav
+        floating
+        items={bottomItems}
+        currentPath={pathname}
+        LinkComponent={RouterLink}
+        label="Menu Portal"
+      />
+      <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} title="Menu" side="left">
+        <Sidebar pathname={pathname} session={session} collapsed={false} onSignOut={signOut} />
+      </Drawer>
     </>
   );
 }

@@ -72,7 +72,7 @@ export function Modal({
       className="m-auto w-[min(32rem,calc(100vw-2rem))] rounded-panel bg-surface-0 p-0 text-ink-900 backdrop:bg-ink-900/60"
     >
       <DialogHeader title={title} titleId={titleId} onClose={onClose} />
-      <div className="px-4 py-4">{children}</div>
+      <div className="max-h-[70vh] overflow-y-auto px-4 py-4">{children}</div>
       {footer ? (
         <div className="flex justify-end gap-2 border-t border-surface-100 px-4 py-3">{footer}</div>
       ) : null}
@@ -81,7 +81,14 @@ export function Modal({
 }
 
 /** Panel geser: dari bawah di smartphone, dari kanan di layar lebar. */
-export function Drawer({ open, onClose, title, children }: DialogBaseProps) {
+/** Laci: lembar bawah di HP dan panel kanan di tablet, atau panel kiri penuh (`side="left"`) untuk menu. */
+export function Drawer({
+  open,
+  onClose,
+  title,
+  children,
+  side = 'auto',
+}: DialogBaseProps & { side?: 'auto' | 'left' }) {
   const ref = useDialog(open);
   const titleId = useId();
   return (
@@ -94,8 +101,9 @@ export function Drawer({ open, onClose, title, children }: DialogBaseProps) {
       }}
       className={cn(
         'bg-surface-0 p-0 text-ink-900 backdrop:bg-ink-900/60',
-        'mt-auto mb-0 max-h-[85dvh] w-full max-w-none rounded-t-panel pb-[env(safe-area-inset-bottom)]',
-        'tablet:my-0 tablet:mr-0 tablet:ml-auto tablet:h-dvh tablet:max-h-none tablet:w-80 tablet:rounded-none',
+        side === 'left'
+          ? 'm-0 h-dvh max-h-none w-80 max-w-[85vw] pb-[env(safe-area-inset-bottom)]'
+          : 'mt-auto mb-0 max-h-[85dvh] w-full max-w-none rounded-t-panel pb-[env(safe-area-inset-bottom)] tablet:my-0 tablet:mr-0 tablet:ml-auto tablet:h-dvh tablet:max-h-none tablet:w-80 tablet:rounded-none',
       )}
     >
       <DialogHeader title={title} titleId={titleId} onClose={onClose} />

@@ -4,14 +4,14 @@ import { OutletLayout } from './app/OutletLayout';
 import { AbkShopPage } from './features/abkshop/AbkShopPage';
 import { AccountPage, LoginPage, RecoverAccessPage } from './features/account/AccountPages';
 import { CalculatorPage } from './features/calculator/CalculatorPage';
-import { CheckoutPage } from './features/checkout/CheckoutPage';
 import { HomePage } from './features/home/HomePage';
-import { OrderDetailPage } from './features/orders/OrderDetailPage';
-import { OrdersPage } from './features/orders/OrdersPage';
 import { ProgramDetailPage } from './features/programs/ProgramDetailPage';
 import { ProgramsPage } from './features/programs/ProgramsPage';
 
-/** Route Outlet mengikuti inventaris PRD 2.7. */
+/**
+ * Route Outlet. Checkout dan Pesanan dari PRD 2.7 tidak ada untuk sekarang: pemesanan
+ * dilakukan di halaman ABKShop yang disematkan (keputusan Abay, 15 Nov 2026).
+ */
 export function App() {
   return (
     <Routes>
@@ -21,9 +21,6 @@ export function App() {
         <Route path="lupa-akses" element={<RecoverAccessPage />} />
         <Route path="kalkulator" element={<CalculatorPage />} />
         <Route path="abkshop" element={<AbkShopPage />} />
-        <Route path="checkout" element={<CheckoutPage />} />
-        <Route path="pesanan" element={<OrdersPage />} />
-        <Route path="pesanan/:id" element={<OrderDetailPage />} />
         <Route path="program" element={<ProgramsPage />} />
         <Route path="program/:slug" element={<ProgramDetailPage />} />
         <Route path="akun" element={<AccountPage />} />

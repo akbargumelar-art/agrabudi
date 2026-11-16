@@ -65,13 +65,13 @@ type MediaPlaceholderProps = {
   /** Teks untuk pembaca layar, mis. "Foto Perdana Contoh 1 belum tersedia". */
   label: string;
   icon?: IconComponent;
-  tone?: 'red' | 'navy' | 'neutral';
+  tone?: 'red' | 'ink' | 'neutral';
   className?: string;
 };
 
 const toneClass = {
   red: 'bg-brand-red-soft text-brand-red',
-  navy: 'bg-ink-soft text-ink-800',
+  ink: 'bg-ink-soft text-ink-800',
   neutral: 'bg-surface-50 text-ink-500',
 } as const;
 
@@ -109,7 +109,7 @@ export function IconBadge({
   tone = 'red',
 }: {
   icon: IconComponent;
-  tone?: 'red' | 'navy';
+  tone?: 'red' | 'ink';
 }) {
   return (
     <span

@@ -8,25 +8,38 @@ import {
   routeAccess,
   visibleSections,
 } from './access';
-import { mockAuthAdapter } from './mock';
+import { demoAccounts } from './mock';
 
-const accounts = mockAuthAdapter.demoAccounts.map((item) => item.session);
+const accounts = demoAccounts;
 const byId = (id: string): StaffSession => {
   const found = accounts.find((session) => session.accountId === id);
   if (!found) throw new Error(`akun contoh ${id} tidak ada`);
   return found;
 };
 
-const adminMobile = byId('contoh-admin-mobile');
-const adminHousehold = byId('contoh-admin-household');
+const adminWeb = byId('contoh-adminweb');
+const adminMobile = byId('contoh-adminmobile');
+const adminHousehold = byId('contoh-adminhousehold');
 const manager = byId('contoh-manager');
-const supervisorMobile = byId('contoh-supervisor-mobile');
-const supervisorHousehold = byId('contoh-supervisor-household');
-const salesMobile = byId('contoh-salesforce-mobile');
-const salesHousehold = byId('contoh-salesforce-household');
-const salesDirect = byId('contoh-salesforce-direct');
+const supervisorMobile = byId('contoh-spvmobile');
+const supervisorHousehold = byId('contoh-spvhousehold');
+const salesMobile = byId('contoh-sfmobile');
+const salesHousehold = byId('contoh-sfhousehold');
+const salesDirect = byId('contoh-sfdirect');
 
 describe('aturan akses menu Portal', () => {
+  it('Admin Web hanya mengatur website, dan hanya Admin Web yang boleh mengaturnya', () => {
+    expect(visibleSections(adminWeb).map((item) => item.section.id)).toEqual(['website']);
+    const modes = moduleRoutes
+      .filter((route) => route.section.id !== 'website')
+      .map((route) => routeAccess(adminWeb, route));
+    expect(modes.every((mode) => mode === null)).toBe(true);
+    for (const session of accounts.filter((item) => item.role !== 'web_admin')) {
+      expect(groupAccess(session, 'website', 'banners'), session.accountId).toBeNull();
+      expect(groupAccess(session, 'website', 'abkshop'), session.accountId).toBeNull();
+    }
+  });
+
   it('setiap menu di registry bisa dibuka minimal satu peran', () => {
     for (const route of moduleRoutes) {
       const reachable = accounts.some((session) => routeAccess(session, route) !== null);
@@ -112,6 +125,7 @@ describe('aturan akses menu Portal', () => {
 
   it('label peran menggabungkan jabatan dan unit', () => {
     expect(accounts.map(roleLabel)).toEqual([
+      'Admin Web',
       'Admin Mobile',
       'Admin Household',
       'Manager',

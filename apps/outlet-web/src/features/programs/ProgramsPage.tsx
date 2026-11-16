@@ -1,4 +1,12 @@
-import { AsyncView, DataNotice, EmptyState, PageHeader, formatDate } from '@agrabudi/ui';
+import {
+  AsyncView,
+  DataNotice,
+  EmptyState,
+  PageHeader,
+  cardClass,
+  cn,
+  formatDate,
+} from '@agrabudi/ui';
 import { Link } from 'react-router';
 import { usePrograms } from '../../data/queries';
 
@@ -23,26 +31,32 @@ export function ProgramsPage() {
               description="Program baru muncul di sini setelah diterbitkan Admin program."
             />
           ) : (
-            <ul className="divide-y divide-surface-100 overflow-hidden rounded-panel border border-surface-100">
+            <ul className="grid gap-4 tablet:grid-cols-2 desktop:grid-cols-3">
               {envelope.data.map((program) => (
-                <li
-                  key={program.id}
-                  className="grid gap-1 px-5 py-4 tablet:grid-cols-[14rem_minmax(0,1fr)] tablet:gap-6"
-                >
-                  <p className="text-sm text-ink-700">
-                    {formatDate(program.startsAt)} sampai {formatDate(program.endsAt)}
-                  </p>
-                  <div>
-                    <h2 className="text-lg font-bold">
-                      <Link
-                        to={`/program/${program.slug}`}
-                        className="underline decoration-brand-red underline-offset-4"
-                      >
-                        {program.title}
-                      </Link>
-                    </h2>
-                    <p className="mt-1 max-w-prose text-sm text-ink-700">{program.summary}</p>
-                  </div>
+                <li key={program.id}>
+                  <Link
+                    to={`/program/${program.slug}`}
+                    className={cn(
+                      cardClass,
+                      'flex h-full flex-col overflow-hidden hover:border-ink-300',
+                    )}
+                  >
+                    {program.imageUrl ? (
+                      <img
+                        src={program.imageUrl}
+                        alt={`Gambar ${program.title}`}
+                        loading="lazy"
+                        className="aspect-16/9 w-full object-cover"
+                      />
+                    ) : null}
+                    <span className="flex flex-1 flex-col gap-1.5 p-5">
+                      <span className="text-sm text-ink-700">
+                        {formatDate(program.startsAt)} sampai {formatDate(program.endsAt)}
+                      </span>
+                      <span className="text-lg font-bold">{program.title}</span>
+                      <span className="text-sm text-ink-700">{program.summary}</span>
+                    </span>
+                  </Link>
                 </li>
               ))}
             </ul>

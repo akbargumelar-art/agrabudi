@@ -3,7 +3,7 @@
  * dan pencocokan URL. Nama menu mengikuti PRD 2.8-2.10 apa adanya;
  * singkatan bisnis tidak diekspansi (PRD 3.3).
  */
-export type SectionId = 'telkomsel' | 'indihome' | 'admin';
+export type SectionId = 'telkomsel' | 'indihome' | 'admin' | 'website';
 
 export type ModuleLeaf = {
   label: string;
@@ -21,7 +21,7 @@ export type ModuleGroup = ModuleLeaf & {
 export type Section = {
   id: SectionId;
   label: string;
-  prefix: `/${SectionId}`;
+  prefix: string;
   description: string;
   /** Path yang dibuka saat pengguna masuk ke bagian ini. */
   home: string;

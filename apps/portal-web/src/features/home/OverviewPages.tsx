@@ -1,10 +1,11 @@
 import type { StaffSession } from '@agrabudi/contracts';
-import { EmptyState, IconBadge, PageHeader, cardClass, cn, type IconComponent } from '@agrabudi/ui';
-import { CardSim, ClipboardList, Wifi } from 'lucide-react';
+import { AsyncView, DataNotice, EmptyState, IconBadge, PageHeader, cardClass, cn } from '@agrabudi/ui';
 import { Link } from 'react-router';
 import { roleLabel, routeAccess, scopePhrase, visibleSections } from '../../auth/access';
 import { useSession } from '../../auth/SessionContext';
-import { findModuleRoute, type SectionId } from '../../registry';
+import { sectionIcon } from '../../app/Sidebar';
+import { useDataset } from '../../data/queries';
+import { findModuleRoute } from '../../registry';
 
 type Shortcut = { to: string; label: string; note: string };
 
@@ -39,14 +40,12 @@ function ShortcutList({ items, emptyTitle }: { items: Shortcut[]; emptyTitle: st
   );
 }
 
-const sectionIcon: Record<SectionId, IconComponent> = {
-  telkomsel: CardSim,
-  indihome: Wifi,
-  admin: ClipboardList,
-};
-
 export function DashboardPage() {
   const session = useSession();
+  const summaries = permitted(session, [
+    { to: '/telkomsel/dashboard', label: 'Telkomsel', note: '' },
+    { to: '/indihome/dashboard', label: 'IndiHome', note: '' },
+  ]);
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
@@ -62,7 +61,7 @@ export function DashboardPage() {
             >
               <IconBadge
                 icon={sectionIcon[section.id]}
-                tone={section.id === 'admin' ? 'navy' : 'red'}
+                tone={section.id === 'admin' ? 'ink' : 'red'}
               />
               <span>
                 <span className="block font-semibold">{section.label}</span>
@@ -72,11 +71,68 @@ export function DashboardPage() {
           </li>
         ))}
       </ul>
-      <EmptyState
-        title="Ringkasan belum tersedia"
-        description="Ringkasan target, order, dan aktivitas tampil setelah sumber datanya tersedia. Tidak ada angka contoh di halaman ini."
-      />
+      {summaries.length > 0 ? (
+        summaries.map((item) => <DashboardSummary key={item.to} {...item} />)
+      ) : (
+        <WebsiteShortcuts />
+      )}
     </div>
+  );
+}
+
+function DashboardSummary({ to, label }: { to: string; label: string }) {
+  const dataset = useDataset(to);
+  return (
+    <section aria-label={`Ringkasan ${label}`} className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-lg font-bold">Ringkasan {label}</h2>
+        <Link to={to} className="text-sm font-semibold text-brand-red underline">
+          Buka dashboard {label}
+        </Link>
+      </div>
+      <AsyncView state={dataset} errorTitle={`Ringkasan ${label} tidak dapat dimuat`} loadingLabel="Memuat ringkasan">
+        {(envelope) =>
+          envelope.data ? (
+            <div className="flex flex-col gap-3">
+              <div>
+                <DataNotice meta={envelope.meta} />
+              </div>
+              <ul className="grid grid-cols-2 gap-3 desktop:grid-cols-4" data-testid="ringkasan">
+                {envelope.data.stats.map((stat) => (
+                  <li key={stat.label} className={cn(cardClass, 'p-4')}>
+                    <p className="text-sm text-ink-700">{stat.label}</p>
+                    <p className="mt-1 text-2xl font-extrabold tabular-nums">{stat.value}</p>
+                    {stat.note ? <p className="mt-1 text-xs text-ink-500">{stat.note}</p> : null}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <EmptyState title="Ringkasan belum tersedia" description="Sumber data ringkasan belum tersedia." />
+          )
+        }
+      </AsyncView>
+    </section>
+  );
+}
+
+function WebsiteShortcuts() {
+  const session = useSession();
+  return (
+    <section aria-labelledby="pintasan-web" className="flex flex-col gap-3">
+      <h2 id="pintasan-web" className="text-lg font-bold">
+        Pintasan pengelolaan website
+      </h2>
+      <ShortcutList
+        emptyTitle="Tidak ada pintasan"
+        items={permitted(session, [
+          { to: '/web-admin/banners', label: 'Banner', note: 'Slide utama halaman depan Publik' },
+          { to: '/web-admin/pages', label: 'Halaman', note: 'Isi halaman Tentang, Kontak, dan lainnya' },
+          { to: '/web-admin/abkshop', label: 'Halaman ABKShop', note: 'Alamat halaman pemesanan di aplikasi Outlet' },
+          { to: '/web-admin/preview', label: 'Pratinjau', note: 'Buka situs Publik dan Outlet' },
+        ])}
+      />
+    </section>
   );
 }
 

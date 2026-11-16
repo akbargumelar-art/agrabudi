@@ -11,32 +11,33 @@ import {
   type BottomNavItem,
   type NavItem,
 } from '@agrabudi/ui';
-import { House, Megaphone, ReceiptText, ShoppingCart, UserRound } from 'lucide-react';
+import { Calculator, House, Megaphone, ShoppingCart, UserRound } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { Link, Outlet, useLocation } from 'react-router';
+import { useOutletSession } from '../auth/SessionContext';
 import { appUrls, usesMockData } from './env';
 import { RouterLink } from './RouterLink';
 
 /** Menu utama Outlet (PRD 2.2). */
 const mainItems: NavItem[] = [
   { label: 'Home', href: '/' },
-  { label: 'ABKShop', href: '/abkshop', alsoActiveOn: ['/checkout'] },
+  { label: 'ABKShop', href: '/abkshop' },
   { label: 'Kalkulator Cuan', href: '/kalkulator' },
   { label: 'Promo & Program', href: '/program' },
-  { label: 'Pesanan', href: '/pesanan' },
 ];
 
-/** Bottom navigation Outlet (PRD 2.2). Kalkulator dibuka dari Home. */
+/** Bottom navigation Outlet. Pesanan diganti Kalkulator karena pemesanan ada di ABKShop. */
 const bottomItems: BottomNavItem[] = [
   { label: 'Home', href: '/', icon: House },
-  { label: 'ABKShop', href: '/abkshop', alsoActiveOn: ['/checkout'], icon: ShoppingCart },
-  { label: 'Pesanan', href: '/pesanan', icon: ReceiptText },
+  { label: 'ABKShop', href: '/abkshop', icon: ShoppingCart },
   { label: 'Program', href: '/program', icon: Megaphone },
+  { label: 'Kalkulator', href: '/kalkulator', icon: Calculator },
   { label: 'Akun', href: '/akun', alsoActiveOn: ['/login', '/lupa-akses'], icon: UserRound },
 ];
 
 export function OutletLayout() {
   const { pathname } = useLocation();
+  const { session } = useOutletSession();
   const mainRef = useRef<HTMLElement>(null);
 
   // Pindah halaman: kembali ke atas dan pindahkan fokus ke isi untuk pembaca layar.
@@ -69,13 +70,14 @@ export function OutletLayout() {
         LinkComponent={RouterLink}
         actions={
           <Link
-            to="/akun"
+            to={session ? '/akun' : '/login'}
+            data-testid="akun-outlet"
             className={cn(
               buttonClass({ variant: 'secondary', size: 'sm' }),
-              'hidden tablet:inline-flex',
+              'hidden max-w-48 tablet:inline-flex',
             )}
           >
-            Akun
+            <span className="truncate">{session ? session.outletName : 'Masuk'}</span>
           </Link>
         }
       />

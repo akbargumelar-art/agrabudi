@@ -57,12 +57,5 @@ export default defineConfig({
       timeout: 240_000,
       reuseExistingServer: !process.env.CI,
     },
-    {
-      command: `pnpm --filter @agrabudi/web-admin build && pnpm --filter @agrabudi/web-admin exec vite preview --port ${ports.webAdmin} --strictPort`,
-      url: `http://localhost:${ports.webAdmin}/web-admin/`,
-      env: appEnv,
-      timeout: 240_000,
-      reuseExistingServer: !process.env.CI,
-    },
   ],
 });

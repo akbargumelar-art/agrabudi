@@ -1,4 +1,4 @@
-import { MockRibbon, bottomNavOffsetClass } from '@agrabudi/ui';
+import { MockRibbon, bottomNavOffsetClass, logoMark } from '@agrabudi/ui';
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import { SiteBottomNav } from '@/components/SiteBottomNav';
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     'Website PT Agrabudi Komunika: produk Telkomsel, layanan IndiHome, program, dan karir.',
   // Tahap kerangka: isi masih data contoh, jadi belum boleh diindeks mesin pencari.
   robots: { index: false, follow: false },
-  icons: { icon: 'data:,' },
+  icons: { icon: logoMark.src },
 };
 
 export const viewport: Viewport = {

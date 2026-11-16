@@ -39,7 +39,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       />
       <div className={pageBodyClass}>
         <nav aria-label="Kategori produk">
-          <ul className="flex gap-2 overflow-x-auto">
+          <ul className="flex gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {filters.map((filter) => (
               <li key={filter.href} className="shrink-0">
                 <Link

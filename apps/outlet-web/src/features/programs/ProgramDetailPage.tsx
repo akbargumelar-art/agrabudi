@@ -44,6 +44,13 @@ export function ProgramDetailPage() {
                 description={`Berlaku ${formatDate(detail.startsAt)} sampai ${formatDate(detail.endsAt)}`}
                 aside={<DataNotice meta={envelope.meta} />}
               />
+              {detail.imageUrl ? (
+                <img
+                  src={detail.imageUrl}
+                  alt={`Gambar ${detail.title}`}
+                  className="aspect-16/9 w-full max-w-3xl rounded-panel object-cover"
+                />
+              ) : null}
               <p className="max-w-prose text-ink-700">{detail.summary}</p>
               <section aria-labelledby="syarat-program">
                 <h2 id="syarat-program" className="text-lg font-bold">
