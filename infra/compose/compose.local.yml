@@ -1,0 +1,65 @@
+# Uji coba full-stack di satu mesin (bukan produksi). Menambah MySQL 8.4 lokal dan
+# mengganti env API supaya tidak perlu server DB terpisah. Tidak ada data contoh yang diisi.
+# Kata sandi DB lokal diisi lewat shell: export LOCAL_DB_PASSWORD=<bebas, minimal 12 karakter>
+#
+#   cd infra/compose
+#   RELEASE=lokal docker compose -f compose.yml -f compose.local.yml --env-file ../env/local.env up -d --build
+#   RELEASE=lokal docker compose -f compose.yml -f compose.local.yml --env-file ../env/local.env run --rm migrate
+#   RELEASE=lokal docker compose -f compose.yml -f compose.local.yml --env-file ../env/local.env \
+#     exec api node dist/create-account.js --realm staff --username adminweb --name "Admin Web" --role web_admin --scope site
+#
+# Tambahkan ke hosts: 127.0.0.1 agrabudi.localhost outlet.agrabudi.localhost portal.agrabudi.localhost
+
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: agrabudi
+      MYSQL_USER: agrabudi
+      MYSQL_PASSWORD: ${LOCAL_DB_PASSWORD:?isi LOCAL_DB_PASSWORD di shell}
+      MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
+    command: ['--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci']
+    volumes: [mysql-local:/var/lib/mysql]
+    networks: [internal]
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', '127.0.0.1']
+      interval: 5s
+      retries: 30
+
+  api:
+    env_file: !reset []
+    environment:
+      &local-api-env # Lokal lewat http tanpa cookie Secure, jadi bukan mode production (API menolaknya).
+      NODE_ENV: development
+      DB_HOST: mysql
+      DB_PORT: '3306'
+      DB_USER: agrabudi
+      DB_PASSWORD: ${LOCAL_DB_PASSWORD:?isi LOCAL_DB_PASSWORD di shell}
+      DB_NAME: agrabudi
+      DB_TLS: 'off'
+      APP_URL_PUBLIC: ${APP_URL_PUBLIC}
+      APP_URL_OUTLET: ${APP_URL_OUTLET}
+      APP_URL_PORTAL: ${APP_URL_PORTAL}
+      COOKIE_SECURE: 'false'
+      STORAGE_DIR: /var/lib/agrabudi/storage
+      MEDIA_PUBLIC_BASE_URL: ${APP_URL_PUBLIC}/media
+      TRUST_PROXY: 172.30.10.0/24
+    volumes: !override
+      - media-public:/var/lib/agrabudi/storage/public
+      - files-private:/var/lib/agrabudi/storage/private
+    depends_on:
+      mysql: { condition: service_healthy }
+
+  migrate:
+    env_file: !reset []
+    environment: *local-api-env
+    volumes: !reset []
+    depends_on:
+      mysql: { condition: service_healthy }
+
+  web:
+    environment:
+      FORWARDED_PROTO: http
+
+volumes:
+  mysql-local:

@@ -27,11 +27,6 @@ export const website: Section = {
       behavior: 'Banner menurut website, halaman, slot, periode.',
     },
     {
-      label: 'Halaman ABKShop',
-      slug: 'abkshop',
-      behavior: 'Alamat halaman pemesanan yang disematkan di menu ABKShop Outlet.',
-    },
-    {
       label: 'Navigasi',
       slug: 'navigation',
       behavior: 'Susunan menu yang diizinkan dan tautan aplikasi.',

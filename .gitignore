@@ -18,3 +18,10 @@ next-env.d.ts
 
 # Hasil build pratinjau artifact
 .preview-out/
+
+# Berkas unggahan lokal API (pengembangan)
+apps/api/var/
+
+# Env dan sertifikat deploy di server: tidak pernah masuk repo. Contohnya ada di infra/env/*.example.
+infra/compose/*.env
+infra/compose/*.pem

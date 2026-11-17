@@ -1,8 +1,12 @@
+import { usesMockData } from './env';
+
 /**
- * Penanda tahap kerangka. Akun dan data masih contoh, dan menu disaring di browser saja;
- * pembatasan akses yang mengikat dilakukan server dan belum dibuat (PRD 4.13).
+ * Penanda tahap kerangka, hanya di mode data contoh: akun dan data masih contoh, dan menu
+ * disaring di browser saja. Di mode `api` akun dan izin diperiksa server, jadi penanda ini
+ * tidak ditampilkan (kalimatnya akan menyesatkan).
  */
 export function StageNotice() {
+  if (!usesMockData) return null;
   return (
     <p
       data-stage-notice

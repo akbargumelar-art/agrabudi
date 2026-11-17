@@ -6,6 +6,7 @@ import {
   ErrorState,
   Field,
   Input,
+  LoadingBlock,
   PageHeader,
   StatusBadge,
   buttonClass,
@@ -14,7 +15,7 @@ import {
   formatDate,
 } from '@agrabudi/ui';
 import { useState, type FormEvent } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router';
 import { getAuthAdapter } from '../../auth';
 import { useOutletSession } from '../../auth/SessionContext';
 import { useOutletProfile } from '../../data/queries';
@@ -23,10 +24,15 @@ import { useOutletProfile } from '../../data/queries';
 export function LoginPage() {
   const { session, signIn } = useOutletSession();
   const navigate = useNavigate();
+  const location = useLocation();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // Kembali ke halaman yang meminta login. Hanya path internal yang diterima.
+  const from: unknown = (location.state as { from?: unknown } | null)?.from;
+  const target =
+    typeof from === 'string' && from.startsWith('/') && !from.startsWith('//') ? from : '/';
 
-  if (session) return <Navigate to="/" replace />;
+  if (session) return <Navigate to={target} replace />;
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -41,7 +47,7 @@ export function LoginPage() {
           password: String(form.get('password') ?? ''),
         }),
       );
-      navigate('/', { replace: true });
+      navigate(target, { replace: true });
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Login gagal. Coba lagi beberapa saat.');
     } finally {
@@ -110,7 +116,8 @@ export function RecoverAccessPage() {
 }
 
 export function AccountPage() {
-  const { session, signOut } = useOutletSession();
+  const { session, status, signOut } = useOutletSession();
+  if (!session && status === 'checking') return <LoadingBlock label="Memeriksa sesi" />;
   if (!session) {
     return (
       <div className="flex flex-col gap-6">
@@ -127,7 +134,7 @@ export function AccountPage() {
       </div>
     );
   }
-  return <AccountProfile digiposId={session.digiposId} onSignOut={signOut} />;
+  return <AccountProfile digiposId={session.digiposId} onSignOut={() => void signOut()} />;
 }
 
 const programStatus = {

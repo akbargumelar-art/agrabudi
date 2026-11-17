@@ -5,7 +5,6 @@ import {
   dataMetaSchema,
   outletOrderSchema,
   outletPackageSchema,
-  siteSettingsSchema,
   staffProfileUpdateSchema,
 } from './index';
 
@@ -81,16 +80,6 @@ describe('kontrak data', () => {
         portal: 'http://b.test',
       }).success,
     ).toBe(false);
-  });
-
-  it('alamat embed ABKShop hanya menerima https di domain Agrabudi', () => {
-    const ok = (url: string) => siteSettingsSchema.safeParse({ abkshopEmbedUrl: url }).success;
-    expect(ok('https://order.agrabudi.com/')).toBe(true);
-    expect(ok('https://outlet.agrabudi.id/pesan')).toBe(true);
-    expect(ok('http://order.agrabudi.com/')).toBe(false);
-    expect(ok('https://order.agrabudi.com.penipu.example/')).toBe(false);
-    expect(ok('https://bukanagrabudi.com/')).toBe(false);
-    expect(ok('javascript:alert(1)')).toBe(false);
   });
 
   it('profil: nama wajib, nomor HP tetap teks, username tidak ikut diubah', () => {

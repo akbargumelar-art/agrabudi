@@ -71,4 +71,7 @@ export const mockAuthAdapter: AuthAdapter = {
     profiles.set(next.username, next);
     return next;
   },
+  // Mode contoh menyimpan sesi kerangka di sessionStorage (lihat SessionContext).
+  restore: async () => null,
+  signOut: async () => undefined,
 };

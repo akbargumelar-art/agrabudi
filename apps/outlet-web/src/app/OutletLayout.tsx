@@ -11,7 +11,7 @@ import {
   type BottomNavItem,
   type NavItem,
 } from '@agrabudi/ui';
-import { Calculator, House, Megaphone, ShoppingCart, UserRound } from 'lucide-react';
+import { House, Megaphone, ReceiptText, ShoppingCart, UserRound } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { Link, Outlet, useLocation } from 'react-router';
 import { useOutletSession } from '../auth/SessionContext';
@@ -21,17 +21,18 @@ import { RouterLink } from './RouterLink';
 /** Menu utama Outlet (PRD 2.2). */
 const mainItems: NavItem[] = [
   { label: 'Home', href: '/' },
-  { label: 'ABKShop', href: '/abkshop' },
+  { label: 'ABKShop', href: '/abkshop', alsoActiveOn: ['/checkout'] },
   { label: 'Kalkulator Cuan', href: '/kalkulator' },
   { label: 'Promo & Program', href: '/program' },
+  { label: 'Pesanan', href: '/pesanan' },
 ];
 
-/** Bottom navigation Outlet. Pesanan diganti Kalkulator karena pemesanan ada di ABKShop. */
+/** Bottom navigation Outlet (PRD 2.2). Kalkulator dibuka dari Home dan menu utama. */
 const bottomItems: BottomNavItem[] = [
   { label: 'Home', href: '/', icon: House },
-  { label: 'ABKShop', href: '/abkshop', icon: ShoppingCart },
+  { label: 'ABKShop', href: '/abkshop', alsoActiveOn: ['/checkout'], icon: ShoppingCart },
+  { label: 'Pesanan', href: '/pesanan', icon: ReceiptText },
   { label: 'Program', href: '/program', icon: Megaphone },
-  { label: 'Kalkulator', href: '/kalkulator', icon: Calculator },
   { label: 'Akun', href: '/akun', alsoActiveOn: ['/login', '/lupa-akses'], icon: UserRound },
 ];
 
@@ -69,16 +70,18 @@ export function OutletLayout() {
         currentPath={pathname}
         LinkComponent={RouterLink}
         actions={
-          <Link
-            to={session ? '/akun' : '/login'}
-            data-testid="akun-outlet"
-            className={cn(
-              buttonClass({ variant: 'secondary', size: 'sm' }),
-              'hidden max-w-48 tablet:inline-flex',
-            )}
-          >
-            <span className="truncate">{session ? session.outletName : 'Masuk'}</span>
-          </Link>
+          // Disembunyikan lewat pembungkus: `cn` tidak menyelesaikan konflik kelas, sehingga
+          // `hidden` pada tombol kalah oleh `inline-flex` dari buttonClass dan chip melebar di HP.
+          // Di HP akun dibuka dari menu bawah.
+          <div className="hidden tablet:block">
+            <Link
+              to={session ? '/akun' : '/login'}
+              data-testid="akun-outlet"
+              className={cn(buttonClass({ variant: 'secondary', size: 'sm' }), 'max-w-48')}
+            >
+              <span className="truncate">{session ? session.outletName : 'Masuk'}</span>
+            </Link>
+          </div>
         }
       />
       {usesMockData ? <MockRibbon /> : null}

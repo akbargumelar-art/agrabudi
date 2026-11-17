@@ -10,6 +10,8 @@ const REQUIRED_ENV = [
   'VITE_DATA_SOURCE',
 ];
 
+const apiProxy = process.env.API_DEV_PROXY ?? 'http://localhost:4000';
+
 export default defineConfig(({ command, mode }) => {
   // Build tanpa URL aplikasi atau sumber data yang eksplisit digagalkan,
   // supaya tidak ada tautan atau data bawaan yang ikut ke staging/produksi.
@@ -22,7 +24,14 @@ export default defineConfig(({ command, mode }) => {
   }
   return {
     plugins: [react(), tailwindcss()],
-    server: { port: 3001, strictPort: true },
+    // Pengembangan lokal: API di proses terpisah (apps/api). Produksi memakai reverse proxy Nginx.
+    server: {
+      port: 3001,
+      strictPort: true,
+      proxy: {
+        '/api': { target: apiProxy },
+      },
+    },
     test: { include: ['src/**/*.test.{ts,tsx}'] },
   };
 });

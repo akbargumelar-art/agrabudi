@@ -2,12 +2,10 @@ import {
   publicationRecordSchema,
   siteBannerSchema,
   sitePageSchema,
-  siteSettingsSchema,
   type DataEnvelope,
   type PublicationRecord,
   type SiteBanner,
   type SitePage,
-  type SiteSettings,
 } from '@agrabudi/contracts';
 import { logoHorizontal, logoHorizontalOnDark, logoMark } from '@agrabudi/ui';
 import { bannerArt, officeArt, programArt } from '@agrabudi/ui/mock-art';
@@ -82,8 +80,6 @@ let publications: PublicationRecord[] = [
   { id: 'pub-1', objectType: 'page', objectTitle: 'Tentang Kami', revision: 1, publishedAt: '2026-11-08T04:00:00Z' },
 ].map((record) => publicationRecordSchema.parse(record));
 
-let settings: SiteSettings = siteSettingsSchema.parse({ abkshopEmbedUrl: 'https://order.agrabudi.com/' });
-
 let navigation: NavItem[] = [
   { id: 'nav-1', site: 'public', label: 'Beranda', href: '/', visible: true, locked: true },
   { id: 'nav-2', site: 'public', label: 'Produk', href: '/produk', visible: true, locked: true },
@@ -127,7 +123,7 @@ let audit: AuditEvent[] = [
   { id: 'aud-4', at: '2026-11-13T02:10:00Z', actor: ACTOR, action: 'Mengajukan review', object: 'Halaman: Lokasi Kantor' },
   { id: 'aud-3', at: '2026-11-12T09:30:00Z', actor: ACTOR, action: 'Menerbitkan', object: 'Halaman: Area Layanan' },
   { id: 'aud-2', at: '2026-11-11T03:00:00Z', actor: ACTOR, action: 'Menerbitkan', object: 'Banner: Internet rumah untuk keluarga' },
-  { id: 'aud-1', at: '2026-11-10T01:15:00Z', actor: ACTOR, action: 'Mengubah alamat ABKShop', object: 'Pengaturan: https://order.agrabudi.com/' },
+  { id: 'aud-1', at: '2026-11-10T01:15:00Z', actor: ACTOR, action: 'Mengubah susunan', object: 'Navigasi' },
 ];
 
 const now = () => new Date().toISOString();
@@ -186,12 +182,6 @@ export const mockAdapter: WebAdminDataAdapter = {
     if (banner) log('Menghapus', `Banner: ${banner.title}`);
   },
   listPublications: async () => asMock(publications),
-  getSiteSettings: async () => asMock(settings),
-  updateSiteSettings: async (next) => {
-    settings = siteSettingsSchema.parse(next);
-    log('Mengubah alamat ABKShop', `Pengaturan: ${settings.abkshopEmbedUrl}`);
-    return asMock(settings);
-  },
   listNavigation: async () => asMock(navigation),
   saveNavigation: async (items) => {
     // Menu terkunci tetap tampil walau permintaan mencoba menyembunyikannya.

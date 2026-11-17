@@ -36,7 +36,6 @@ describe('aturan akses menu Portal', () => {
     expect(modes.every((mode) => mode === null)).toBe(true);
     for (const session of accounts.filter((item) => item.role !== 'web_admin')) {
       expect(groupAccess(session, 'website', 'banners'), session.accountId).toBeNull();
-      expect(groupAccess(session, 'website', 'abkshop'), session.accountId).toBeNull();
     }
   });
 

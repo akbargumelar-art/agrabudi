@@ -1,6 +1,6 @@
 import { DataNotice, Field, Input } from '@agrabudi/ui';
 import type { Metadata } from 'next';
-import { DemoForm } from '@/components/DemoForm';
+import { PublicForm } from '@/components/PublicForm';
 import { AddressField, NameField, PhoneField } from '@/components/FormFields';
 import { SectionUnavailable } from '@/components/Notices';
 import { PageIntro, pageBodyClass } from '@/components/PageIntro';
@@ -60,7 +60,8 @@ export default async function DigiposPage() {
               Form pendaftaran
             </h2>
             <div className="mt-4">
-              <DemoForm
+              <PublicForm
+                endpoint="digipos-registration"
                 refPrefix="DGP"
                 submitLabel="Kirim pendaftaran"
                 successTitle="Pendaftaran terkirim"
@@ -78,7 +79,7 @@ export default async function DigiposPage() {
                 <NameField id="digipos-pemilik" label="Nama pemilik" />
                 <PhoneField id="digipos-hp" />
                 <AddressField id="digipos-alamat" label="Alamat outlet" />
-              </DemoForm>
+              </PublicForm>
             </div>
           </section>
         </div>

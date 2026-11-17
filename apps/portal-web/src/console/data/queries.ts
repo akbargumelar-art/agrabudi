@@ -1,4 +1,4 @@
-import type { ContentStatus, SiteBanner, SiteSettings } from '@agrabudi/contracts';
+import type { ContentStatus, SiteBanner } from '@agrabudi/contracts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getAdapter } from './index';
 import type { LayoutSection, NavItem, SiteAsset } from './types';
@@ -22,16 +22,12 @@ export const usePages = () => useList('pages', async () => (await getAdapter()).
 export const useBanners = () => useList('banners', async () => (await getAdapter()).listBanners());
 export const usePublications = () =>
   useList('publications', async () => (await getAdapter()).listPublications());
-export const useSiteSettings = () =>
-  useList('site-settings', async () => (await getAdapter()).getSiteSettings());
 export const useNavigation = () =>
   useList('navigation', async () => (await getAdapter()).listNavigation());
 export const useLayouts = () => useList('layouts', async () => (await getAdapter()).listLayouts());
 export const useAssets = () => useList('assets', async () => (await getAdapter()).listAssets());
 export const useAudit = () => useList('audit', async () => (await getAdapter()).listAudit());
 
-export const useUpdateSiteSettings = () =>
-  useChange(async (next: SiteSettings) => (await getAdapter()).updateSiteSettings(next));
 export const useUpdatePageStatus = () =>
   useChange(async (input: { id: string; status: ContentStatus }) =>
     (await getAdapter()).updatePageStatus(input.id, input.status),

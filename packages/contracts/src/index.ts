@@ -1,3 +1,5 @@
+export * from './access';
+export * from './api';
 export * from './apps';
 export * from './auth';
 export * from './career';
@@ -9,5 +11,6 @@ export * from './indihome';
 export * from './meta';
 export * from './outlet-catalog';
 export * from './outlet-order';
+export * from './portal-module';
 export * from './program';
 export * from './site';

@@ -1,0 +1,125 @@
+# Routing tiga host (PRD 4.3). Template diisi envsubst oleh image nginx resmi saat start:
+# PUBLIC_HOST, OUTLET_HOST, PORTAL_HOST, MEDIA_ORIGIN, FORWARDED_PROTO.
+#
+# Nginx ini mendengar HTTP di 8080 dan diletakkan di belakang terminator TLS yang sudah ada
+# di server (port 443). Port publik dan sertifikat tidak diubah dari repo ini (PRD 4.11).
+# Jalur API diproses sebelum fallback SPA; setiap host hanya membuka API audiensnya sendiri.
+
+upstream api_upstream {
+  server api:4000;
+  keepalive 16;
+}
+
+upstream public_upstream {
+  server public-web:3000;
+  keepalive 16;
+}
+
+map $http_x_forwarded_proto $forwarded_proto {
+  default ${FORWARDED_PROTO};
+  https https;
+}
+
+server_tokens off;
+
+# Host tidak dikenal: tutup koneksi, jangan melayani konten aplikasi mana pun.
+server {
+  listen 8080 default_server;
+  server_name _;
+  location = /nginx-health { access_log off; return 200 "ok\n"; }
+  location / { return 444; }
+}
+
+# ---------------------------------------------------------------- agrabudi.id (Publik + Karir)
+server {
+  listen 8080;
+  server_name ${PUBLIC_HOST};
+
+  location /api/public/ {
+    include /etc/nginx/snippets/proxy-api.conf;
+  }
+  # API audiens lain dan console website tidak dibuka dari host Publik.
+  location /api/ { return 404; }
+  location /web-admin { return 404; }
+
+  # Berkas publik dari Aset Website (banner, logo). CV dan berkas privat tidak pernah di sini.
+  location /media/ {
+    alias /srv/media/;
+    include /etc/nginx/snippets/security-headers.conf;
+    add_header Cache-Control "public, max-age=86400" always;
+    add_header Content-Security-Policy "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; sandbox" always;
+    types { image/png png; image/jpeg jpg jpeg; image/webp webp; }
+    default_type application/octet-stream;
+    try_files $uri =404;
+  }
+
+  location / {
+    proxy_pass http://public_upstream;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $remote_addr;
+    proxy_set_header X-Forwarded-Proto $forwarded_proto;
+    proxy_set_header Connection "";
+    include /etc/nginx/snippets/security-headers.conf;
+  }
+}
+
+# ---------------------------------------------------------------- outlet.agrabudi.id
+server {
+  listen 8080;
+  server_name ${OUTLET_HOST};
+  root /usr/share/nginx/html/outlet;
+
+  location /api/v1/outlet/ {
+    include /etc/nginx/snippets/proxy-api.conf;
+  }
+  location /api/ { return 404; }
+  location /web-admin { return 404; }
+
+  # Bundel statis Vite: berkas ber-hash di-cache lama; index.html tidak di-cache supaya rilis
+  # baru langsung terpakai. Route SPA jatuh ke index.html setelah lokasi /api di atas.
+  location /assets/ {
+    include /etc/nginx/snippets/security-headers.conf;
+    add_header Cache-Control "public, max-age=31536000, immutable" always;
+    try_files $uri =404;
+  }
+  location / {
+    include /etc/nginx/snippets/security-headers.conf;
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: ${MEDIA_ORIGIN}; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'" always;
+    add_header Cache-Control "no-cache" always;
+    try_files $uri $uri/ /index.html;
+  }
+}
+
+# ---------------------------------------------------------------- portal.agrabudi.id (+ /web-admin)
+server {
+  listen 8080;
+  server_name ${PORTAL_HOST};
+  root /usr/share/nginx/html/portal;
+
+  # CMS API Admin Web diproses sebelum bundel /web-admin.
+  location /web-admin/api/ {
+    include /etc/nginx/snippets/proxy-api.conf;
+  }
+  # API Outlet dan Publik bukan audiens host Portal.
+  location /api/v1/outlet/ { return 404; }
+  location /api/public/ { return 404; }
+  location /api/v1/ {
+    include /etc/nginx/snippets/proxy-api.conf;
+  }
+  location /api/ { return 404; }
+
+  # Bundel statis Vite: berkas ber-hash di-cache lama; index.html tidak di-cache supaya rilis
+  # baru langsung terpakai. Route SPA jatuh ke index.html setelah lokasi /api di atas.
+  location /assets/ {
+    include /etc/nginx/snippets/security-headers.conf;
+    add_header Cache-Control "public, max-age=31536000, immutable" always;
+    try_files $uri =404;
+  }
+  location / {
+    include /etc/nginx/snippets/security-headers.conf;
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: ${MEDIA_ORIGIN}; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'" always;
+    add_header Cache-Control "no-cache" always;
+    try_files $uri $uri/ /index.html;
+  }
+}

@@ -6,3 +6,6 @@ export const appUrls: AppUrls = appUrlsSchema.parse({
   outlet: import.meta.env.VITE_APP_URL_OUTLET,
   portal: import.meta.env.VITE_APP_URL_PORTAL,
 });
+
+/** Mock hanya aktif bila diminta eksplisit. Nilai lain dianggap `api`. */
+export const usesMockData = import.meta.env.VITE_DATA_SOURCE === 'mock';

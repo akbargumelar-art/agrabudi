@@ -2,7 +2,7 @@ import { EmptyState, Field, Input, buttonClass } from '@agrabudi/ui';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { DemoForm } from '@/components/DemoForm';
+import { PublicForm } from '@/components/PublicForm';
 import { ConsentField, CvField, NameField, PhoneField } from '@/components/FormFields';
 import { SectionUnavailable } from '@/components/Notices';
 import { PageIntro, pageBodyClass } from '@/components/PageIntro';
@@ -54,7 +54,9 @@ export default async function ApplyPage({ params }: ApplyPageProps) {
           />
         ) : (
           <div className="w-full max-w-xl">
-            <DemoForm
+            <PublicForm
+              endpoint={`job-application/${encodeURIComponent(slug)}`}
+              withFile
               refPrefix="LMR"
               submitLabel="Kirim lamaran"
               successTitle="Lamaran terkirim"
@@ -67,7 +69,7 @@ export default async function ApplyPage({ params }: ApplyPageProps) {
               <PhoneField id="lamar-hp" />
               <CvField id="lamar-cv" />
               <ConsentField text="Saya setuju data lamaran ini diproses untuk keperluan rekrutmen." />
-            </DemoForm>
+            </PublicForm>
           </div>
         )}
       </div>

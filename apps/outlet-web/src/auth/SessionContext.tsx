@@ -1,10 +1,22 @@
 import { outletSessionSchema, type OutletSession } from '@agrabudi/contracts';
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
+import { usesMockData } from '../app/env';
+import { getAuthAdapter } from './index';
 
 type SessionApi = {
   session: OutletSession | null;
+  /** `checking` selama sesi dari server belum diketahui; halaman berizin menunggu, bukan meminta login. */
+  status: 'checking' | 'ready';
   signIn: (session: OutletSession) => void;
-  signOut: () => void;
+  signOut: () => Promise<void>;
 };
 
 const STORAGE_KEY = 'abk-outlet-sesi-kerangka-v1';
@@ -31,20 +43,54 @@ function writeStored(session: OutletSession | null) {
   }
 }
 
-/** Sesi kerangka di browser. Sesi sungguhan adalah cookie HttpOnly dari server. */
+/**
+ * Sesi Outlet. Mode `api`: sesi sungguhan adalah cookie HttpOnly dari server; saat halaman
+ * dibuka, server ditanya apakah sesi masih berlaku. Mode `mock`: sesi kerangka di
+ * sessionStorage, hanya untuk mencoba tampilan.
+ */
 export function SessionProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<OutletSession | null>(readStored);
+  const [session, setSession] = useState<OutletSession | null>(() =>
+    usesMockData ? readStored() : null,
+  );
+  const [status, setStatus] = useState<SessionApi['status']>(usesMockData ? 'ready' : 'checking');
+
+  useEffect(() => {
+    if (usesMockData) return;
+    let active = true;
+    getAuthAdapter()
+      .then((adapter) => adapter.restore())
+      .then((restored) => {
+        if (active) setSession(restored);
+      })
+      .catch(() => {
+        // Server tidak terjangkau: perlakukan sebagai belum masuk. Login akan menampilkan gangguannya.
+        if (active) setSession(null);
+      })
+      .finally(() => {
+        if (active) setStatus('ready');
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const signIn = useCallback((next: OutletSession) => {
-    writeStored(next);
+    if (usesMockData) writeStored(next);
     setSession(next);
   }, []);
-  const signOut = useCallback(() => {
-    writeStored(null);
-    setSession(null);
+  const signOut = useCallback(async () => {
+    try {
+      await (await getAuthAdapter()).signOut();
+    } finally {
+      if (usesMockData) writeStored(null);
+      setSession(null);
+    }
   }, []);
 
-  const api = useMemo(() => ({ session, signIn, signOut }), [session, signIn, signOut]);
+  const api = useMemo(
+    () => ({ session, status, signIn, signOut }),
+    [session, status, signIn, signOut],
+  );
   return <SessionContext.Provider value={api}>{children}</SessionContext.Provider>;
 }
 

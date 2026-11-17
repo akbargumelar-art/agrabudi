@@ -1,7 +1,7 @@
 import { DataNotice, EmptyState, cardClass, cn, formatRupiah } from '@agrabudi/ui';
 import { Check } from 'lucide-react';
 import type { Metadata } from 'next';
-import { DemoForm } from '@/components/DemoForm';
+import { PublicForm } from '@/components/PublicForm';
 import { AddressField, NameField, PhoneField } from '@/components/FormFields';
 import { SectionUnavailable } from '@/components/Notices';
 import { PageIntro, pageBodyClass } from '@/components/PageIntro';
@@ -129,7 +129,8 @@ export default async function IndihomePage() {
               pemasangan dikonfirmasi petugas, tidak otomatis.
             </p>
             <div className="mt-4">
-              <DemoForm
+              <PublicForm
+                endpoint="indihome-interest"
                 refPrefix="MNT"
                 submitLabel="Kirim minat pemasangan"
                 successTitle="Minat pemasangan terkirim"
@@ -138,7 +139,7 @@ export default async function IndihomePage() {
                 <NameField id="minat-nama" />
                 <PhoneField id="minat-hp" />
                 <AddressField id="minat-alamat" label="Alamat pemasangan" />
-              </DemoForm>
+              </PublicForm>
             </div>
           </section>
         </div>

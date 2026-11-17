@@ -14,4 +14,7 @@ export const mockAuthAdapter: OutletAuthAdapter = {
     if (!found || password !== DEMO_OUTLET_PASSWORD) throw new InvalidCredentialsError();
     return outletSessionSchema.parse(found);
   },
+  // Mode contoh menyimpan sesi kerangka di sessionStorage (lihat SessionContext).
+  restore: async () => null,
+  signOut: async () => undefined,
 };

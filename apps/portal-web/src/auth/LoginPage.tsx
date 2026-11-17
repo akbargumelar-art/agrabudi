@@ -19,13 +19,14 @@ function targetAfterLogin(state: unknown): string {
  * sistem membuka menu sesuai peran akun yang masuk.
  */
 export function LoginPage() {
-  const { session, signIn } = useSessionApi();
+  const { session, status, signIn } = useSessionApi();
   const navigate = useNavigate();
   const location = useLocation();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   if (session) return <Navigate to={targetAfterLogin(location.state)} replace />;
+  if (status === 'checking') return null;
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

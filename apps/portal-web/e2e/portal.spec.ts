@@ -296,32 +296,11 @@ test('profil bisa diubah kecuali username', async ({ page }) => {
   await expect(page.getByTestId('profil-peran')).toHaveText('Supervisor Mobile');
 });
 
-test('Admin Web mengatur alamat halaman ABKShop; alamat di luar domain Agrabudi ditolak', async ({
-  page,
-}) => {
+test('Admin Web tidak punya pengaturan pemesanan ABKShop Outlet (PRD 2.4)', async ({ page }) => {
   await signInAs(page, 'adminweb');
   await page.goto(`${base}/web-admin/abkshop`);
-  const field = page.getByLabel('Alamat halaman pemesanan');
-  await expect(field).toHaveValue('https://order.agrabudi.com/');
-  await expect(page.locator('[data-mock-label]').first()).toBeVisible();
-
-  for (const bad of [
-    'http://order.agrabudi.com/',
-    'https://order.agrabudi.com.penipu.example/',
-    'bukan alamat',
-  ]) {
-    await field.fill(bad);
-    await page.getByRole('button', { name: 'Simpan alamat' }).click();
-    await expect(field, bad).toHaveAttribute('aria-invalid', 'true');
-    await expect(page.getByTestId('abkshop-url-aktif'), bad).toHaveText(
-      'https://order.agrabudi.com/',
-    );
-  }
-
-  await field.fill('https://order.agrabudi.id/form');
-  await page.getByRole('button', { name: 'Simpan alamat' }).click();
-  await expect(page.getByRole('status').getByText('Alamat ABKShop disimpan.')).toBeVisible();
-  await expect(page.getByTestId('abkshop-url-aktif')).toHaveText('https://order.agrabudi.id/form');
+  await expect(page.getByText('Menu tidak ditemukan')).toBeVisible();
+  await expect(page.getByLabel('Alamat halaman pemesanan')).toHaveCount(0);
 });
 
 test('refresh mempertahankan sesi; keluar menghapusnya dan akun berikutnya mulai dari Dashboard', async ({

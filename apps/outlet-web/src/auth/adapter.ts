@@ -6,6 +6,10 @@ import type { OutletSession } from '@agrabudi/contracts';
  */
 export interface OutletAuthAdapter {
   signIn(input: { digiposId: string; password: string }): Promise<OutletSession>;
+  /** Sesi yang masih berlaku saat halaman dibuka, atau `null` bila belum masuk. */
+  restore(): Promise<OutletSession | null>;
+  /** Cabut sesi di server. */
+  signOut(): Promise<void>;
 }
 
 export class AuthUnavailableError extends Error {

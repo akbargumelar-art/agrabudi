@@ -1,7 +1,7 @@
 import { DataNotice, Field, Select, Textarea } from '@agrabudi/ui';
 import type { Metadata } from 'next';
 import { ChannelList } from '@/components/company';
-import { DemoForm } from '@/components/DemoForm';
+import { PublicForm } from '@/components/PublicForm';
 import { NameField, PhoneField } from '@/components/FormFields';
 import { SectionUnavailable } from '@/components/Notices';
 import { PageIntro, pageBodyClass } from '@/components/PageIntro';
@@ -40,7 +40,8 @@ export default async function ContactPage() {
               Kirim pesan
             </h2>
             <div className="mt-4">
-              <DemoForm
+              <PublicForm
+                endpoint="contact"
                 refPrefix="PSN"
                 submitLabel="Kirim pesan"
                 successTitle="Pesan terkirim"
@@ -68,7 +69,7 @@ export default async function ContactPage() {
                     maxLength={1000}
                   />
                 </Field>
-              </DemoForm>
+              </PublicForm>
             </div>
           </section>
         </div>

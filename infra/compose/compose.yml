@@ -1,0 +1,106 @@
+# Stack aplikasi Agrabudi.id (PRD 4.8): satu server aplikasi, MySQL di server terpisah.
+# MySQL TIDAK ada di file ini; API terhubung lewat jaringan privat/VPN dengan TLS (PRD 4.9).
+#
+#   cd infra/compose
+#   cp ../env/stack.env.example stack.env   # isi di server, jangan di-commit
+#   cp ../env/api.env.example api.env       # isi di server, berisi kredensial DB
+#   docker compose --env-file stack.env build
+#   docker compose --env-file stack.env run --rm migrate
+#   docker compose --env-file stack.env up -d
+#
+# Langkah lengkap dan pemeriksaan pasca-deploy: docs/deploy.md.
+
+name: agrabudi
+
+x-node-limits: &node-limits
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options: { max-size: '10m', max-file: '5' }
+
+services:
+  api:
+    <<: *node-limits
+    image: agrabudi-api:${RELEASE:?isi RELEASE dengan commit yang dirilis}
+    build:
+      context: ../..
+      dockerfile: infra/docker/api.Dockerfile
+    env_file: [api.env]
+    environment:
+      STORAGE_DIR: /var/lib/agrabudi/storage
+      # Hanya Nginx di jaringan internal yang dipercaya sebagai proxy.
+      TRUST_PROXY: 172.30.10.0/24
+    volumes:
+      - media-public:/var/lib/agrabudi/storage/public
+      - files-private:/var/lib/agrabudi/storage/private
+      - ${DB_TLS_CA_HOST_PATH:-./db-ca.pem}:/run/secrets/db-ca.pem:ro
+    networks: [internal]
+    # Tidak ada `ports`: API tidak pernah dibuka langsung ke Internet (PRD 4.9).
+    mem_limit: 768m
+
+  # Migrasi skema: dijalankan manual per rilis dengan akun DB migrator (PRD 4.10, 4.15).
+  migrate:
+    image: agrabudi-api:${RELEASE}
+    profiles: [migrate]
+    env_file: [migrate.env]
+    command: ['node', 'dist/migrate.js']
+    volumes:
+      - ${DB_TLS_CA_HOST_PATH:-./db-ca.pem}:/run/secrets/db-ca.pem:ro
+    networks: [internal]
+
+  public-web:
+    <<: *node-limits
+    image: agrabudi-public:${RELEASE}
+    build:
+      context: ../..
+      dockerfile: infra/docker/public-web.Dockerfile
+      args:
+        NEXT_PUBLIC_APP_URL_PUBLIC: ${APP_URL_PUBLIC:?}
+        NEXT_PUBLIC_APP_URL_OUTLET: ${APP_URL_OUTLET:?}
+        NEXT_PUBLIC_APP_URL_PORTAL: ${APP_URL_PORTAL:?}
+        NEXT_PUBLIC_DATA_SOURCE: api
+    environment:
+      API_INTERNAL_URL: http://api:4000
+    depends_on: [api]
+    networks: [internal]
+    mem_limit: 512m
+
+  web:
+    <<: *node-limits
+    image: agrabudi-web:${RELEASE}
+    build:
+      context: ../..
+      dockerfile: infra/docker/web.Dockerfile
+      args:
+        VITE_APP_URL_PUBLIC: ${APP_URL_PUBLIC:?}
+        VITE_APP_URL_OUTLET: ${APP_URL_OUTLET:?}
+        VITE_APP_URL_PORTAL: ${APP_URL_PORTAL:?}
+        VITE_DATA_SOURCE: api
+    environment:
+      PUBLIC_HOST: ${PUBLIC_HOST:?}
+      OUTLET_HOST: ${OUTLET_HOST:?}
+      PORTAL_HOST: ${PORTAL_HOST:?}
+      MEDIA_ORIGIN: ${APP_URL_PUBLIC:?}
+      FORWARDED_PROTO: https
+    volumes:
+      # Hanya media publik. Berkas privat (CV) tidak pernah dipasang di Nginx.
+      - media-public:/srv/media:ro
+    depends_on: [api, public-web]
+    networks:
+      internal:
+        ipv4_address: 172.30.10.10
+    # Hanya loopback: terminator TLS yang sudah ada di server meneruskan ke sini.
+    # Ganti port bila 8080 sudah dipakai aplikasi lain; jangan mengubah port aplikasi lama.
+    ports:
+      - '127.0.0.1:${WEB_PORT:-8080}:8080'
+
+volumes:
+  media-public:
+  files-private:
+
+networks:
+  internal:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.10.0/24

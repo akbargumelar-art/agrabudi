@@ -9,6 +9,10 @@ export interface AuthAdapter {
   signIn(input: { username: string; password: string }): Promise<StaffSession>;
   /** Mengubah nama, email, dan nomor HP. Username, peran, dan cakupan tidak bisa diubah dari sini. */
   updateProfile(session: StaffSession, update: StaffProfileUpdate): Promise<StaffSession>;
+  /** Sesi yang masih berlaku saat halaman dibuka (staff atau Admin Web), atau `null`. */
+  restore(): Promise<StaffSession | null>;
+  /** Cabut sesi di server, sesuai realm akun yang sedang masuk. */
+  signOut(session: StaffSession): Promise<void>;
 }
 
 export class AuthUnavailableError extends Error {

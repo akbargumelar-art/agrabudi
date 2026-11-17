@@ -34,8 +34,8 @@ describe('route registry Portal', () => {
 
   it('bagian Website berada di /web-admin dan tiap menunya punya halaman', () => {
     const website = moduleRoutes.filter((route) => route.section.id === 'website');
-    // Sembilan menu PRD 2.3 ditambah Halaman ABKShop.
-    expect(website).toHaveLength(10);
+    // Sembilan menu PRD 2.3. Pemesanan Outlet bukan urusan Admin Web (PRD 2.4).
+    expect(website).toHaveLength(9);
     expect(website.every((route) => route.path.startsWith('/web-admin/'))).toBe(true);
     expect(Object.keys(consolePages).sort()).toEqual(
       website.map((route) => route.group.slug).sort(),

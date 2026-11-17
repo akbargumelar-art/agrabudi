@@ -5,6 +5,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
 import { App } from './App';
 import { SessionProvider } from './auth/SessionContext';
+import { CartProvider } from './features/abkshop/CartContext';
 import './styles.css';
 
 const queryClient = new QueryClient({
@@ -23,7 +24,9 @@ createRoot(root).render(
       <BrowserRouter>
         <ToastProvider>
           <SessionProvider>
-            <App />
+            <CartProvider>
+              <App />
+            </CartProvider>
           </SessionProvider>
         </ToastProvider>
       </BrowserRouter>

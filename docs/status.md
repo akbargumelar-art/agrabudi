@@ -1,21 +1,22 @@
 # Status fitur
 
-Terakhir diperbarui: 16 November 2026, setelah data contoh semua halaman, Kalkulator Cuan, dan navigasi sidebar Portal.
+Terakhir diperbarui: 18 November 2026, setelah backend M2 (`apps/api`), adapter HTTP tiga aplikasi, dan infrastruktur deploy.
 Arti status: **planned** belum dikerjakan, **mock** tampil dengan data contoh berlabel atau aksi dinonaktifkan,
 **integrated** tersambung backend, **tested** lulus tes otomatis yang relevan, **accepted** lolos UAT pemilik modul.
-Belum ada fitur berstatus integrated atau accepted: backend belum dibuat.
+Belum ada fitur berstatus accepted. "integrated" di bawah berarti tersambung ke API dan lulus tes integrasi API
+terhadap MySQL 8.4 sungguhan; alur browser terhadap API belum diuji e2e dan belum pernah jalan di server staging.
 
 ## M0 — fondasi repo (minimal)
 
-| Item                                | Status  | Catatan                                                            |
-| ----------------------------------- | ------- | ------------------------------------------------------------------ |
-| Monorepo pnpm + Turborepo, lockfile | tested  | `pnpm install`, `pnpm build`                                       |
-| Lint, typecheck, unit test          | tested  | ESLint, TypeScript 6, Vitest                                       |
-| `packages/contracts`                | tested  | Skema Zod awal untuk data yang dipakai M1                          |
-| `AGENTS.md` (AS-01 s.d. AS-18)      | selesai |                                                                    |
-| Workflow CI GitHub Actions          | planned | File ada, **belum pernah dijalankan** karena repo GitHub belum ada |
-| Compose lokal MySQL + Redis         | planned | Belum dibuat; dibutuhkan mulai M2                                  |
-| Preflight VPS, DNS, Nginx staging   | planned | Menunggu akses dan persetujuan (T-1)                               |
+| Item                                | Status  | Catatan                                                                                                                                              |
+| ----------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Monorepo pnpm + Turborepo, lockfile | tested  | `pnpm install`, `pnpm build`                                                                                                                         |
+| Lint, typecheck, unit test          | tested  | ESLint, TypeScript 6, Vitest                                                                                                                         |
+| `packages/contracts`                | tested  | Skema Zod awal untuk data yang dipakai M1                                                                                                            |
+| `AGENTS.md` (AS-01 s.d. AS-18)      | selesai |                                                                                                                                                      |
+| Workflow CI GitHub Actions          | planned | Ditambah job MySQL 8.4, audit dependency, build mode `api`, build image Docker, `nginx -t`. **Belum pernah dijalankan**: repo GitHub belum ada (T-2) |
+| Compose produksi + lokal (MySQL)    | planned | `infra/compose`. **Belum pernah dijalankan**: mesin pengembangan tidak punya Docker. Redis belum dipakai                                             |
+| Preflight VPS, DNS, Nginx staging   | planned | Menunggu akses dan persetujuan (T-1). Runbook: `docs/deploy.md`                                                                                      |
 
 ## M1 — design system dan kerangka
 
@@ -29,25 +30,57 @@ Belum ada fitur berstatus integrated atau accepted: backend belum dibuat.
 | Primitive: Button, Field/Input/Select/Textarea, Modal, Drawer (bawah/kanan/kiri), Toast, Table, Carousel, EmptyState, ErrorState, Skeleton | tested        |                                                                                                                                                                                                                                                                                                             |
 | Gambar contoh                                                                                                                              | mock          | Ilustrasi SVG dari `@agrabudi/ui/mock-art`, berlabel "Ilustrasi contoh", hanya diimpor adapter mock                                                                                                                                                                                                         |
 | Publik: 14 route PRD 2.6                                                                                                                   | mock, tested  | 8 produk, 3 promo, 4 lowongan, 3 paket IndiHome, banner, profil, area, kantor, kontak dari mock berlabel. Form lamaran, minat IndiHome, Daftar Digipos, kontak memeriksa isian lalu memberi nomor referensi contoh; tidak ada yang terkirim                                                                 |
-| Outlet: login ID Digipos, ABKShop embed                                                                                                    | mock, tested  | 3 outlet contoh. ABKShop menyematkan alamat yang diatur Admin Web (allowlist domain Agrabudi). Tidak ada menu Pesanan                                                                                                                                                                                       |
+| Outlet: login ID Digipos, ABKShop tabel, checkout, pesanan                                                                                 | mock, tested  | 3 outlet contoh. Tabel pembelian dengan aturan jumlah, checkout dua langkah (harga final lalu ajukan), daftar dan detail pesanan. Embed ABKShop dihapus                                                                                                                                                     |
 | Outlet: slider pemenang program                                                                                                            | mock, tested  | 6 dokumentasi penyerahan hadiah dengan foto ilustrasi, detail di modal                                                                                                                                                                                                                                      |
 | Outlet: Kalkulator Cuan                                                                                                                    | mock, tested  | Mengikuti `/cuan` repo landing: modal awal, mode Rekomendasi (greedy rasio untung, filter brand/kategori/unggulan) dan Pilih Sendiri, ringkasan, unduh CSV, kontak DigiposAja. 65 produk contoh dari `seed-cuan.ts`. Harga contoh (D-07)                                                                    |
-| Portal: login, menu per peran                                                                                                              | mock, tested  | 9 akun contoh, kata sandi `contoh123`. Menu, sidebar, dan "Akses ditolak" mengikuti jabatan x unit x cakupan x izin. **Penyaringan ini baru di browser**, bukan kontrol akses                                                                                                                               |
+| Portal: login, menu per peran                                                                                                              | mock, tested  | 9 akun contoh, kata sandi `contoh123`. Menu, sidebar, dan "Akses ditolak" mengikuti jabatan x unit x cakupan x izin. Di mode `api` server menegakkan izin untuk modul yang tersambung (lihat M2); menu lain tetap penyaringan tampilan                                                                      |
 | Portal: navigasi                                                                                                                           | tested        | Tablet/desktop: sidebar saja (bisa diciutkan, diingat). HP: menu bawah melayang + sidebar dari kiri lewat item Menu                                                                                                                                                                                         |
 | Portal: data modul                                                                                                                         | mock, tested  | Semua menu daun Telkomsel, IndiHome, Admin punya dataset contoh (`src/data/mock/datasets.ts`): ringkasan, grafik batang, cari, filter, urut, halaman, detail, tambah/ubah/hapus sesuai hak, unggah CSV dengan validasi. Cakupan self/team/cluster disaring di adapter mock. Kolom final menunggu kamus data |
 | Portal: Admin Web (`/web-admin`)                                                                                                           | mock, tested  | Banner CRUD dengan gambar, status halaman, navigasi, layout, aset, preview, riwayat publikasi, audit. Perubahan hanya di memori browser                                                                                                                                                                     |
 | Build `api` tanpa data contoh                                                                                                              | tested manual | 16 Nov 2026: bundle Publik, Outlet, dan Portal mode `api` diperiksa, tidak memuat nama, harga, atau ilustrasi contoh                                                                                                                                                                                        |
 
-## Belum ada sama sekali
+## M2 — backend (`apps/api`) dan sambungan frontend
 
-Login dan sesi sungguhan, RBAC di server, API, database, upload berkas, quote/order server, editor CMS, impor data, notifikasi.
-Seluruh pembatasan akses di M1 hanya tampilan; belum ada kontrol akses yang nyata.
+Stack dan alasannya: `docs/adr/0001-backend-stack.md`. Tes: `pnpm --filter @agrabudi/api test` (65 tes integrasi, MySQL 8.4).
+
+| Item                                                              | Status             | Catatan                                                                                                                                                                                                  |
+| ----------------------------------------------------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Skema MySQL + migrasi terpisah dari runtime                       | integrated, tested | 26 tabel InnoDB utf8mb4, uang integer, FK, unique idempotensi, CHECK. `dist/migrate.js` idempoten (diuji pada build)                                                                                     |
+| Sesi tiga realm (staff, outlet, web_admin)                        | integrated, tested | Token acak, hanya hash di DB, cookie host-only HttpOnly Secure SameSite=Strict. Admin Web: cookie Path `/web-admin`, idle 30 menit, maks 8 jam. Logout, idle, akun nonaktif, realm salah ditolak         |
+| Satu pintu login Portal                                           | integrated, tested | Sesuai keputusan 15 Nov; akun Admin Web mendapat sesi realm `web_admin`. Akunnya masih satu tabel dengan staff (D-B2)                                                                                    |
+| CSRF (Origin per aplikasi), batas laju login/form/order           | integrated, tested | Batas laju di memori proses; perlu Redis bila API lebih dari satu proses                                                                                                                                 |
+| Format error, request ID, log tanpa cookie/isi form               | integrated, tested | 400/401/403/404/409/413/415/422/429/503                                                                                                                                                                  |
+| Publik: konten terbit                                             | integrated, tested | Produk, program, lowongan, paket IndiHome, banner, profil. Draft/arsip/lewat periode tidak tampil. Dokumen belum diisi = "belum diterbitkan"                                                             |
+| Publik: form kontak, minat IndiHome, Daftar Digipos, lamaran + CV | integrated, tested | Nomor referensi dari server, Idempotency-Key, CV diperiksa dari isi berkas (PDF/DOC/DOCX, 2 MB), disimpan privat                                                                                         |
+| Outlet: katalog, quote, order, pesanan sendiri                    | integrated, tested | Harga dari server, quote 15 menit (TBD), satu key = satu order, satu quote = satu order, harga berubah = 409, outlet lain = 404, kiriman bersamaan diuji                                                 |
+| Portal: 13 menu Admin tersambung                                  | integrated, tested | Lowongan, Lamaran (unduh CV berizin), Produk Pelanggan, Kategori/Paket/Order Outlet, Paket/Lead IndiHome, Program pelanggan/outlet/internal, Pendaftaran Digipos, Kalkulator Cuan                        |
+| Portal: menu Telkomsel, IndiHome, dan Admin lain                  | planned            | Mode `api` menampilkan "belum tersambung". Menunggu kamus data (PRD 2.8, AS-10). Dataset contoh tetap di mode `mock`                                                                                     |
+| Proses order Admin                                                | integrated, tested | Transisi baseline dari PRD 2.7, alasan wajib untuk Ditolak/Dibatalkan, riwayat + audit. SOP final belum disahkan (D-B3)                                                                                  |
+| CMS Admin Web                                                     | integrated, tested | Halaman, banner (gambar wajib dari Aset), navigasi (menu terkunci), layout, aset (PNG/JPEG/WebP; SVG ditolak), riwayat, audit, profil perusahaan (API saja)                                              |
+| Build mode `api`: tanpa data contoh, halaman Publik dinamis       | tested             | 18 Nov 2026: build bersih; tidak ada akun/data/ilustrasi contoh di bundel                                                                                                                                |
+| Smoke test artefak build                                          | tested manual      | 18 Nov 2026: migrate, create-account, server mode produksi pada MySQL 8.4; login tiga realm, quote Rp1.565.000, order + kirim ulang, pemisahan realm                                                     |
+| E2E mode `mock`, 5 lebar layar                                    | tested             | 18 Nov 2026: seluruh matriks lulus (Outlet dan Portal diulang setelah perbaikan). Diperbaiki: chip akun Outlet melebar 66 px di HP (bug sejak HEAD), penanda "kerangka" Portal kini hanya di mode `mock` |
+| Smoke browser mode `api`                                          | tested manual      | 18 Nov 2026, 390 px: login Outlet, tabel, harga final Rp1.565.000, ajukan, detail setelah refresh; Portal Admin melihat order nyata; menu tanpa kamus data tampil "belum tersambung"                     |
+| Image Docker, Nginx tiga host, compose                            | planned            | Ditulis, belum dibangun atau dijalankan                                                                                                                                                                  |
+
+## Belum ada
+
+Editor UI untuk profil perusahaan, info IndiHome/Digipos, dan kontak Kalkulator Cuan (API profil dan kontak sudah ada).
+Menu untuk membaca pesan Hubungi Kami (kiriman tersimpan di `form_submissions`, belum ada menu Portal).
+User Management di Portal (akun dibuat lewat CLI). Pembatalan order oleh outlet. Status pembayaran (tetap Belum ditagih).
+Stok/reservasi, impor CSV, notifikasi WA/email, MFA Admin Web, rollback revisi konten, pemisahan CMS API ke proses dan
+akun DB sendiri, backup otomatis, object storage S3 (sekarang volume disk).
 
 ## Keputusan terbuka yang menahan pekerjaan berikutnya
 
-| ID         | Hal                                     | Dampak                                              |
-| ---------- | --------------------------------------- | --------------------------------------------------- |
-| T-2        | Repo GitHub baru                        | Kode belum bisa di-push; CI belum bisa jalan        |
-| T-4 / D-09 | Logo, warna brand, alamat, kontak, foto | Token warna dan isi institusional masih placeholder |
-| T-1        | Preflight VPS                           | Staging belum bisa disiapkan                        |
-| D-07       | Rumus Kalkulator Cuan, KPI, fee, poin   | Halaman memakai rumus dan harga contoh berlabel     |
+| ID         | Hal                                     | Dampak                                                    |
+| ---------- | --------------------------------------- | --------------------------------------------------------- |
+| T-2        | Repo GitHub baru                        | Kode belum bisa di-push; CI belum bisa jalan              |
+| T-4 / D-09 | Logo, warna brand, alamat, kontak, foto | Token warna dan isi institusional masih placeholder       |
+| T-1        | Preflight VPS                           | Staging belum bisa disiapkan                              |
+| D-B1       | Stack backend (ADR 0001)                | Fastify + Kysely dipakai, bukan NestJS + Prisma           |
+| D-B2       | Akun Admin Web satu tabel dengan staff  | Sesi sudah terpisah; tabel dan akun DB belum              |
+| D-B3       | SOP order: transisi, masa quote, batal  | Baseline usulan dipakai; bisa berubah                     |
+| D-B4       | Izin Admin per modul (PRD 2.5)          | Sementara unit bisnis, belum `catalog.outlet.manage` dst. |
+| D-B5       | Pesan Hubungi Kami dibaca di menu apa   | Tersimpan, belum bisa dibaca dari Portal                  |
+| D-07       | Rumus Kalkulator Cuan, KPI, fee, poin   | Halaman memakai rumus dan harga contoh berlabel           |

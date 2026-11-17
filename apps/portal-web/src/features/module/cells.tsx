@@ -62,13 +62,23 @@ export function cellText(column: Column, value: Cell): string {
       return formatDate(String(value));
     case 'image':
       return 'Gambar';
+    case 'link':
+      return 'Unduh';
     default:
       return String(value);
   }
 }
 
 /** Isi satu sel tabel. Status yang dikenal tampil sebagai lencana berikon, bukan warna saja. */
-export function CellView({ column, value, compact = true }: { column: Column; value: Cell; compact?: boolean }) {
+export function CellView({
+  column,
+  value,
+  compact = true,
+}: {
+  column: Column;
+  value: Cell;
+  compact?: boolean;
+}) {
   if (column.kind === 'image') {
     return value ? (
       <img
@@ -80,6 +90,16 @@ export function CellView({ column, value, compact = true }: { column: Column; va
           compact ? 'h-12 w-16' : 'aspect-4/3 w-full max-w-md',
         )}
       />
+    ) : (
+      <span className="text-ink-500">-</span>
+    );
+  }
+  // Tautan unduhan internal (mis. CV) dibuka lewat API berizin; hanya path relatif yang dirender.
+  if (column.kind === 'link') {
+    return typeof value === 'string' && value.startsWith('/') ? (
+      <a href={value} className="font-medium text-info underline" download>
+        Unduh {column.label}
+      </a>
     ) : (
       <span className="text-ink-500">-</span>
     );

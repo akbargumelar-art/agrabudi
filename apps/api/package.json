@@ -1,0 +1,35 @@
+{
+  "name": "@agrabudi/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --env-file-if-exists=.env.development --env-file-if-exists=.env.local src/main.ts",
+    "build": "vite build",
+    "start": "node dist/main.js",
+    "migrate": "tsx --env-file-if-exists=.env.development --env-file-if-exists=.env.local src/db/migrate-cli.ts",
+    "account:create": "tsx --env-file-if-exists=.env.development --env-file-if-exists=.env.local src/scripts/create-account.ts",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@agrabudi/contracts": "workspace:*",
+    "@fastify/cookie": "11.1.5",
+    "@fastify/multipart": "10.1.7",
+    "@fastify/rate-limit": "11.2.2",
+    "fastify": "5.12.8",
+    "kysely": "0.29.8",
+    "mysql2": "3.24.6",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@agrabudi/config": "workspace:*",
+    "@types/node": "22.20.5",
+    "mysql-memory-server": "1.18.0",
+    "tsx": "4.23.15",
+    "typescript": "6.0.3",
+    "vite": "8.3.8",
+    "vitest": "5.1.0"
+  }
+}

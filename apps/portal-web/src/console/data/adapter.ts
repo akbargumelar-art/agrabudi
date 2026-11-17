@@ -4,7 +4,6 @@ import type {
   PublicationRecord,
   SiteBanner,
   SitePage,
-  SiteSettings,
 } from '@agrabudi/contracts';
 import type { AuditEvent, LayoutSection, NavItem, SiteAsset } from './types';
 
@@ -19,8 +18,6 @@ export interface WebAdminDataAdapter {
   saveBanner(banner: SiteBanner): Promise<void>;
   deleteBanner(id: string): Promise<void>;
   listPublications(): Promise<DataEnvelope<PublicationRecord[]>>;
-  getSiteSettings(): Promise<DataEnvelope<SiteSettings>>;
-  updateSiteSettings(next: SiteSettings): Promise<DataEnvelope<SiteSettings>>;
   listNavigation(): Promise<DataEnvelope<NavItem[]>>;
   saveNavigation(items: NavItem[]): Promise<void>;
   listLayouts(): Promise<DataEnvelope<LayoutSection[]>>;

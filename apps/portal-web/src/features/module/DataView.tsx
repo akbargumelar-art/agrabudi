@@ -45,7 +45,8 @@ export function DataView({ path, dataset, meta }: DataViewProps) {
   const [deleting, setDeleting] = useState<DataRow | null>(null);
 
   const { columns } = dataset;
-  const canAdd = dataset.editable || dataset.ownerCreate;
+  const canAdd = (dataset.editable && dataset.canCreate !== false) || dataset.ownerCreate;
+  const canDelete = dataset.editable && dataset.canDelete !== false;
 
   const filterColumns = dataset.filters
     .map((key) => columns.find((column) => column.key === key))
@@ -54,14 +55,18 @@ export function DataView({ path, dataset, meta }: DataViewProps) {
   const visible = useMemo(() => {
     const keyword = search.trim().toLowerCase();
     let rows = dataset.rows.filter((item) =>
-      Object.entries(filters).every(([key, value]) => value === '' || String(item.cells[key] ?? '') === value),
+      Object.entries(filters).every(
+        ([key, value]) => value === '' || String(item.cells[key] ?? '') === value,
+      ),
     );
     if (keyword) {
       rows = rows.filter((item) =>
         columns.some(
           (column) =>
             column.kind !== 'image' &&
-            cellText(column, item.cells[column.key] ?? null).toLowerCase().includes(keyword),
+            cellText(column, item.cells[column.key] ?? null)
+              .toLowerCase()
+              .includes(keyword),
         ),
       );
     }
@@ -84,7 +89,9 @@ export function DataView({ path, dataset, meta }: DataViewProps) {
   const pageRows = visible.slice(current * PAGE_SIZE, current * PAGE_SIZE + PAGE_SIZE);
 
   async function copyCsv() {
-    const header = columns.filter((column) => column.kind !== 'image').map((column) => column.label);
+    const header = columns
+      .filter((column) => column.kind !== 'image')
+      .map((column) => column.label);
     const lines = visible.map((item) =>
       columns
         .filter((column) => column.kind !== 'image')
@@ -99,12 +106,17 @@ export function DataView({ path, dataset, meta }: DataViewProps) {
       await navigator.clipboard.writeText([header.join(','), ...lines].join('\n'));
       toast.show({ tone: 'success', message: `${visible.length} baris disalin sebagai CSV.` });
     } catch {
-      toast.show({ tone: 'danger', message: 'Browser menolak menyalin. Coba lagi dari tombol yang sama.' });
+      toast.show({
+        tone: 'danger',
+        message: 'Browser menolak menyalin. Coba lagi dari tombol yang sama.',
+      });
     }
   }
 
   function toggleSort(key: string) {
-    setSort((value) => (value?.key === key ? (value.dir === 1 ? { key, dir: -1 } : null) : { key, dir: 1 }));
+    setSort((value) =>
+      value?.key === key ? (value.dir === 1 ? { key, dir: -1 } : null) : { key, dir: 1 },
+    );
   }
 
   return (
@@ -137,7 +149,10 @@ export function DataView({ path, dataset, meta }: DataViewProps) {
               Cari data
             </label>
             <div className="relative">
-              <Search aria-hidden className="pointer-events-none absolute top-3 left-3 size-5 text-ink-500" />
+              <Search
+                aria-hidden
+                className="pointer-events-none absolute top-3 left-3 size-5 text-ink-500"
+              />
               <Input
                 id={`cari-${path}`}
                 type="search"
@@ -152,7 +167,13 @@ export function DataView({ path, dataset, meta }: DataViewProps) {
             </div>
           </div>
           {filterColumns.map((column) => {
-            const values = [...new Set(dataset.rows.map((item) => item.cells[column.key]).filter((value) => value !== null && value !== ''))]
+            const values = [
+              ...new Set(
+                dataset.rows
+                  .map((item) => item.cells[column.key])
+                  .filter((value) => value !== null && value !== ''),
+              ),
+            ]
               .map(String)
               .sort((a, b) => a.localeCompare(b, 'id'));
             return (
@@ -179,7 +200,12 @@ export function DataView({ path, dataset, meta }: DataViewProps) {
             );
           })}
           <div className="flex gap-2">
-            <Button variant="secondary" size="sm" onClick={() => void copyCsv()} className="min-h-11">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => void copyCsv()}
+              className="min-h-11"
+            >
               <Copy aria-hidden className="size-4" />
               Salin CSV
             </Button>
@@ -202,7 +228,10 @@ export function DataView({ path, dataset, meta }: DataViewProps) {
             }
           />
         ) : (
-          <TableScroll label="Tabel data" scrollHint="Geser tabel ke samping untuk melihat semua kolom.">
+          <TableScroll
+            label="Tabel data"
+            scrollHint="Geser tabel ke samping untuk melihat semua kolom."
+          >
             <table className={cn(tableClass, 'min-w-[44rem]')}>
               <thead>
                 <tr>
@@ -210,7 +239,13 @@ export function DataView({ path, dataset, meta }: DataViewProps) {
                     <th
                       key={column.key}
                       scope="col"
-                      aria-sort={sort?.key === column.key ? (sort.dir === 1 ? 'ascending' : 'descending') : undefined}
+                      aria-sort={
+                        sort?.key === column.key
+                          ? sort.dir === 1
+                            ? 'ascending'
+                            : 'descending'
+                          : undefined
+                      }
                       className={cn(thClass, isNumericKind(column) && 'text-right')}
                     >
                       {column.kind === 'image' ? (
@@ -242,7 +277,13 @@ export function DataView({ path, dataset, meta }: DataViewProps) {
                 {pageRows.map((item) => (
                   <tr key={item.id} className="hover:bg-surface-50">
                     {columns.map((column) => (
-                      <td key={column.key} className={cn(tdClass, isNumericKind(column) && 'text-right whitespace-nowrap')}>
+                      <td
+                        key={column.key}
+                        className={cn(
+                          tdClass,
+                          isNumericKind(column) && 'text-right whitespace-nowrap',
+                        )}
+                      >
                         <CellView column={column} value={item.cells[column.key] ?? null} />
                       </td>
                     ))}
@@ -259,9 +300,13 @@ export function DataView({ path, dataset, meta }: DataViewProps) {
         )}
 
         {visible.length > 0 ? (
-          <nav aria-label="Halaman tabel" className="flex flex-wrap items-center justify-between gap-3 text-sm">
+          <nav
+            aria-label="Halaman tabel"
+            className="flex flex-wrap items-center justify-between gap-3 text-sm"
+          >
             <p className="text-ink-700" data-testid="jumlah-baris">
-              {current * PAGE_SIZE + 1}–{Math.min(visible.length, (current + 1) * PAGE_SIZE)} dari {visible.length} baris
+              {current * PAGE_SIZE + 1}–{Math.min(visible.length, (current + 1) * PAGE_SIZE)} dari{' '}
+              {visible.length} baris
             </p>
             <div className="flex gap-2">
               <Button
@@ -299,16 +344,18 @@ export function DataView({ path, dataset, meta }: DataViewProps) {
         footer={
           detail && dataset.editable ? (
             <>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setDeleting(detail);
-                  setDetail(null);
-                }}
-              >
-                Hapus
-              </Button>
+              {canDelete ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setDeleting(detail);
+                    setDetail(null);
+                  }}
+                >
+                  Hapus
+                </Button>
+              ) : null}
               <Button
                 size="sm"
                 onClick={() => {
@@ -332,7 +379,11 @@ export function DataView({ path, dataset, meta }: DataViewProps) {
               <div key={column.key} className="grid gap-1 tablet:grid-cols-[9rem_minmax(0,1fr)]">
                 <dt className="text-ink-700">{column.label}</dt>
                 <dd className="font-medium">
-                  <CellView column={column} value={detail.cells[column.key] ?? null} compact={false} />
+                  <CellView
+                    column={column}
+                    value={detail.cells[column.key] ?? null}
+                    compact={false}
+                  />
                 </dd>
               </div>
             ))}
@@ -351,11 +402,17 @@ export function DataView({ path, dataset, meta }: DataViewProps) {
               await save.mutateAsync(input);
               toast.show({
                 tone: 'success',
-                message: editing === 'new' ? 'Data ditambahkan (contoh, hanya di browser ini).' : 'Perubahan tersimpan (contoh, hanya di browser ini).',
+                message:
+                  editing === 'new'
+                    ? 'Data ditambahkan (contoh, hanya di browser ini).'
+                    : 'Perubahan tersimpan (contoh, hanya di browser ini).',
               });
               setEditing(null);
             } catch (error) {
-              toast.show({ tone: 'danger', message: error instanceof Error ? error.message : 'Gagal menyimpan.' });
+              toast.show({
+                tone: 'danger',
+                message: error instanceof Error ? error.message : 'Gagal menyimpan.',
+              });
             }
           }}
         />
@@ -377,9 +434,15 @@ export function DataView({ path, dataset, meta }: DataViewProps) {
                 if (!deleting) return;
                 try {
                   await remove.mutateAsync(deleting.id);
-                  toast.show({ tone: 'success', message: 'Data dihapus (contoh, hanya di browser ini).' });
+                  toast.show({
+                    tone: 'success',
+                    message: 'Data dihapus (contoh, hanya di browser ini).',
+                  });
                 } catch (error) {
-                  toast.show({ tone: 'danger', message: error instanceof Error ? error.message : 'Gagal menghapus.' });
+                  toast.show({
+                    tone: 'danger',
+                    message: error instanceof Error ? error.message : 'Gagal menghapus.',
+                  });
                 }
                 setDeleting(null);
               }}
@@ -389,14 +452,21 @@ export function DataView({ path, dataset, meta }: DataViewProps) {
           </>
         }
       >
-        <p className="text-sm">Data yang dihapus tidak tampil lagi di tabel. Di mode contoh, muat ulang halaman mengembalikannya.</p>
+        <p className="text-sm">
+          Data yang dihapus tidak tampil lagi di tabel. Di mode contoh, muat ulang halaman
+          mengembalikannya.
+        </p>
       </Modal>
     </div>
   );
 }
 
 function BarList({ chart }: { chart: NonNullable<ModuleDataset['chart']> }) {
-  const max = Math.max(chart.unit === 'percent' ? 120 : 0, ...chart.bars.map((bar) => bar.value), 1);
+  const max = Math.max(
+    chart.unit === 'percent' ? 120 : 0,
+    ...chart.bars.map((bar) => bar.value),
+    1,
+  );
   const format = (value: number) =>
     chart.unit === 'percent'
       ? `${value.toLocaleString('id-ID')}%`
@@ -413,13 +483,19 @@ function BarList({ chart }: { chart: NonNullable<ModuleDataset['chart']> }) {
         {chart.bars.map((bar) => {
           const reached = bar.target === undefined || bar.value >= bar.target;
           return (
-            <li key={bar.label} className="grid grid-cols-[minmax(6rem,10rem)_minmax(0,1fr)_auto] items-center gap-3 text-sm">
+            <li
+              key={bar.label}
+              className="grid grid-cols-[minmax(6rem,10rem)_minmax(0,1fr)_auto] items-center gap-3 text-sm"
+            >
               <span className="truncate text-ink-700" title={bar.label}>
                 {bar.label}
               </span>
               <span className="relative h-3 rounded-full bg-surface-100">
                 <span
-                  className={cn('absolute inset-y-0 left-0 rounded-full', reached ? 'bg-brand-red' : 'bg-brand-gold')}
+                  className={cn(
+                    'absolute inset-y-0 left-0 rounded-full',
+                    reached ? 'bg-brand-red' : 'bg-brand-gold',
+                  )}
                   style={{ width: `${Math.max(2, (bar.value / max) * 100)}%` }}
                 />
                 {bar.target !== undefined ? (
@@ -444,7 +520,11 @@ type RowFormProps = {
   row: DataRow | null;
   busy: boolean;
   onClose: () => void;
-  onSubmit: (input: { id?: string; ownerId?: string | null; cells: Record<string, Cell> }) => Promise<void>;
+  onSubmit: (input: {
+    id?: string;
+    ownerId?: string | null;
+    cells: Record<string, Cell>;
+  }) => Promise<void>;
 };
 
 function RowForm({ dataset, row, busy, onClose, onSubmit }: RowFormProps) {
@@ -452,7 +532,8 @@ function RowForm({ dataset, row, busy, onClose, onSubmit }: RowFormProps) {
   const [values, setValues] = useState<Record<string, string>>(() =>
     Object.fromEntries(
       fields.map((column) => {
-        if (column.kind === 'person') return [column.key, row?.ownerId ?? dataset.people[0]?.id ?? ''];
+        if (column.kind === 'person')
+          return [column.key, row?.ownerId ?? dataset.people[0]?.id ?? ''];
         const value = row?.cells[column.key];
         return [column.key, value === null || value === undefined ? '' : String(value)];
       }),
@@ -486,7 +567,10 @@ function RowForm({ dataset, row, busy, onClose, onSubmit }: RowFormProps) {
         }
         const valid = column.kind === 'percent' ? /^\d+([.,]\d+)?$/.test(raw) : /^\d+$/.test(raw);
         if (!valid) {
-          nextErrors[column.key] = column.kind === 'percent' ? 'Isi angka, boleh desimal.' : 'Isi angka bulat tanpa titik.';
+          nextErrors[column.key] =
+            column.kind === 'percent'
+              ? 'Isi angka, boleh desimal.'
+              : 'Isi angka bulat tanpa titik.';
           continue;
         }
         cells[column.key] = Number(raw.replace(',', '.'));
@@ -515,7 +599,12 @@ function RowForm({ dataset, row, busy, onClose, onSubmit }: RowFormProps) {
         </>
       }
     >
-      <form id="form-data" noValidate onSubmit={(event) => void submit(event)} className="flex flex-col gap-4">
+      <form
+        id="form-data"
+        noValidate
+        onSubmit={(event) => void submit(event)}
+        className="flex flex-col gap-4"
+      >
         {fields.map((column) => {
           const id = `isian-${column.key}`;
           const error = errors[column.key];
@@ -523,7 +612,11 @@ function RowForm({ dataset, row, busy, onClose, onSubmit }: RowFormProps) {
           let control;
           if (column.kind === 'person') {
             control = (
-              <Select id={id} value={value} onChange={(event) => set(column.key, event.target.value)}>
+              <Select
+                id={id}
+                value={value}
+                onChange={(event) => set(column.key, event.target.value)}
+              >
                 {dataset.people.map((person) => (
                   <option key={person.id} value={person.id}>
                     {person.name}
@@ -533,7 +626,12 @@ function RowForm({ dataset, row, busy, onClose, onSubmit }: RowFormProps) {
             );
           } else if (column.kind === 'status') {
             control = (
-              <Select id={id} value={value} onChange={(event) => set(column.key, event.target.value)} aria-invalid={Boolean(error)}>
+              <Select
+                id={id}
+                value={value}
+                onChange={(event) => set(column.key, event.target.value)}
+                aria-invalid={Boolean(error)}
+              >
                 <option value="">Pilih {column.label.toLowerCase()}</option>
                 {(column.options ?? []).map((option) => (
                   <option key={option} value={option}>
@@ -543,11 +641,24 @@ function RowForm({ dataset, row, busy, onClose, onSubmit }: RowFormProps) {
               </Select>
             );
           } else if (column.kind === 'longtext') {
-            control = <Textarea id={id} value={value} onChange={(event) => set(column.key, event.target.value)} aria-invalid={Boolean(error)} />;
+            control = (
+              <Textarea
+                id={id}
+                value={value}
+                onChange={(event) => set(column.key, event.target.value)}
+                aria-invalid={Boolean(error)}
+              />
+            );
           } else if (column.kind === 'image') {
             control = (
               <div className="flex flex-col gap-2">
-                {value ? <img src={value} alt="" className="h-24 w-32 rounded-control border border-surface-100 object-cover" /> : null}
+                {value ? (
+                  <img
+                    src={value}
+                    alt=""
+                    className="h-24 w-32 rounded-control border border-surface-100 object-cover"
+                  />
+                ) : null}
                 <Input
                   id={id}
                   type="file"
@@ -557,7 +668,10 @@ function RowForm({ dataset, row, busy, onClose, onSubmit }: RowFormProps) {
                     const file = event.target.files?.[0];
                     if (!file) return;
                     if (file.size > 3 * 1024 * 1024) {
-                      setErrors((current) => ({ ...current, [column.key]: 'Ukuran gambar paling besar 3 MB.' }));
+                      setErrors((current) => ({
+                        ...current,
+                        [column.key]: 'Ukuran gambar paling besar 3 MB.',
+                      }));
                       return;
                     }
                     const reader = new FileReader();
@@ -590,7 +704,9 @@ function RowForm({ dataset, row, busy, onClose, onSubmit }: RowFormProps) {
             </Field>
           );
         })}
-        <p className="text-xs text-ink-700">Mode contoh: perubahan hanya tersimpan di browser ini sampai halaman dimuat ulang.</p>
+        <p className="text-xs text-ink-700">
+          Mode contoh: perubahan hanya tersimpan di browser ini sampai halaman dimuat ulang.
+        </p>
       </form>
     </Modal>
   );

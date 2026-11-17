@@ -1,5 +1,4 @@
 import type { ComponentType } from 'react';
-import { AbkShopSettingsPage } from './AbkShopSettingsPage';
 import { BannersPage } from './BannersPage';
 import { DashboardPage, PagesPage, PublicationsPage } from './ContentPages';
 import { AssetsPage, AuditPage, LayoutsPage, NavigationPage, PreviewPage } from './SettingsPages';
@@ -9,7 +8,6 @@ export const consolePages: Record<string, ComponentType> = {
   dashboard: DashboardPage,
   pages: PagesPage,
   banners: BannersPage,
-  abkshop: AbkShopSettingsPage,
   navigation: NavigationPage,
   layouts: LayoutsPage,
   assets: AssetsPage,

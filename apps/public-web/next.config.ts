@@ -1,5 +1,6 @@
+import { fileURLToPath } from 'node:url';
 import type { NextConfig } from 'next';
-import { PHASE_PRODUCTION_BUILD } from 'next/constants';
+import { PHASE_DEVELOPMENT_SERVER, PHASE_PRODUCTION_BUILD } from 'next/constants';
 
 const REQUIRED_ENV = [
   'NEXT_PUBLIC_APP_URL_PUBLIC',
@@ -23,5 +24,20 @@ export default function config(phase: string): NextConfig {
     // Paket workspace dikirim sebagai sumber TypeScript, jadi Next yang mengompilasinya.
     transpilePackages: ['@agrabudi/ui', '@agrabudi/contracts'],
     poweredByHeader: false,
+    // Server mandiri hanya untuk image Docker (NEXT_OUTPUT=standalone di Dockerfile), supaya
+    // `next start` untuk e2e tetap bisa dipakai. Tracing dari root monorepo agar paket workspace ikut.
+    ...(process.env.NEXT_OUTPUT === 'standalone'
+      ? {
+          output: 'standalone' as const,
+          outputFileTracingRoot: fileURLToPath(new URL('../../', import.meta.url)),
+        }
+      : {}),
+    // Pengembangan lokal: form di browser memanggil /api/public di origin yang sama.
+    // Produksi: Nginx meneruskan /api/public ke API sebelum sampai ke Next.js (PRD 4.3).
+    async rewrites() {
+      if (phase !== PHASE_DEVELOPMENT_SERVER) return [];
+      const target = process.env.API_DEV_PROXY ?? 'http://localhost:4000';
+      return [{ source: '/api/public/:path*', destination: `${target}/api/public/:path*` }];
+    },
   };
 }

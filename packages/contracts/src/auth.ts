@@ -85,3 +85,23 @@ export const outletProfileSchema = outletSessionSchema.extend({
   ),
 });
 export type OutletProfile = z.infer<typeof outletProfileSchema>;
+
+/** Isian login Portal. Panjang dibatasi supaya hashing tidak dipakai untuk membebani server. */
+export const staffLoginSchema = z.object({
+  username: z.string().trim().toLowerCase().min(1, 'Username wajib diisi.').max(64),
+  password: z.string().min(1, 'Kata sandi wajib diisi.').max(200),
+});
+export type StaffLogin = z.infer<typeof staffLoginSchema>;
+
+/** Isian login Outlet: ID Digipos disimpan sebagai teks huruf besar, nol di depan tetap. */
+export const outletLoginSchema = z.object({
+  digiposId: z.string().trim().toUpperCase().min(1, 'ID Digipos wajib diisi.').max(32),
+  password: z.string().min(1, 'Kata sandi wajib diisi.').max(200),
+});
+export type OutletLogin = z.infer<typeof outletLoginSchema>;
+
+/** Kata sandi akun baru: minimal 12 karakter (kebijakan final mengikuti perusahaan). */
+export const newPasswordSchema = z
+  .string()
+  .min(12, 'Kata sandi minimal 12 karakter.')
+  .max(200, 'Kata sandi terlalu panjang.');
