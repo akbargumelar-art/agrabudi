@@ -18,6 +18,8 @@ next-env.d.ts
 
 # Hasil build pratinjau artifact
 .preview-out/
+# Log server preview lokal
+.preview-logs/
 
 # Berkas unggahan lokal API (pengembangan)
 apps/api/var/
