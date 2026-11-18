@@ -8,15 +8,15 @@ terhadap MySQL 8.4 sungguhan; alur browser terhadap API belum diuji e2e dan belu
 
 ## M0 — fondasi repo (minimal)
 
-| Item                                | Status  | Catatan                                                                                                                                              |
-| ----------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Monorepo pnpm + Turborepo, lockfile | tested  | `pnpm install`, `pnpm build`                                                                                                                         |
-| Lint, typecheck, unit test          | tested  | ESLint, TypeScript 6, Vitest                                                                                                                         |
-| `packages/contracts`                | tested  | Skema Zod awal untuk data yang dipakai M1                                                                                                            |
-| `AGENTS.md` (AS-01 s.d. AS-18)      | selesai |                                                                                                                                                      |
-| Workflow CI GitHub Actions          | planned | Ditambah job MySQL 8.4, audit dependency, build mode `api`, build image Docker, `nginx -t`. **Belum pernah dijalankan**: repo GitHub belum ada (T-2) |
-| Compose produksi + lokal (MySQL)    | planned | `infra/compose`. **Belum pernah dijalankan**: mesin pengembangan tidak punya Docker. Redis belum dipakai                                             |
-| Preflight VPS, DNS, Nginx staging   | planned | Menunggu akses dan persetujuan (T-1). Runbook: `docs/deploy.md`                                                                                      |
+| Item                                | Status     | Catatan                                                                                                                                                                                                                                                                                                                                                        |
+| ----------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Monorepo pnpm + Turborepo, lockfile | tested     | `pnpm install`, `pnpm build`                                                                                                                                                                                                                                                                                                                                   |
+| Lint, typecheck, unit test          | tested     | ESLint, TypeScript 6, Vitest                                                                                                                                                                                                                                                                                                                                   |
+| `packages/contracts`                | tested     | Skema Zod awal untuk data yang dipakai M1                                                                                                                                                                                                                                                                                                                      |
+| `AGENTS.md` (AS-01 s.d. AS-18)      | selesai    |                                                                                                                                                                                                                                                                                                                                                                |
+| Workflow CI GitHub Actions          | integrated | [Run `efa33f7`](https://github.com/akbargumelar-art/agrabudi/actions/runs/44262589062): `check` (termasuk tes MySQL 8.4), `build-api-mode`, `e2e` lulus. Job `docker` gagal: `next build` di image ikut memeriksa `e2e/*.spec.ts` yang mengimpor `tests/` (tidak disalin ke image). Diperbaiki: spec E2E dipindah ke tsconfig root; menunggu run CI berikutnya |
+| Compose produksi + lokal (MySQL)    | planned    | `infra/compose`. **Belum pernah dijalankan**: mesin pengembangan tidak punya Docker. Redis belum dipakai                                                                                                                                                                                                                                                       |
+| Preflight VPS, DNS, Nginx staging   | planned    | Menunggu akses dan persetujuan (T-1). Runbook: `docs/deploy.md`                                                                                                                                                                                                                                                                                                |
 
 ## M1 — design system dan kerangka
 
@@ -61,7 +61,7 @@ Stack dan alasannya: `docs/adr/0001-backend-stack.md`. Tes: `pnpm --filter @agra
 | Smoke test artefak build                                          | tested manual      | 18 Nov 2026: migrate, create-account, server mode produksi pada MySQL 8.4; login tiga realm, quote Rp1.565.000, order + kirim ulang, pemisahan realm                                                     |
 | E2E mode `mock`, 5 lebar layar                                    | tested             | 18 Nov 2026: seluruh matriks lulus (Outlet dan Portal diulang setelah perbaikan). Diperbaiki: chip akun Outlet melebar 66 px di HP (bug sejak HEAD), penanda "kerangka" Portal kini hanya di mode `mock` |
 | Smoke browser mode `api`                                          | tested manual      | 18 Nov 2026, 390 px: login Outlet, tabel, harga final Rp1.565.000, ajukan, detail setelah refresh; Portal Admin melihat order nyata; menu tanpa kamus data tampil "belum tersambung"                     |
-| Image Docker, Nginx tiga host, compose                            | planned            | Ditulis, belum dibangun atau dijalankan                                                                                                                                                                  |
+| Image Docker, Nginx tiga host, compose                            | planned            | Image API terbangun di CI `efa33f7`; image Publik gagal (lihat CI), image web dan `nginx -t` belum sampai. Compose belum dijalankan                                                                      |
 
 ## Belum ada
 
@@ -73,14 +73,22 @@ akun DB sendiri, backup otomatis, object storage S3 (sekarang volume disk).
 
 ## Keputusan terbuka yang menahan pekerjaan berikutnya
 
-| ID         | Hal                                     | Dampak                                                    |
-| ---------- | --------------------------------------- | --------------------------------------------------------- |
-| T-2        | Repo GitHub baru                        | Kode belum bisa di-push; CI belum bisa jalan              |
-| T-4 / D-09 | Logo, warna brand, alamat, kontak, foto | Token warna dan isi institusional masih placeholder       |
-| T-1        | Preflight VPS                           | Staging belum bisa disiapkan                              |
-| D-B1       | Stack backend (ADR 0001)                | Fastify + Kysely dipakai, bukan NestJS + Prisma           |
-| D-B2       | Akun Admin Web satu tabel dengan staff  | Sesi sudah terpisah; tabel dan akun DB belum              |
-| D-B3       | SOP order: transisi, masa quote, batal  | Baseline usulan dipakai; bisa berubah                     |
-| D-B4       | Izin Admin per modul (PRD 2.5)          | Sementara unit bisnis, belum `catalog.outlet.manage` dst. |
-| D-B5       | Pesan Hubungi Kami dibaca di menu apa   | Tersimpan, belum bisa dibaca dari Portal                  |
-| D-07       | Rumus Kalkulator Cuan, KPI, fee, poin   | Halaman memakai rumus dan harga contoh berlabel           |
+| ID         | Hal                                     | Dampak                                                                             |
+| ---------- | --------------------------------------- | ---------------------------------------------------------------------------------- |
+| T-2        | Akses CI/CD repo GitHub                 | Repo ada (`akbargumelar-art/agrabudi`), `main` dan CI jalan; deploy otomatis belum |
+| T-4 / D-09 | Logo, warna brand, alamat, kontak, foto | Token warna dan isi institusional masih placeholder                                |
+| T-1        | Preflight VPS                           | Staging belum bisa disiapkan                                                       |
+| D-B1       | Stack backend (ADR 0001)                | Fastify + Kysely dipakai, bukan NestJS + Prisma                                    |
+| D-B2       | Akun Admin Web satu tabel dengan staff  | Sesi sudah terpisah; tabel dan akun DB belum                                       |
+| D-B3       | SOP order: transisi, masa quote, batal  | Baseline usulan dipakai; bisa berubah                                              |
+| D-B4       | Izin Admin per modul (PRD 2.5)          | Sementara unit bisnis, belum `catalog.outlet.manage` dst.                          |
+| D-B5       | Pesan Hubungi Kami dibaca di menu apa   | Tersimpan, belum bisa dibaca dari Portal                                           |
+| D-07       | Rumus Kalkulator Cuan, KPI, fee, poin   | Halaman memakai rumus dan harga contoh berlabel                                    |
+
+## Keputusan yang sudah diambil pemilik
+
+- 18 Nov 2026 — **Tiga host produksi**: `agrabudi.id` (Publik), `outlet.agrabudi.id` (Outlet),
+  `portal.agrabudi.id` (Portal, termasuk `/web-admin`). Staging: `dev.agrabudi.id`,
+  `dev-outlet.agrabudi.id`, `dev-portal.agrabudi.id`. Sesuai template Nginx tiga `server`,
+  cookie `__Host-`/`__Secure-`, dan pemeriksaan Origin per path yang sudah ada.
+  Belum diputuskan: perlakuan `www.agrabudi.id` (sekarang jatuh ke `default_server`).

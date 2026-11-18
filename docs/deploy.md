@@ -1,8 +1,8 @@
 # Runbook deploy Agrabudi.id
 
 Untuk: pengelola teknis yang menyiapkan staging atau produksi. Acuan: PRD 4.8 s.d. 4.15.
-Status: **belum pernah dijalankan di server**. Image Docker belum dibangun di mesin mana pun
-(lingkungan pengembangan tidak punya Docker); CI menyiapkan job build image dan `nginx -t`.
+Status: **belum pernah dijalankan di server**. CI memeriksa build image Docker dan `nginx -t`;
+lihat [status verifikasi](status.md) untuk hasil terakhir yang sudah dikonfirmasi.
 Jalankan dulu di staging dan catat hasilnya di bawah sebelum produksi.
 
 ## Topologi
@@ -29,7 +29,10 @@ api ──jaringan privat/VPN + TLS──> MySQL (server terpisah)
 3. Sertifikat CA MySQL di server aplikasi, mis. `/etc/agrabudi/db-ca.pem`.
 4. Port loopback untuk Nginx yang belum dipakai aplikasi lain. **Jangan mengubah port,
    domain, atau konfigurasi aplikasi lama.**
-5. DNS tiga host mengarah ke server aplikasi, sertifikat TLS di terminator yang ada.
+5. DNS tiga host mengarah ke server aplikasi dan sertifikat TLS di terminator mencakup ketiganya.
+   Untuk staging gunakan `dev.agrabudi.id`, `dev-outlet.agrabudi.id`, dan `dev-portal.agrabudi.id`.
+   Jika memakai satu sertifikat wildcard via DNS-01, sertakan `agrabudi.id` dan `*.agrabudi.id`;
+   wildcard saja tidak mencakup domain utama.
 
 ## 1. Database dan akun (sekali, oleh DBA)
 

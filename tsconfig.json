@@ -1,8 +1,9 @@
 {
   "extends": "./packages/config/tsconfig/base.json",
   "compilerOptions": {
-    "lib": ["ES2022", "DOM"],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
     "types": ["node"]
   },
-  "include": ["playwright.config.ts", "tests"]
+  "include": ["playwright.config.ts", "tests", "apps/*/e2e/**/*.ts"]
 }
