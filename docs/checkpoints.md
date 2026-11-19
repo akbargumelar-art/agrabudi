@@ -20,6 +20,24 @@ Checkpoint terbaru selalu ditaruh paling atas.
    Kalau sudah merah sebelum Anda mengubah apa pun, catat dulu, jangan dianggap akibat perubahan Anda.
 5. Setelah update selesai dan teruji, tambah checkpoint baru di atas dengan format yang sama, lalu buat tag.
 
+## checkpoint/2026-11-19-vscode-diagnostics-verified
+
+Tanggal: 19 November 2026. Branch: `feat/m1-redesign-telkomsel-pattern`.
+Diagnostics merah pada panel Problems VS Code untuk `apps/api/src/routes/accounts.ts`, `apps/api/test/helpers.ts`, dan `apps/public-web/src/app/tentang/area/page.tsx` sudah diperiksa terhadap file di disk. Tidak ada syntax error pada source tersimpan; diagnostics berasal dari buffer/language service VS Code yang stale.
+File disentuh ulang untuk memicu pembacaan ulang watcher tanpa mengubah isi kode.
+
+### Tes
+
+- `pnpm typecheck`: lulus, 6 task.
+- `pnpm lint`: lulus, 6 task.
+- `git diff --check`: lulus.
+
+### Terbuka
+
+- Jika Problems masih menampilkan error lama, tutup-buka tab atau jalankan `Developer: Reload Window`.
+- Warning Tailwind canonical class tetap berupa warning, bukan error build.
+- WAHA sungguhan, Docker/staging, konfigurasi produksi, dan UAT tetap terbuka.
+
 ## checkpoint/2026-11-19-live-preview-mock-accounts
 
 Tanggal: 19 November 2026. Branch: `feat/m1-redesign-telkomsel-pattern`.
