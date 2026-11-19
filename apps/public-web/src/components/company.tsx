@@ -1,6 +1,15 @@
 import type { CompanyProfile } from '@agrabudi/contracts';
-import { cardClass, cn } from '@agrabudi/ui';
-import { AtSign, Clock, ExternalLink, Mail, MapPin, MessageCircle, Phone } from 'lucide-react';
+import { MediaPlaceholder, cardClass, cn } from '@agrabudi/ui';
+import {
+  AtSign,
+  Clock,
+  ExternalLink,
+  ImageOff,
+  Mail,
+  MapPin,
+  MessageCircle,
+  Phone,
+} from 'lucide-react';
 
 const channelIcon = {
   whatsapp: MessageCircle,
@@ -34,7 +43,13 @@ export function AreaList({
               loading="lazy"
               className="aspect-3/2 w-full object-cover"
             />
-          ) : null}
+          ) : (
+            <MediaPlaceholder
+              label={`Foto wilayah ${area.name} belum tersedia`}
+              icon={ImageOff}
+              className="aspect-3/2 w-full"
+            />
+          )}
           <div className="flex flex-1 flex-col p-5">
             <Heading className="flex items-center gap-2 text-lg font-bold">
               <MapPin aria-hidden className="size-5 text-brand-red" />
@@ -78,11 +93,17 @@ export function OfficeList({ offices }: { offices: CompanyProfile['offices'] }) 
           {office.imageUrl ? (
             <img
               src={office.imageUrl}
-              alt={`Gambar ${office.name}`}
+              alt={`Foto kantor ${office.name}`}
               loading="lazy"
               className="aspect-3/2 w-full object-cover"
             />
-          ) : null}
+          ) : (
+            <MediaPlaceholder
+              label={`Foto kantor ${office.name} belum tersedia`}
+              icon={ImageOff}
+              className="aspect-3/2 w-full"
+            />
+          )}
           <div className="flex flex-col gap-3 p-5">
             <h3 className="text-lg font-bold">{office.name}</h3>
             <p className="flex items-start gap-2 text-sm">

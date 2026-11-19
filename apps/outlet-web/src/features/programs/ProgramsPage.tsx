@@ -2,6 +2,7 @@ import {
   AsyncView,
   DataNotice,
   EmptyState,
+  MediaPlaceholder,
   PageHeader,
   cardClass,
   cn,
@@ -48,7 +49,12 @@ export function ProgramsPage() {
                         loading="lazy"
                         className="aspect-16/9 w-full object-cover"
                       />
-                    ) : null}
+                    ) : (
+                      <MediaPlaceholder
+                        label={`Gambar ${program.title} belum tersedia`}
+                        className="aspect-16/9 w-full"
+                      />
+                    )}
                     <span className="flex flex-1 flex-col gap-1.5 p-5">
                       <span className="text-sm text-ink-700">
                         {formatDate(program.startsAt)} sampai {formatDate(program.endsAt)}

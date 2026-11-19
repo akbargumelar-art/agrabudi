@@ -1,10 +1,11 @@
-import { AsyncView, EmptyState, ErrorState, PageHeader, buttonClass } from '@agrabudi/ui';
+import { AsyncView, EmptyState, ErrorState, PageHeader, buttonClass, cn } from '@agrabudi/ui';
+import { ChevronRight } from 'lucide-react';
 import { Link, Navigate, useLocation } from 'react-router';
 import { accessModeLabel, routeAccess, scopePhrase, visibleSections } from '../../auth/access';
 import { useSession } from '../../auth/SessionContext';
 import { consolePages } from '../../console/ConsolePage';
 import { useDataset } from '../../data/queries';
-import { findModuleRoute, findSection } from '../../registry';
+import { findModuleRoute, findSection, type ModuleLeaf } from '../../registry';
 import { DataView } from './DataView';
 
 function AccessDenied() {
@@ -65,57 +66,70 @@ export function ModulePage() {
 
   const groupPath = `${route.section.prefix}/${route.group.slug}`;
   const children = route.leaf ? undefined : route.group.children;
+  const siblings = route.leaf ? (route.group.children ?? []) : [];
 
   return (
     <div className="flex flex-col gap-6">
-      <nav aria-label="Posisi halaman" className="text-sm text-ink-700">
-        <ol className="flex flex-wrap items-center gap-x-2">
-          <li>{route.section.label}</li>
-          <li aria-hidden>/</li>
-          {route.leaf ? (
-            <>
-              <li>
-                <Link to={groupPath} className="underline">
-                  {route.group.label}
-                </Link>
-              </li>
-              <li aria-hidden>/</li>
+      <header className="flex flex-col gap-4 border-b border-surface-100 pb-5">
+        <nav aria-label="Posisi halaman" className="text-sm text-ink-700">
+          <ol className="flex flex-wrap items-center gap-x-2">
+            <li>{route.section.label}</li>
+            <li aria-hidden>/</li>
+            {route.leaf ? (
+              <>
+                <li>
+                  <Link to={groupPath} className="underline">
+                    {route.group.label}
+                  </Link>
+                </li>
+                <li aria-hidden>/</li>
+                <li aria-current="page" className="font-medium text-ink-900">
+                  {route.leaf.label}
+                </li>
+              </>
+            ) : (
               <li aria-current="page" className="font-medium text-ink-900">
-                {route.leaf.label}
+                {route.group.label}
               </li>
-            </>
-          ) : (
-            <li aria-current="page" className="font-medium text-ink-900">
-              {route.group.label}
-            </li>
-          )}
-        </ol>
-      </nav>
+            )}
+          </ol>
+        </nav>
 
-      <PageHeader title={route.title} />
+        <PageHeader title={route.title} />
 
-      <dl className="grid gap-x-6 gap-y-1 text-sm tablet:grid-cols-[10rem_minmax(0,1fr)]">
-        <dt className="text-ink-700">Perilaku inti</dt>
-        <dd className="max-w-prose">{route.group.behavior}</dd>
-        <dt className="text-ink-700">Hak akses Anda</dt>
-        <dd data-testid="hak-akses">
-          {accessModeLabel[access]}. Cakupan data: {scopePhrase(session)}.
-        </dd>
-      </dl>
+        <dl className="grid gap-x-6 gap-y-1 rounded-control border border-surface-100 bg-surface-50 px-4 py-3 text-sm tablet:grid-cols-[10rem_minmax(0,1fr)]">
+          <dt className="font-semibold text-ink-700">Perilaku inti</dt>
+          <dd className="max-w-prose">{route.group.behavior}</dd>
+          <dt className="font-semibold text-ink-700">Hak akses Anda</dt>
+          <dd data-testid="hak-akses">
+            {accessModeLabel[access]}. Cakupan data: {scopePhrase(session)}.
+          </dd>
+        </dl>
+      </header>
+
+      {siblings.length > 1 ? (
+        <SubmenuTabs
+          label={route.group.label}
+          groupPath={groupPath}
+          items={siblings}
+          current={route.leaf?.slug}
+        />
+      ) : null}
 
       {children ? (
         <section aria-labelledby="submenu">
           <h2 id="submenu" className="text-base font-bold">
             Submenu
           </h2>
-          <ul className="mt-2 divide-y divide-surface-100 border-y border-surface-100">
+          <ul className="mt-3 divide-y divide-surface-100 overflow-hidden rounded-panel border border-ink-300">
             {children.map((leaf) => (
-              <li key={leaf.slug}>
+              <li key={leaf.slug} className="even:bg-surface-50">
                 <Link
                   to={`${groupPath}/${leaf.slug}`}
-                  className="flex min-h-11 items-center text-sm font-medium hover:bg-surface-50"
+                  className="flex min-h-11 items-center justify-between gap-3 px-4 text-sm font-medium hover:bg-ink-soft focus-visible:-outline-offset-2"
                 >
                   {leaf.label}
+                  <ChevronRight aria-hidden className="size-4 shrink-0 text-ink-500" />
                 </Link>
               </li>
             ))}
@@ -128,10 +142,54 @@ export function ModulePage() {
   );
 }
 
+type SubmenuTabsProps = {
+  label: string;
+  groupPath: string;
+  items: ModuleLeaf[];
+  current?: string;
+};
+
+/**
+ * Tab antarsubmenu dalam satu menu. Tiap tab pindah halaman, jadi polanya navigasi tautan
+ * dengan `aria-current`, bukan `role="tablist"` (itu untuk panel di halaman yang sama).
+ * Tautan membungkus ke baris berikutnya agar pilihan aktif tetap terlihat pada layar sempit.
+ */
+function SubmenuTabs({ label, groupPath, items, current }: SubmenuTabsProps) {
+  return (
+    <nav aria-label={`Submenu ${label}`}>
+      <ul className="flex flex-wrap gap-1 rounded-control border border-ink-300 bg-ink-soft p-1">
+        {items.map((leaf) => {
+          const active = leaf.slug === current;
+          return (
+            <li key={leaf.slug} className="max-w-full">
+              <Link
+                to={`${groupPath}/${leaf.slug}`}
+                aria-current={active ? 'page' : undefined}
+                className={cn(
+                  'inline-flex min-h-11 items-center rounded-control border px-3 py-1.5 text-sm focus-visible:-outline-offset-2',
+                  active
+                    ? 'border-brand-red bg-brand-red-soft font-semibold text-brand-red-strong'
+                    : 'border-transparent text-ink-700 hover:border-ink-300 hover:bg-surface-0 hover:text-ink-900',
+                )}
+              >
+                {leaf.label}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
+  );
+}
+
 function ModuleData({ path }: { path: string }) {
   const dataset = useDataset(path);
   return (
-    <AsyncView state={dataset} errorTitle="Data modul tidak dapat dimuat" loadingLabel="Memuat data modul">
+    <AsyncView
+      state={dataset}
+      errorTitle="Data modul tidak dapat dimuat"
+      loadingLabel="Memuat data modul"
+    >
       {(envelope) =>
         envelope.data ? (
           <DataView key={path} path={path} dataset={envelope.data} meta={envelope.meta} />

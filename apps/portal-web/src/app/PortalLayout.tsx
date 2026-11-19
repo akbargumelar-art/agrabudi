@@ -1,4 +1,12 @@
-import { AppSwitcher, BottomNav, Drawer, Wordmark, cn, logoMark, type BottomNavItem } from '@agrabudi/ui';
+import {
+  AppSwitcher,
+  BottomNav,
+  Drawer,
+  Wordmark,
+  cn,
+  logoMark,
+  type BottomNavItem,
+} from '@agrabudi/ui';
 import { Activity, ChartColumn, House, LayoutGrid, UserRound } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router';
@@ -66,13 +74,18 @@ export function PortalLayout() {
   ];
 
   const brand = (
-    <Link to="/" aria-label="Agrabudi Portal, ke Dashboard" className="inline-flex min-h-11 items-center">
+    <Link
+      to="/"
+      aria-label="Agrabudi Portal, ke Dashboard"
+      className="inline-flex min-h-11 items-center"
+    >
       <Wordmark app="Portal" />
     </Link>
   );
 
   return (
-    <>
+    // Dari tablet ke atas: kanvas abu, sidebar dan isi halaman jadi panel putih terpisah.
+    <div className="min-h-dvh tablet:bg-surface-50">
       <a
         href="#konten"
         className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-control focus:bg-surface-0 focus:px-3 focus:py-2"
@@ -88,19 +101,25 @@ export function PortalLayout() {
         className={cn(
           'mx-auto w-full max-w-[90rem] px-4 tablet:grid tablet:gap-6 tablet:px-6',
           collapsed
-            ? 'tablet:grid-cols-[2.75rem_minmax(0,1fr)]'
+            ? 'tablet:grid-cols-[4.5rem_minmax(0,1fr)]'
             : 'tablet:grid-cols-[17.5rem_minmax(0,1fr)]',
         )}
       >
         <aside className="hidden py-4 tablet:block">
-          <div className="sticky top-4 flex max-h-[calc(100dvh-2rem)] flex-col gap-3 overflow-y-auto">
+          <div className="sticky top-4 flex max-h-[calc(100dvh-2rem)] flex-col gap-3 overflow-y-auto rounded-panel border border-surface-100 bg-surface-0 p-2">
             {collapsed ? (
               <Link
                 to="/"
                 aria-label="Agrabudi Portal, ke Dashboard"
-                className="inline-flex size-11 items-center justify-center"
+                className="inline-flex size-11 shrink-0 items-center justify-center self-center"
               >
-                <img src={logoMark.src} alt="" width={logoMark.width} height={logoMark.height} className="size-8" />
+                <img
+                  src={logoMark.src}
+                  alt=""
+                  width={logoMark.width}
+                  height={logoMark.height}
+                  className="size-8"
+                />
               </Link>
             ) : (
               <div className="px-1">{brand}</div>
@@ -114,7 +133,12 @@ export function PortalLayout() {
             />
           </div>
         </aside>
-        <main id="konten" ref={mainRef} tabIndex={-1} className="min-w-0 pt-6 pb-[calc(6.5rem+env(safe-area-inset-bottom))] outline-none tablet:pb-6">
+        <main
+          id="konten"
+          ref={mainRef}
+          tabIndex={-1}
+          className="min-w-0 pt-6 pb-[calc(6.5rem+env(safe-area-inset-bottom))] outline-none tablet:my-4 tablet:self-start tablet:rounded-panel tablet:border tablet:border-surface-100 tablet:bg-surface-0 tablet:p-6"
+        >
           <Outlet />
         </main>
       </div>
@@ -128,6 +152,6 @@ export function PortalLayout() {
       <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} title="Menu" side="left">
         <Sidebar pathname={pathname} session={session} collapsed={false} onSignOut={signOut} />
       </Drawer>
-    </>
+    </div>
   );
 }

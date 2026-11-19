@@ -9,6 +9,7 @@ import {
 } from '../../../tests/e2e/helpers';
 
 const base = baseUrls.public;
+const telkomselVacancy = '/karir/salesforce-telkomsel-kota-cirebon';
 
 /** Seluruh route Publik dari PRD 2.6. */
 const routes = [
@@ -24,8 +25,8 @@ const routes = [
   '/promo/bonus-kuota-perdana-baru',
   '/digipos',
   '/karir',
-  '/karir/salesforce-mobile-kota-cirebon',
-  '/karir/salesforce-mobile-kota-cirebon/lamar',
+  telkomselVacancy,
+  `${telkomselVacancy}/lamar`,
 ];
 
 test('semua route Publik tampil tanpa overflow dan tanpa error', async ({ page }) => {
@@ -66,7 +67,7 @@ test('bar aplikasi lebih kecil dari menu utama dan garis aktifnya merah', async 
 });
 
 test('Karir tetap mengaktifkan Publik dan menu Karir', async ({ page }) => {
-  await page.goto(`${base}/karir/posisi-contoh-1`);
+  await page.goto(base + telkomselVacancy);
   await expectActiveApp(page, 'Publik');
   const nav = isPhone(page)
     ? page.locator('[data-bottom-nav]')
@@ -163,6 +164,34 @@ test('filter kategori produk hanya menampilkan kategori itu', async ({ page }) =
   await expect(page.locator('main ul li a[href^="/produk/"]')).toHaveCount(8);
 });
 
+test('tiga lowongan contoh dibuka dan punya detail serta tautan lamaran', async ({ page }) => {
+  const vacancies = [
+    ['Salesforce Telkomsel', 'Kota Cirebon', telkomselVacancy],
+    [
+      'Direct Sales Telkomsel',
+      'Kabupaten Cirebon',
+      '/karir/direct-sales-telkomsel-kabupaten-cirebon',
+    ],
+    ['Salesforce IndiHome', 'Kabupaten Kuningan', '/karir/salesforce-indihome-kabupaten-kuningan'],
+  ];
+  for (const vacancyData of vacancies) {
+    const [title, location, route] = vacancyData as [string, string, string];
+    await page.goto(`${base}/karir`);
+    const vacancy = page.getByRole('link', { name: new RegExp(title) });
+    await expect(vacancy).toContainText(location);
+    await expect(vacancy).toContainText('Dibuka');
+    await vacancy.click();
+    await expect(page).toHaveURL(base + route);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(title);
+    await expect(page.getByRole('region', { name: 'Persyaratan' })).toContainText('SMA/SMK');
+    await expect(page.getByRole('link', { name: 'Lamar posisi ini' })).toHaveAttribute(
+      'href',
+      `${route}/lamar`,
+    );
+    await expectNoPageOverflow(page, route);
+  }
+});
+
 test('lowongan tutup menolak lamaran; form lamaran memeriksa isian lalu memberi nomor referensi', async ({
   page,
 }) => {
@@ -170,7 +199,7 @@ test('lowongan tutup menolak lamaran; form lamaran memeriksa isian lalu memberi 
   await expect(page.getByText('Lowongan ini sudah ditutup')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Kirim lamaran' })).toHaveCount(0);
 
-  await page.goto(`${base}/karir/salesforce-mobile-kota-cirebon/lamar`);
+  await page.goto(`${base}${telkomselVacancy}/lamar`);
   await page.getByRole('button', { name: 'Kirim lamaran' }).click();
   await expect(page.locator('[data-demo-success]')).toHaveCount(0);
 

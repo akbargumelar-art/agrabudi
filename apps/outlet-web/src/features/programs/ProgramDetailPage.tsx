@@ -2,6 +2,7 @@ import {
   AsyncView,
   DataNotice,
   EmptyState,
+  MediaPlaceholder,
   PageHeader,
   buttonClass,
   formatDate,
@@ -50,7 +51,12 @@ export function ProgramDetailPage() {
                   alt={`Gambar ${detail.title}`}
                   className="aspect-16/9 w-full max-w-3xl rounded-panel object-cover"
                 />
-              ) : null}
+              ) : (
+                <MediaPlaceholder
+                  label={`Gambar ${detail.title} belum tersedia`}
+                  className="aspect-16/9 w-full max-w-3xl rounded-panel"
+                />
+              )}
               <p className="max-w-prose text-ink-700">{detail.summary}</p>
               <section aria-labelledby="syarat-program">
                 <h2 id="syarat-program" className="text-lg font-bold">

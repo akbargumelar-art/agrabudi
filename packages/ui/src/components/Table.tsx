@@ -20,7 +20,7 @@ export function TableScroll({ label, scrollHint, children }: TableScrollProps) {
         aria-label={label}
         tabIndex={0}
         data-table-scroll
-        className="relative overflow-x-auto rounded-panel border border-surface-100"
+        className="relative overflow-x-auto rounded-panel border border-ink-300 bg-surface-0"
       >
         {children}
       </div>
@@ -28,7 +28,9 @@ export function TableScroll({ label, scrollHint, children }: TableScrollProps) {
   );
 }
 
-export const tableClass = 'w-full border-collapse text-left text-sm';
+export const tableClass =
+  'w-full border-collapse text-left text-sm [&_:where(tbody>tr:nth-child(even))]:bg-surface-50';
+/** Kepala kolom: latar abu dan garis bawah tegas supaya terpisah jelas dari isi. */
 export const thClass =
-  'border-b border-surface-100 bg-surface-50 px-3 py-2.5 text-xs font-semibold whitespace-nowrap text-ink-700';
+  'border-b border-ink-300 bg-ink-soft px-3 py-2.5 text-xs font-semibold whitespace-nowrap text-ink-800';
 export const tdClass = 'border-b border-surface-100 px-3 py-3 align-top';

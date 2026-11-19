@@ -210,6 +210,44 @@ test('modul menampilkan data contoh berlabel dengan tabel, cari, dan detail', as
   await expect(table.locator('tbody tr').first()).toContainText('100%');
 });
 
+test('Kelola Karir menampilkan sampel lowongan dengan tabel zebra dan navigasi keyboard', async ({
+  page,
+}) => {
+  await signInAs(page, 'adminmobile');
+  const career = `${base}/admin/kelola-karir`;
+  await page.goto(`${career}/lowongan`);
+
+  const table = page.getByRole('table');
+  for (const position of [
+    'Salesforce Telkomsel',
+    'Direct Sales Telkomsel',
+    'Salesforce IndiHome',
+  ]) {
+    await expect(table.getByRole('row', { name: new RegExp(position) })).toContainText('Dibuka');
+  }
+  const rows = table.locator('tbody tr');
+  await expect(rows.nth(1)).toHaveCSS('background-color', 'rgb(247, 246, 248)');
+  await expect(table.getByRole('columnheader', { name: 'Posisi' })).toHaveCSS(
+    'background-color',
+    'rgb(241, 239, 244)',
+  );
+  await expectNoPageOverflow(page, `${career}/lowongan`);
+
+  const submenu = page.getByRole('navigation', { name: 'Submenu Kelola Karir' });
+  const vacancies = submenu.getByRole('link', { name: 'Lowongan' });
+  const applications = submenu.getByRole('link', { name: 'Lamaran' });
+  await expect(vacancies).toHaveAttribute('aria-current', 'page');
+  await vacancies.focus();
+  await page.keyboard.press('Tab');
+  await expect(applications).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(`${career}/lamaran`);
+  await expect(applications).toHaveAttribute('aria-current', 'page');
+  await expect(vacancies).not.toHaveAttribute('aria-current');
+  await page.goBack();
+  await expect(vacancies).toHaveAttribute('aria-current', 'page');
+});
+
 test('salesforce hanya melihat datanya sendiri dan tidak bisa mengubah', async ({ page }) => {
   await signInAs(page, 'sfmobile');
   await page.goto(`${base}/telkomsel/sellthru/st-digipos`);

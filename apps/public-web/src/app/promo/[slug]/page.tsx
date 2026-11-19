@@ -1,4 +1,4 @@
-import { DataNotice, formatDate } from '@agrabudi/ui';
+import { DataNotice, MediaPlaceholder, formatDate } from '@agrabudi/ui';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -48,7 +48,12 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
             alt={`Gambar ${detail.title}`}
             className="aspect-16/9 w-full max-w-3xl rounded-panel object-cover"
           />
-        ) : null}
+        ) : (
+          <MediaPlaceholder
+            label={`Gambar ${detail.title} belum tersedia`}
+            className="aspect-16/9 w-full max-w-3xl rounded-panel"
+          />
+        )}
         <p className="max-w-prose text-ink-900">{detail.summary}</p>
         <section aria-labelledby="syarat">
           <h2 id="syarat" className="text-xl font-bold">

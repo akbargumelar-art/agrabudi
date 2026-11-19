@@ -142,8 +142,11 @@ export function DataView({ path, dataset, meta }: DataViewProps) {
 
       {dataset.upload ? <UploadPanel path={path} spec={dataset.upload} /> : null}
 
-      <section aria-label="Data" className="flex flex-col gap-3">
-        <div className="flex flex-wrap items-end gap-3">
+      <section aria-labelledby="judul-tabel" className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-end gap-3 rounded-panel border border-surface-100 bg-surface-50 p-3">
+          <h2 id="judul-tabel" className="w-full text-base font-bold">
+            Data modul
+          </h2>
           <div className="min-w-48 flex-1">
             <label htmlFor={`cari-${path}`} className="sr-only">
               Cari data
@@ -275,7 +278,7 @@ export function DataView({ path, dataset, meta }: DataViewProps) {
               </thead>
               <tbody>
                 {pageRows.map((item) => (
-                  <tr key={item.id} className="hover:bg-surface-50">
+                  <tr key={item.id} className="hover:bg-ink-soft focus-within:bg-ink-soft">
                     {columns.map((column) => (
                       <td
                         key={column.key}

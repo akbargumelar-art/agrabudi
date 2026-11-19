@@ -166,7 +166,9 @@ export function Sidebar({ pathname, session, collapsed, onToggle, onSignOut }: S
               aria-current={active ? 'page' : undefined}
               className={cn(
                 iconLinkClass,
-                active ? 'bg-brand-red-soft text-brand-red-strong' : 'text-ink-700 hover:bg-surface-50',
+                active
+                  ? 'bg-brand-red-soft text-brand-red-strong'
+                  : 'text-ink-700 hover:bg-surface-50',
               )}
             >
               <item.icon aria-hidden className="size-5" />
@@ -203,12 +205,20 @@ export function Sidebar({ pathname, session, collapsed, onToggle, onSignOut }: S
           aria-current={pathname === '/akun' ? 'page' : undefined}
           className={cn(
             iconLinkClass,
-            pathname === '/akun' ? 'bg-brand-red-soft text-brand-red-strong' : 'text-ink-700 hover:bg-surface-50',
+            pathname === '/akun'
+              ? 'bg-brand-red-soft text-brand-red-strong'
+              : 'text-ink-700 hover:bg-surface-50',
           )}
         >
           <UserRound aria-hidden className="size-5" />
         </Link>
-        <button type="button" onClick={onSignOut} title="Keluar" aria-label="Keluar" className={toggleClass}>
+        <button
+          type="button"
+          onClick={onSignOut}
+          title="Keluar"
+          aria-label="Keluar"
+          className={toggleClass}
+        >
           <LogOut aria-hidden className="size-5" />
         </button>
       </nav>
@@ -216,7 +226,11 @@ export function Sidebar({ pathname, session, collapsed, onToggle, onSignOut }: S
   }
 
   return (
-    <nav aria-label="Modul Portal" data-sidebar={onToggle ? 'expanded' : 'drawer'} className="flex flex-col gap-2">
+    <nav
+      aria-label="Modul Portal"
+      data-sidebar={onToggle ? 'expanded' : 'drawer'}
+      className="flex flex-col gap-2"
+    >
       {onToggle ? (
         <div className="flex items-center justify-between">
           <p className="px-1 text-sm font-semibold text-ink-700">Menu</p>
@@ -258,9 +272,9 @@ export function Sidebar({ pathname, session, collapsed, onToggle, onSignOut }: S
           <details
             key={section.id}
             open={activeSection?.id === section.id || visible.length === 1}
-            className="group/section rounded-panel border border-surface-100"
+            className="group/section rounded-control border border-ink-300"
           >
-            <summary className="flex min-h-11 cursor-pointer items-center gap-2 px-4 text-sm font-bold text-ink-900">
+            <summary className="flex min-h-11 cursor-pointer items-center gap-2 rounded-control bg-surface-50 px-4 text-sm font-bold text-ink-900 hover:bg-ink-soft group-open/section:rounded-b-none group-open/section:border-b group-open/section:border-surface-100">
               <Icon aria-hidden className="size-4 text-brand-red" />
               <span className="flex-1">{section.label}</span>
               <ChevronDown
@@ -276,7 +290,7 @@ export function Sidebar({ pathname, session, collapsed, onToggle, onSignOut }: S
           </details>
         );
       })}
-      <div className="mt-2 flex flex-col gap-1 border-t border-surface-100 pt-3">
+      <div className="mt-2 flex flex-col gap-1 border-t border-ink-300 pt-3">
         <Link
           to="/akun"
           data-testid={onToggle ? 'peran-aktif' : 'peran-aktif-menu'}
@@ -289,9 +303,7 @@ export function Sidebar({ pathname, session, collapsed, onToggle, onSignOut }: S
           <UserRound aria-hidden className="size-5 shrink-0 text-ink-700" />
           <span className="min-w-0 text-sm leading-tight">
             <span className="block truncate font-semibold text-ink-900">{session.displayName}</span>
-            <span className="block truncate text-xs text-ink-700">
-              {roleLabel(session)}, Akun
-            </span>
+            <span className="block truncate text-xs text-ink-700">{roleLabel(session)}, Akun</span>
           </span>
         </Link>
         <button

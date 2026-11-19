@@ -1,4 +1,11 @@
-import { DataNotice, EmptyState, cardClass, cn, formatRupiah } from '@agrabudi/ui';
+import {
+  DataNotice,
+  EmptyState,
+  MediaPlaceholder,
+  cardClass,
+  cn,
+  formatRupiah,
+} from '@agrabudi/ui';
 import { Check } from 'lucide-react';
 import type { Metadata } from 'next';
 import { PublicForm } from '@/components/PublicForm';
@@ -48,7 +55,12 @@ export default async function IndihomePage() {
                         loading="lazy"
                         className="aspect-4/3 w-full object-cover"
                       />
-                    ) : null}
+                    ) : (
+                      <MediaPlaceholder
+                        label={`Gambar paket ${item.name} belum tersedia`}
+                        className="aspect-4/3 w-full"
+                      />
+                    )}
                     <div className="flex flex-1 flex-col gap-3 p-5">
                       <h3 className="text-lg font-bold">{item.name}</h3>
                       <p className="text-sm text-ink-700">{item.summary}</p>

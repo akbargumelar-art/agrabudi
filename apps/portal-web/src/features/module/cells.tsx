@@ -1,4 +1,13 @@
-import { StatusBadge, cn, formatDate, formatRupiah, type StatusTone } from '@agrabudi/ui';
+import {
+  MediaPlaceholder,
+  StatusBadge,
+  cn,
+  formatDate,
+  formatRupiah,
+  type StatusTone,
+} from '@agrabudi/ui';
+import { ImageOff } from 'lucide-react';
+
 import type { Cell, Column } from '../../data/types';
 
 const toneByWord: Record<string, StatusTone> = {
@@ -80,18 +89,14 @@ export function CellView({
   compact?: boolean;
 }) {
   if (column.kind === 'image') {
+    const className = cn(
+      'rounded-control border border-surface-100 object-cover',
+      compact ? 'h-12 w-16' : 'aspect-4/3 w-full max-w-md',
+    );
     return value ? (
-      <img
-        src={String(value)}
-        alt=""
-        loading="lazy"
-        className={cn(
-          'rounded-control border border-surface-100 object-cover',
-          compact ? 'h-12 w-16' : 'aspect-4/3 w-full max-w-md',
-        )}
-      />
+      <img src={String(value)} alt="Gambar" loading="lazy" className={className} />
     ) : (
-      <span className="text-ink-500">-</span>
+      <MediaPlaceholder label="Gambar belum tersedia" icon={ImageOff} className={className} />
     );
   }
   // Tautan unduhan internal (mis. CV) dibuka lewat API berizin; hanya path relatif yang dirender.

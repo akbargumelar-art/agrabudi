@@ -57,10 +57,12 @@ export function DashboardPage() {
   ]);
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader
-        title="Dashboard"
-        description={`Anda masuk sebagai ${roleLabel(session)}. Cakupan data: ${scopePhrase(session)}.`}
-      />
+      <header className="border-b border-ink-300 pb-5">
+        <PageHeader
+          title="Dashboard"
+          description={`Anda masuk sebagai ${roleLabel(session)}. Cakupan data: ${scopePhrase(session)}.`}
+        />
+      </header>
       <ul className="grid gap-3 tablet:grid-cols-3">
         {visibleSections(session).map(({ section, entryPath }) => (
           <li key={section.id}>
