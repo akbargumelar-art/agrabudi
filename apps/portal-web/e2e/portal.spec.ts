@@ -32,7 +32,9 @@ async function signInAs(page: Page, username: string) {
 async function openSidebar(page: Page) {
   if (isPhone(page)) {
     await page.locator('[data-bottom-nav]').getByRole('button', { name: 'Menu' }).click();
-    return page.getByRole('dialog', { name: 'Menu' }).getByRole('navigation', { name: 'Modul Portal' });
+    return page
+      .getByRole('dialog', { name: 'Menu' })
+      .getByRole('navigation', { name: 'Modul Portal' });
   }
   return page.getByRole('navigation', { name: 'Modul Portal' });
 }
@@ -92,7 +94,9 @@ test('halaman utama setelah masuk tampil tanpa overflow dan tanpa error', async 
     await expectBottomNavRule(page);
     if (isPhone(page)) {
       await expect(page.locator('[data-bottom-nav]')).toHaveAttribute('data-floating', '');
-      await expect(page.getByRole('navigation', { name: 'Menu Portal' }).getByRole('button', { name: 'Menu' })).toBeVisible();
+      await expect(
+        page.getByRole('navigation', { name: 'Menu Portal' }).getByRole('button', { name: 'Menu' }),
+      ).toBeVisible();
     } else {
       await expect(page.getByRole('navigation', { name: 'Modul Portal' })).toBeVisible();
     }
@@ -225,7 +229,9 @@ test('unggah CSV contoh menolak baris salah dan menyimpan sisanya', async ({ pag
   // ID dengan nol di depan tetap utuh.
   await expect(result).toContainText('007123');
   await page.getByRole('button', { name: 'Simpan 3 baris' }).click();
-  await expect(page.getByRole('table').locator('tbody tr').first()).toContainText('contoh_unggah.csv');
+  await expect(page.getByRole('table').locator('tbody tr').first()).toContainText(
+    'contoh_unggah.csv',
+  );
 });
 
 test('sidebar bisa diciutkan dan dibuka lagi, dan pilihannya diingat', async ({ page }) => {
@@ -304,6 +310,35 @@ test('Admin Web tidak punya pengaturan pemesanan ABKShop Outlet (PRD 2.4)', asyn
   await page.goto(`${base}/web-admin/abkshop`);
   await expect(page.getByText('Menu tidak ditemukan')).toBeVisible();
   await expect(page.getByLabel('Alamat halaman pemesanan')).toHaveCount(0);
+});
+
+test('Area Layanan: koordinat wajib berpasangan, tempel dari peta mengisi keduanya, foto dari Aset', async ({
+  page,
+}) => {
+  await signInAs(page, 'adminweb');
+  await page.goto(`${base}/web-admin/area-layanan`);
+  const lat = page.getByLabel('Lintang / latitude (opsional)');
+  const lng = page.getByLabel('Bujur / longitude (opsional)');
+  await expect(lat).toHaveValue('');
+
+  await lat.fill('-6.7320');
+  await page.getByRole('button', { name: 'Simpan dan terbitkan' }).click();
+  await expect(page.getByText('Lintang dan bujur diisi keduanya')).toBeVisible();
+
+  await lat.fill('');
+  await lat.evaluate((input) => {
+    const data = new DataTransfer();
+    data.setData('text/plain', '-6.7320, 108.5523');
+    input.dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, bubbles: true }));
+  });
+  await expect(lat).toHaveValue('-6.732');
+  await expect(lng).toHaveValue('108.5523');
+
+  const photo = page.getByLabel('Foto wilayah (opsional)');
+  await photo.selectOption({ label: 'Kantor Cirebon (ilustrasi contoh)' });
+  await page.getByRole('button', { name: 'Simpan dan terbitkan' }).click();
+  await expect(page.getByText('Area Layanan disimpan dan tampil di website.')).toBeVisible();
+  await expect(page.getByText('Periksa kembali isian yang ditandai.')).toHaveCount(0);
 });
 
 test('refresh mempertahankan sesi; keluar menghapusnya dan akun berikutnya mulai dari Dashboard', async ({

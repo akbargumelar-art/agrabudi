@@ -292,6 +292,9 @@ const company: CompanyProfile = companyProfileSchema.parse({
     {
       name: 'Kota Cirebon',
       districts: ['Kejaksan', 'Kesambi', 'Lemahwungkuk', 'Pekalipan', 'Harjamukti'],
+      // Titik perkiraan pusat kota, data contoh. Titik resmi diisi Admin Web.
+      latitude: -6.732,
+      longitude: 108.5523,
     },
     {
       name: 'Kabupaten Cirebon',

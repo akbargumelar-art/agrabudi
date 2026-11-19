@@ -483,6 +483,15 @@ export const cmsRoutes: FastifyPluginAsync = async (app) => {
         }
       }
     }
+    if ('areas' in part) {
+      for (const [index, area] of part.areas.entries()) {
+        if (area.imageUrl !== null && !area.imageUrl.startsWith(mediaPrefix)) {
+          throw invalid('Foto wilayah harus diunggah lewat Aset Website.', {
+            [`areas.${index}.imageUrl`]: 'Pilih foto dari Aset Website.',
+          });
+        }
+      }
+    }
     const next = await db.transaction().execute(async (trx) => {
       // Kunci baris supaya dua editor bagian berbeda tidak saling menimpa.
       const row = await trx

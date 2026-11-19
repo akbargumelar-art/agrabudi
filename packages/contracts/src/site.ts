@@ -50,10 +50,33 @@ export const companyProfileSchema = z.object({
   vision: z.string(),
   missions: z.array(z.string()),
   areas: z.array(
-    z.object({
-      name: z.string().min(1),
-      districts: z.array(z.string()),
-    }),
+    z
+      .object({
+        name: z.string().min(1),
+        districts: z.array(z.string()),
+        /**
+         * Titik wilayah (WGS84) untuk tautan peta. `default(null)` menjaga dokumen lama
+         * yang tersimpan sebelum kolom ini ada tetap terbaca.
+         */
+        latitude: z
+          .number({ error: 'Isi koordinat seperti -6.7320, 108.5523.' })
+          .min(-90, 'Lintang harus antara -90 dan 90.')
+          .max(90, 'Lintang harus antara -90 dan 90.')
+          .nullable()
+          .default(null),
+        longitude: z
+          .number({ error: 'Isi koordinat seperti -6.7320, 108.5523.' })
+          .min(-180, 'Bujur harus antara -180 dan 180.')
+          .max(180, 'Bujur harus antara -180 dan 180.')
+          .nullable()
+          .default(null),
+        /** Foto wilayah dari Aset Website. `null` berarti tanpa foto. */
+        imageUrl: z.string().nullable().default(null),
+      })
+      .refine((area) => (area.latitude === null) === (area.longitude === null), {
+        message: 'Lintang dan bujur diisi keduanya atau dikosongkan keduanya.',
+        path: ['latitude'],
+      }),
   ),
   offices: z.array(
     z.object({

@@ -72,6 +72,50 @@ describe('editor profil per bagian', () => {
   });
 });
 
+describe('area layanan: koordinat dan foto', () => {
+  it('foto wilayah harus dari Aset Website; koordinat tersimpan dan tampil di Publik', async () => {
+    const area = {
+      name: 'Wilayah Uji',
+      districts: ['Kecamatan Uji'],
+      latitude: -6.732,
+      longitude: 108.5523,
+      imageUrl: 'https://situs-lain.test/foto.png',
+    };
+    expect((await cms('PUT', '/company-profile/areas', { areas: [area] })).statusCode).toBe(422);
+    expect(
+      (await cms('PUT', '/company-profile/areas', { areas: [{ ...area, longitude: null }] }))
+        .statusCode,
+    ).toBe(422);
+
+    const saved = { ...area, imageUrl: `${ORIGIN.public}/media/2026/11/wilayah.png` };
+    expect((await cms('PUT', '/company-profile/areas', { areas: [saved] })).statusCode).toBe(200);
+    const live = await ctx.app.inject({ method: 'GET', url: '/api/public/v1/company-profile' });
+    expect(live.json().data.areas).toEqual([saved]);
+  });
+
+  it('wilayah yang disimpan sebelum ada koordinat tetap terbaca dengan nilai kosong', async () => {
+    await ctx.db
+      .insertInto('siteDocuments')
+      .values({
+        key: 'company_profile',
+        body: JSON.stringify({
+          about: [],
+          history: [],
+          vision: '',
+          missions: [],
+          areas: [{ name: 'Lama', districts: [] }],
+          offices: [],
+          channels: [],
+        }),
+        updatedBy: null,
+      })
+      .execute();
+    expect((await cms('GET', '/company-profile/areas')).json().data).toEqual({
+      areas: [{ name: 'Lama', districts: [], latitude: null, longitude: null, imageUrl: null }],
+    });
+  });
+});
+
 describe('teks halaman Daftar Digipos', () => {
   it('disimpan Admin Web lalu tampil di Publik', async () => {
     expect((await cms('GET', '/digipos-info')).json().data).toBeNull();
