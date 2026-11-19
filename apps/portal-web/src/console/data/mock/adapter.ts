@@ -364,7 +364,15 @@ let company: CompanyProfile = {
   history: ['Contoh paragraf sejarah perusahaan.'],
   vision: 'Contoh visi perusahaan.',
   missions: ['Contoh misi pertama.', 'Contoh misi kedua.'],
-  areas: [{ name: 'Kota Cirebon (contoh)', districts: ['Kejaksan', 'Kesambi'] }],
+  areas: [
+    {
+      name: 'Kota Cirebon (contoh)',
+      districts: ['Kejaksan', 'Kesambi'],
+      latitude: null,
+      longitude: null,
+      imageUrl: null,
+    },
+  ],
   offices: [
     {
       id: 'kantor-1',

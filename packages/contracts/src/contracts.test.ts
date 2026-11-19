@@ -96,7 +96,7 @@ describe('kontrak data', () => {
     const profile = {
       ...emptyCompanyProfile,
       vision: 'Visi',
-      areas: [{ name: 'A', districts: [] }],
+      areas: [{ name: 'A', districts: [], latitude: null, longitude: null, imageUrl: null }],
     };
     expect(pickCompanySection(profile, 'areas')).toEqual({ areas: profile.areas });
     expect(pickCompanySection(profile, 'about')).toEqual({
@@ -105,6 +105,24 @@ describe('kontrak data', () => {
       vision: 'Visi',
       missions: [],
     });
+  });
+
+  it('area layanan: koordinat berpasangan dan dalam rentang; dokumen lama tetap terbaca', () => {
+    const area = (extra: Record<string, unknown>) =>
+      companyProfileSections.areas.safeParse({ areas: [{ name: 'A', districts: [], ...extra }] });
+    const legacy = area({});
+    expect(legacy.success && legacy.data.areas[0]).toEqual({
+      name: 'A',
+      districts: [],
+      latitude: null,
+      longitude: null,
+      imageUrl: null,
+    });
+    expect(area({ latitude: -6.732, longitude: 108.5523 }).success).toBe(true);
+    expect(area({ latitude: -6.732, longitude: null }).success).toBe(false);
+    expect(area({ latitude: 91, longitude: 108 }).success).toBe(false);
+    expect(area({ latitude: -6, longitude: 181 }).success).toBe(false);
+    expect(area({ latitude: Number.NaN, longitude: 108 }).success).toBe(false);
   });
 
   it('WA Gateway: hanya ID grup @g.us atau kosong', () => {

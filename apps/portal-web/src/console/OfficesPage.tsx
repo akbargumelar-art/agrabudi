@@ -1,13 +1,13 @@
 import { companyProfileSections, type CompanyProfile } from '@agrabudi/contracts';
-import { Field, Input, Select } from '@agrabudi/ui';
+import { Field, Input } from '@agrabudi/ui';
 import { useId } from 'react';
 import { emptySection } from './CompanyPages';
-import { useAssets, useCompanySection, useSaveCompanySection } from './data/queries';
+import { useCompanySection, useSaveCompanySection } from './data/queries';
 import { DocumentEditor } from './editors';
 import { ListFieldset, RowActions, moveItem } from './list-fields';
+import { PhotoField, usePhotoAssets, type Photo } from './photo-field';
 
 type Office = CompanyProfile['offices'][number];
-type Photo = { url: string; name: string };
 
 const trimOffice = (office: Office): Office => ({
   ...office,
@@ -51,7 +51,6 @@ function OfficeRow({
       />
     </Field>
   );
-  const stored = office.imageUrl && !photos.some((photo) => photo.url === office.imageUrl);
   return (
     <li className="flex flex-col gap-3 border-t border-surface-100 pt-3 first:border-t-0 first:pt-0">
       <div className="flex items-center justify-between gap-2">
@@ -70,33 +69,20 @@ function OfficeRow({
         {text('address', 'Alamat')}
         {text('hours', 'Jam layanan', 'Contoh: Senin–Jumat 08.00–16.00 WIB')}
       </div>
-      <Field
+      <PhotoField
+        id={`${id}-foto`}
         label="Foto kantor (opsional)"
-        htmlFor={`${id}-foto`}
-        hint="Unggah dulu di Aset Website dengan jenis Foto."
+        value={office.imageUrl}
+        photos={photos}
         error={errors[`offices.${index}.imageUrl`]}
-      >
-        <Select
-          id={`${id}-foto`}
-          value={office.imageUrl ?? ''}
-          onChange={(event) => onChange({ ...office, imageUrl: event.target.value || null })}
-        >
-          <option value="">Tanpa foto</option>
-          {stored ? <option value={office.imageUrl ?? ''}>Foto tersimpan sebelumnya</option> : null}
-          {photos.map((photo) => (
-            <option key={photo.url} value={photo.url}>
-              {photo.name}
-            </option>
-          ))}
-        </Select>
-      </Field>
+        onChange={(imageUrl) => onChange({ ...office, imageUrl })}
+      />
     </li>
   );
 }
 
 export function OfficesEditorPage() {
-  const assets = useAssets();
-  const photos = (assets.data?.data ?? []).filter((asset) => asset.kind === 'foto');
+  const photos = usePhotoAssets();
   return (
     <DocumentEditor
       title="Lokasi Kantor"

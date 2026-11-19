@@ -112,6 +112,10 @@ test('halaman perusahaan berisi data contoh berlabel', async ({ page }) => {
   }
   await page.goto(`${base}/tentang/area`);
   await expect(page.getByRole('main')).toContainText('Kabupaten Kuningan');
+  // Hanya wilayah yang punya koordinat yang diberi tautan peta.
+  const mapLinks = page.getByRole('main').getByRole('link', { name: /di peta/ });
+  await expect(mapLinks).toHaveCount(1);
+  await expect(mapLinks.first()).toHaveAttribute('href', /query=-6\.732,108\.5523$/);
 });
 
 test('filter kategori produk hanya menampilkan kategori itu', async ({ page }) => {
