@@ -21,9 +21,9 @@ export const indihomeInfoSchema = z.object({
 });
 export type IndihomeInfo = z.infer<typeof indihomeInfoSchema>;
 
-/** Syarat dan langkah pendaftaran Digipos. Isi bisnis milik Admin layanan Digipos. */
-export const digiposInfoSchema = z.object({
-  requirements: z.array(z.string()),
-  steps: z.array(z.string()),
+/** Teks halaman Daftar Digipos dikelola Admin Web; data pendaftar tetap di admin operasional. */
+export const digiposInfoSchema = z.strictObject({
+  requirements: z.array(z.string().trim().min(1).max(500)).max(50),
+  steps: z.array(z.string().trim().min(1).max(500)).max(50),
 });
 export type DigiposInfo = z.infer<typeof digiposInfoSchema>;

@@ -151,6 +151,32 @@ test('lowongan tutup menolak lamaran; form lamaran memeriksa isian lalu memberi 
   await expect(page.locator('[data-demo-reference]')).toHaveText(/^LMR-\d{6}-\d{4}$/);
 });
 
+test('footer menempel di dasar layar walau isi halaman pendek', async ({ page }) => {
+  // Daftar kosong (mode API tanpa data) dan 404 adalah halaman terpendek.
+  for (const route of ['/promo', '/karir', '/produk/tidak-ada', ...routes]) {
+    await page.goto(base + route);
+    const layout = await page.evaluate(() => {
+      const footer = document.querySelector('footer');
+      const wrapper = footer?.parentElement;
+      if (!footer || !wrapper) return null;
+      return {
+        footerBottom: footer.getBoundingClientRect().bottom + window.scrollY,
+        offset: Number.parseFloat(getComputedStyle(wrapper).paddingBottom),
+        documentHeight: document.documentElement.scrollHeight,
+        viewportHeight: window.innerHeight,
+      };
+    });
+    expect(layout, route).not.toBeNull();
+    if (!layout) continue;
+    expect(layout.documentHeight, route).toBeGreaterThanOrEqual(layout.viewportHeight);
+    // Di bawah footer hanya boleh ada ruang untuk bottom navigation (HP).
+    expect(
+      Math.abs(layout.documentHeight - layout.offset - layout.footerBottom),
+      route,
+    ).toBeLessThanOrEqual(1);
+  }
+});
+
 test('alamat yang tidak ada menghasilkan 404', async ({ page }) => {
   const response = await page.goto(`${base}/produk/tidak-ada`);
   expect(response?.status()).toBe(404);

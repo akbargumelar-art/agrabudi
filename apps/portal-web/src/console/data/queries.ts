@@ -1,5 +1,13 @@
-import type { ContentStatus, SiteBanner } from '@agrabudi/contracts';
+import type {
+  CompanyProfileSection,
+  CompanySectionData,
+  ContentStatus,
+  DigiposInfo,
+  SiteBanner,
+  WaNotificationSettings,
+} from '@agrabudi/contracts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { WaTestTarget } from './adapter';
 import { getAdapter } from './index';
 import type { LayoutSection, NavItem, SiteAsset } from './types';
 
@@ -41,6 +49,30 @@ export const useSaveNavigation = () =>
 export const useSaveLayouts = () =>
   useChange(async (items: LayoutSection[]) => (await getAdapter()).saveLayouts(items));
 export const useAddAsset = () =>
-  useChange(async (asset: Omit<SiteAsset, 'id' | 'uploadedAt'>) => (await getAdapter()).addAsset(asset));
+  useChange(async (asset: Omit<SiteAsset, 'id' | 'uploadedAt'>) =>
+    (await getAdapter()).addAsset(asset),
+  );
 export const useDeleteAsset = () =>
   useChange(async (id: string) => (await getAdapter()).deleteAsset(id));
+
+export const useCompanySection = <K extends CompanyProfileSection>(section: K) =>
+  useList(`company-${section}`, async () => (await getAdapter()).getCompanySection(section));
+export const useSaveCompanySection = <K extends CompanyProfileSection>(section: K) =>
+  useChange(async (data: CompanySectionData<K>) =>
+    (await getAdapter()).saveCompanySection(section, data),
+  );
+export const useDigiposInfo = () =>
+  useList('digipos-info', async () => (await getAdapter()).getDigiposInfo());
+export const useSaveDigiposInfo = () =>
+  useChange(async (info: DigiposInfo) => (await getAdapter()).saveDigiposInfo(info));
+export const useWaGateway = () =>
+  useList('wa-gateway', async () => (await getAdapter()).getWaGateway());
+export const useSaveWaGateway = () =>
+  useChange(async (settings: WaNotificationSettings) =>
+    (await getAdapter()).saveWaGateway(settings),
+  );
+/** Pesan uji tidak mengubah data, jadi tidak menyegarkan cache. */
+export const useTestWaGateway = () =>
+  useMutation({
+    mutationFn: async (target: WaTestTarget) => (await getAdapter()).testWaGateway(target),
+  });

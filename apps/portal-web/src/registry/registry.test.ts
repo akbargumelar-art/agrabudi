@@ -10,10 +10,11 @@ describe('route registry Portal', () => {
 
   it('memuat seluruh menu PRD 2.8-2.10', () => {
     const count = (id: string) => moduleRoutes.filter((route) => route.section.id === id).length;
-    // 17 menu + 42 submenu Telkomsel; 13 menu + 12 submenu IndiHome; 9 kelompok + 42 menu Admin.
+    // 17 menu + 42 submenu Telkomsel; 13 menu + 12 submenu IndiHome; 9 kelompok + 40 menu Admin.
+    // Syarat dan kolom form Daftar Digipos pindah ke Admin Web (teks halaman Publik).
     expect(count('telkomsel')).toBe(59);
     expect(count('indihome')).toBe(25);
-    expect(count('admin')).toBe(51);
+    expect(count('admin')).toBe(49);
   });
 
   it('semua alias menunjuk ke modul yang ada dan bukan alias lagi', () => {
@@ -34,8 +35,9 @@ describe('route registry Portal', () => {
 
   it('bagian Website berada di /web-admin dan tiap menunya punya halaman', () => {
     const website = moduleRoutes.filter((route) => route.section.id === 'website');
-    // Sembilan menu PRD 2.3. Pemesanan Outlet bukan urusan Admin Web (PRD 2.4).
-    expect(website).toHaveLength(9);
+    // Sembilan menu PRD 2.3, ditambah editor per halaman institusional dan WA Gateway.
+    // Pemesanan Outlet bukan urusan Admin Web (PRD 2.4).
+    expect(website).toHaveLength(15);
     expect(website.every((route) => route.path.startsWith('/web-admin/'))).toBe(true);
     expect(Object.keys(consolePages).sort()).toEqual(
       website.map((route) => route.group.slug).sort(),

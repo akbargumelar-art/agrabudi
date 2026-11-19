@@ -1,4 +1,4 @@
-import { MockRibbon, bottomNavOffsetClass, logoMark } from '@agrabudi/ui';
+import { MockRibbon, bottomNavOffsetClass, cn, logoMark } from '@agrabudi/ui';
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import { SiteBottomNav } from '@/components/SiteBottomNav';
@@ -22,10 +22,14 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 };
 
+/**
+ * Body berupa kolom setinggi layar dan `main` mengisi sisa ruang, sehingga footer
+ * tetap di dasar layar walau isi halaman pendek (mis. daftar kosong).
+ */
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="id">
-      <body>
+      <body className="flex min-h-dvh flex-col">
         <a
           href="#konten"
           className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-control focus:bg-surface-0 focus:px-3 focus:py-2"
@@ -34,8 +38,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         </a>
         <SiteHeader />
         {usesMockData ? <MockRibbon /> : null}
-        <div className={bottomNavOffsetClass}>
-          <main id="konten">{children}</main>
+        <div className={cn('flex flex-1 flex-col', bottomNavOffsetClass)}>
+          <main id="konten" className="flex-1">
+            {children}
+          </main>
           <SiteFooter />
         </div>
         <SiteBottomNav />

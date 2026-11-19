@@ -198,7 +198,8 @@ export interface CuanProductsTable {
   updatedAt: UpdatedAt;
 }
 
-export type SiteDocumentKey = 'company_profile' | 'indihome_info' | 'digipos_info' | 'cuan_contact';
+export type SiteDocumentKey =
+  'company_profile' | 'indihome_info' | 'digipos_info' | 'cuan_contact' | 'wa_notifications';
 
 export interface SiteDocumentsTable {
   key: SiteDocumentKey;

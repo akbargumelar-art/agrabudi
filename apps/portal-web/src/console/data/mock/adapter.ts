@@ -1,11 +1,21 @@
 import {
+  companyProfileSchema,
+  companyProfileSections,
+  digiposInfoSchema,
+  emptyWaNotificationSettings,
+  pickCompanySection,
   publicationRecordSchema,
   siteBannerSchema,
   sitePageSchema,
+  waNotificationSettingsSchema,
+  type CompanyProfile,
+  type CompanyProfileSection,
   type DataEnvelope,
+  type DigiposInfo,
   type PublicationRecord,
   type SiteBanner,
   type SitePage,
+  type WaNotificationSettings,
 } from '@agrabudi/contracts';
 import { logoHorizontal, logoHorizontalOnDark, logoMark } from '@agrabudi/ui';
 import { bannerArt, officeArt, programArt } from '@agrabudi/ui/mock-art';
@@ -20,12 +30,54 @@ import type { AuditEvent, LayoutSection, NavItem, SiteAsset } from '../types';
 const ACTOR = 'Laras Wulandari (adminweb)';
 
 let pages: SitePage[] = [
-  { id: 'hal-1', site: 'public', slug: 'tentang', title: 'Tentang Kami', status: 'published', updatedAt: '2026-11-08T04:00:00Z' },
-  { id: 'hal-2', site: 'public', slug: 'tentang/area', title: 'Area Layanan', status: 'published', updatedAt: '2026-11-12T09:30:00Z' },
-  { id: 'hal-3', site: 'public', slug: 'tentang/kantor', title: 'Lokasi Kantor', status: 'review', updatedAt: '2026-11-13T02:10:00Z' },
-  { id: 'hal-4', site: 'public', slug: 'kontak', title: 'Hubungi Kami', status: 'published', updatedAt: '2026-11-10T07:45:00Z' },
-  { id: 'hal-5', site: 'public', slug: 'tentang/sejarah', title: 'Sejarah Perusahaan', status: 'draft', updatedAt: '2026-11-14T08:20:00Z' },
-  { id: 'hal-6', site: 'public', slug: 'kebijakan-privasi', title: 'Kebijakan Privasi', status: 'archived', updatedAt: '2026-10-28T07:45:00Z' },
+  {
+    id: 'hal-1',
+    site: 'public',
+    slug: 'tentang',
+    title: 'Tentang Kami',
+    status: 'published',
+    updatedAt: '2026-11-08T04:00:00Z',
+  },
+  {
+    id: 'hal-2',
+    site: 'public',
+    slug: 'tentang/area',
+    title: 'Area Layanan',
+    status: 'published',
+    updatedAt: '2026-11-12T09:30:00Z',
+  },
+  {
+    id: 'hal-3',
+    site: 'public',
+    slug: 'tentang/kantor',
+    title: 'Lokasi Kantor',
+    status: 'review',
+    updatedAt: '2026-11-13T02:10:00Z',
+  },
+  {
+    id: 'hal-4',
+    site: 'public',
+    slug: 'kontak',
+    title: 'Hubungi Kami',
+    status: 'published',
+    updatedAt: '2026-11-10T07:45:00Z',
+  },
+  {
+    id: 'hal-5',
+    site: 'public',
+    slug: 'tentang/sejarah',
+    title: 'Sejarah Perusahaan',
+    status: 'draft',
+    updatedAt: '2026-11-14T08:20:00Z',
+  },
+  {
+    id: 'hal-6',
+    site: 'public',
+    slug: 'kebijakan-privasi',
+    title: 'Kebijakan Privasi',
+    status: 'archived',
+    updatedAt: '2026-10-28T07:45:00Z',
+  },
 ].map((page) => sitePageSchema.parse(page));
 
 let banners: SiteBanner[] = [
@@ -74,57 +126,271 @@ let banners: SiteBanner[] = [
 ].map((banner) => siteBannerSchema.parse(banner));
 
 let publications: PublicationRecord[] = [
-  { id: 'pub-4', objectType: 'banner', objectTitle: 'Internet rumah untuk keluarga', revision: 1, publishedAt: '2026-11-11T03:00:00Z' },
-  { id: 'pub-3', objectType: 'page', objectTitle: 'Area Layanan', revision: 2, publishedAt: '2026-11-12T09:30:00Z' },
-  { id: 'pub-2', objectType: 'banner', objectTitle: 'Kuota besar untuk aktivitas harian', revision: 2, publishedAt: '2026-11-09T03:00:00Z' },
-  { id: 'pub-1', objectType: 'page', objectTitle: 'Tentang Kami', revision: 1, publishedAt: '2026-11-08T04:00:00Z' },
+  {
+    id: 'pub-4',
+    objectType: 'banner',
+    objectTitle: 'Internet rumah untuk keluarga',
+    revision: 1,
+    publishedAt: '2026-11-11T03:00:00Z',
+  },
+  {
+    id: 'pub-3',
+    objectType: 'page',
+    objectTitle: 'Area Layanan',
+    revision: 2,
+    publishedAt: '2026-11-12T09:30:00Z',
+  },
+  {
+    id: 'pub-2',
+    objectType: 'banner',
+    objectTitle: 'Kuota besar untuk aktivitas harian',
+    revision: 2,
+    publishedAt: '2026-11-09T03:00:00Z',
+  },
+  {
+    id: 'pub-1',
+    objectType: 'page',
+    objectTitle: 'Tentang Kami',
+    revision: 1,
+    publishedAt: '2026-11-08T04:00:00Z',
+  },
 ].map((record) => publicationRecordSchema.parse(record));
 
 let navigation: NavItem[] = [
   { id: 'nav-1', site: 'public', label: 'Beranda', href: '/', visible: true, locked: true },
   { id: 'nav-2', site: 'public', label: 'Produk', href: '/produk', visible: true, locked: true },
   { id: 'nav-3', site: 'public', label: 'Promo', href: '/promo', visible: true, locked: false },
-  { id: 'nav-4', site: 'public', label: 'IndiHome', href: '/indihome', visible: true, locked: false },
-  { id: 'nav-5', site: 'public', label: 'Daftar Digipos', href: '/digipos', visible: true, locked: false },
+  {
+    id: 'nav-4',
+    site: 'public',
+    label: 'IndiHome',
+    href: '/indihome',
+    visible: true,
+    locked: false,
+  },
+  {
+    id: 'nav-5',
+    site: 'public',
+    label: 'Daftar Digipos',
+    href: '/digipos',
+    visible: true,
+    locked: false,
+  },
   { id: 'nav-6', site: 'public', label: 'Karir', href: '/karir', visible: true, locked: false },
   { id: 'nav-7', site: 'public', label: 'Tentang', href: '/tentang', visible: true, locked: false },
   { id: 'nav-8', site: 'public', label: 'Kontak', href: '/kontak', visible: true, locked: false },
   { id: 'nav-9', site: 'outlet', label: 'Beranda', href: '/', visible: true, locked: true },
   { id: 'nav-10', site: 'outlet', label: 'ABKShop', href: '/abkshop', visible: true, locked: true },
-  { id: 'nav-11', site: 'outlet', label: 'Program', href: '/program', visible: true, locked: false },
-  { id: 'nav-12', site: 'outlet', label: 'Kalkulator Cuan', href: '/kalkulator', visible: true, locked: false },
+  {
+    id: 'nav-11',
+    site: 'outlet',
+    label: 'Program',
+    href: '/program',
+    visible: true,
+    locked: false,
+  },
+  {
+    id: 'nav-12',
+    site: 'outlet',
+    label: 'Kalkulator Cuan',
+    href: '/kalkulator',
+    visible: true,
+    locked: false,
+  },
   { id: 'nav-13', site: 'outlet', label: 'Akun', href: '/akun', visible: true, locked: true },
 ];
 
 let layouts: LayoutSection[] = [
-  { id: 'lay-1', page: 'Beranda Publik', label: 'Banner utama', component: 'Hero slider', visible: true },
-  { id: 'lay-2', page: 'Beranda Publik', label: 'Produk pilihan', component: 'Grid produk', visible: true },
-  { id: 'lay-3', page: 'Beranda Publik', label: 'Promo berjalan', component: 'Kartu program', visible: true },
-  { id: 'lay-4', page: 'Beranda Publik', label: 'IndiHome', component: 'Ajakan dengan gambar', visible: true },
-  { id: 'lay-5', page: 'Beranda Publik', label: 'Lowongan terbaru', component: 'Daftar lowongan', visible: false },
-  { id: 'lay-6', page: 'Beranda Outlet', label: 'Dokumentasi pemenang', component: 'Slider foto', visible: true },
-  { id: 'lay-7', page: 'Beranda Outlet', label: 'Program untuk Anda', component: 'Kartu program', visible: true },
+  {
+    id: 'lay-1',
+    page: 'Beranda Publik',
+    label: 'Banner utama',
+    component: 'Hero slider',
+    visible: true,
+  },
+  {
+    id: 'lay-2',
+    page: 'Beranda Publik',
+    label: 'Produk pilihan',
+    component: 'Grid produk',
+    visible: true,
+  },
+  {
+    id: 'lay-3',
+    page: 'Beranda Publik',
+    label: 'Promo berjalan',
+    component: 'Kartu program',
+    visible: true,
+  },
+  {
+    id: 'lay-4',
+    page: 'Beranda Publik',
+    label: 'IndiHome',
+    component: 'Ajakan dengan gambar',
+    visible: true,
+  },
+  {
+    id: 'lay-5',
+    page: 'Beranda Publik',
+    label: 'Lowongan terbaru',
+    component: 'Daftar lowongan',
+    visible: false,
+  },
+  {
+    id: 'lay-6',
+    page: 'Beranda Outlet',
+    label: 'Dokumentasi pemenang',
+    component: 'Slider foto',
+    visible: true,
+  },
+  {
+    id: 'lay-7',
+    page: 'Beranda Outlet',
+    label: 'Program untuk Anda',
+    component: 'Kartu program',
+    visible: true,
+  },
   { id: 'lay-8', page: 'Beranda Outlet', label: 'Pintasan', component: 'Ikon menu', visible: true },
 ];
 
 let assets: SiteAsset[] = [
-  { id: 'aset-1', name: 'Logo Agrabudi horizontal', kind: 'logo', url: logoHorizontal.src, sizeKb: 21, uploadedAt: '2026-11-15T03:00:00Z' },
-  { id: 'aset-2', name: 'Logo Agrabudi latar gelap', kind: 'logo', url: logoHorizontalOnDark.src, sizeKb: 20, uploadedAt: '2026-11-15T03:00:00Z' },
-  { id: 'aset-3', name: 'Logo Agrabudi ikon', kind: 'logo', url: logoMark.src, sizeKb: 8, uploadedAt: '2026-11-15T03:00:00Z' },
-  { id: 'aset-4', name: 'Kantor Cirebon (ilustrasi contoh)', kind: 'foto', url: officeArt('Kantor Cirebon', 'aset-kantor-1'), sizeKb: 6, uploadedAt: '2026-11-12T02:00:00Z' },
-  { id: 'aset-5', name: 'Kantor Kuningan (ilustrasi contoh)', kind: 'foto', url: officeArt('Kantor Kuningan', 'aset-kantor-2'), sizeKb: 6, uploadedAt: '2026-11-12T02:00:00Z' },
-  { id: 'aset-6', name: 'Banner hero merah (ilustrasi contoh)', kind: 'banner', url: bannerArt('banner-hero-1', 'red'), sizeKb: 5, uploadedAt: '2026-11-09T02:00:00Z' },
-  { id: 'aset-7', name: 'Banner hero gelap (ilustrasi contoh)', kind: 'banner', url: bannerArt('banner-hero-2', 'ink'), sizeKb: 5, uploadedAt: '2026-11-09T02:00:00Z' },
-  { id: 'aset-8', name: 'Program emas (ilustrasi contoh)', kind: 'ilustrasi', url: programArt('aset-program', 'gold'), sizeKb: 4, uploadedAt: '2026-11-05T02:00:00Z' },
+  {
+    id: 'aset-1',
+    name: 'Logo Agrabudi horizontal',
+    kind: 'logo',
+    url: logoHorizontal.src,
+    sizeKb: 21,
+    uploadedAt: '2026-11-15T03:00:00Z',
+  },
+  {
+    id: 'aset-2',
+    name: 'Logo Agrabudi latar gelap',
+    kind: 'logo',
+    url: logoHorizontalOnDark.src,
+    sizeKb: 20,
+    uploadedAt: '2026-11-15T03:00:00Z',
+  },
+  {
+    id: 'aset-3',
+    name: 'Logo Agrabudi ikon',
+    kind: 'logo',
+    url: logoMark.src,
+    sizeKb: 8,
+    uploadedAt: '2026-11-15T03:00:00Z',
+  },
+  {
+    id: 'aset-4',
+    name: 'Kantor Cirebon (ilustrasi contoh)',
+    kind: 'foto',
+    url: officeArt('Kantor Cirebon', 'aset-kantor-1'),
+    sizeKb: 6,
+    uploadedAt: '2026-11-12T02:00:00Z',
+  },
+  {
+    id: 'aset-5',
+    name: 'Kantor Kuningan (ilustrasi contoh)',
+    kind: 'foto',
+    url: officeArt('Kantor Kuningan', 'aset-kantor-2'),
+    sizeKb: 6,
+    uploadedAt: '2026-11-12T02:00:00Z',
+  },
+  {
+    id: 'aset-6',
+    name: 'Banner hero merah (ilustrasi contoh)',
+    kind: 'banner',
+    url: bannerArt('banner-hero-1', 'red'),
+    sizeKb: 5,
+    uploadedAt: '2026-11-09T02:00:00Z',
+  },
+  {
+    id: 'aset-7',
+    name: 'Banner hero gelap (ilustrasi contoh)',
+    kind: 'banner',
+    url: bannerArt('banner-hero-2', 'ink'),
+    sizeKb: 5,
+    uploadedAt: '2026-11-09T02:00:00Z',
+  },
+  {
+    id: 'aset-8',
+    name: 'Program emas (ilustrasi contoh)',
+    kind: 'ilustrasi',
+    url: programArt('aset-program', 'gold'),
+    sizeKb: 4,
+    uploadedAt: '2026-11-05T02:00:00Z',
+  },
 ];
 
 let audit: AuditEvent[] = [
-  { id: 'aud-5', at: '2026-11-14T08:20:00Z', actor: ACTOR, action: 'Membuat draft', object: 'Halaman: Sejarah Perusahaan' },
-  { id: 'aud-4', at: '2026-11-13T02:10:00Z', actor: ACTOR, action: 'Mengajukan review', object: 'Halaman: Lokasi Kantor' },
-  { id: 'aud-3', at: '2026-11-12T09:30:00Z', actor: ACTOR, action: 'Menerbitkan', object: 'Halaman: Area Layanan' },
-  { id: 'aud-2', at: '2026-11-11T03:00:00Z', actor: ACTOR, action: 'Menerbitkan', object: 'Banner: Internet rumah untuk keluarga' },
-  { id: 'aud-1', at: '2026-11-10T01:15:00Z', actor: ACTOR, action: 'Mengubah susunan', object: 'Navigasi' },
+  {
+    id: 'aud-5',
+    at: '2026-11-14T08:20:00Z',
+    actor: ACTOR,
+    action: 'Membuat draft',
+    object: 'Halaman: Sejarah Perusahaan',
+  },
+  {
+    id: 'aud-4',
+    at: '2026-11-13T02:10:00Z',
+    actor: ACTOR,
+    action: 'Mengajukan review',
+    object: 'Halaman: Lokasi Kantor',
+  },
+  {
+    id: 'aud-3',
+    at: '2026-11-12T09:30:00Z',
+    actor: ACTOR,
+    action: 'Menerbitkan',
+    object: 'Halaman: Area Layanan',
+  },
+  {
+    id: 'aud-2',
+    at: '2026-11-11T03:00:00Z',
+    actor: ACTOR,
+    action: 'Menerbitkan',
+    object: 'Banner: Internet rumah untuk keluarga',
+  },
+  {
+    id: 'aud-1',
+    at: '2026-11-10T01:15:00Z',
+    actor: ACTOR,
+    action: 'Mengubah susunan',
+    object: 'Navigasi',
+  },
 ];
+
+/** Isi profil contoh. Bukan profil, alamat, atau kontak resmi (PRD 3.3). */
+let company: CompanyProfile = {
+  about: ['Contoh paragraf profil perusahaan. Ganti dengan profil resmi yang sudah disahkan.'],
+  history: ['Contoh paragraf sejarah perusahaan.'],
+  vision: 'Contoh visi perusahaan.',
+  missions: ['Contoh misi pertama.', 'Contoh misi kedua.'],
+  areas: [{ name: 'Kota Cirebon (contoh)', districts: ['Kejaksan', 'Kesambi'] }],
+  offices: [
+    {
+      id: 'kantor-1',
+      name: 'Kantor contoh',
+      address: 'Jl. Contoh No. 1 (alamat contoh)',
+      hours: 'Senin–Jumat 08.00–16.00 WIB',
+      phone: '(0231) 000-0000',
+      imageUrl: null,
+    },
+  ],
+  channels: [{ kind: 'email', label: 'Email', value: 'kontak@contoh.invalid' }],
+};
+
+let digiposInfo: DigiposInfo = {
+  requirements: ['Contoh syarat: memiliki toko atau tempat usaha tetap.'],
+  steps: ['Contoh langkah: isi form pendaftaran.', 'Contoh langkah: petugas menghubungi Anda.'],
+};
+
+let waSettings: WaNotificationSettings = { ...emptyWaNotificationSettings };
+
+const sectionLabel: Record<CompanyProfileSection, string> = {
+  about: 'Tentang Kami',
+  areas: 'Area Layanan',
+  offices: 'Lokasi Kantor',
+  channels: 'Hubungi Kami',
+};
 
 const now = () => new Date().toISOString();
 const newId = (prefix: string) => `${prefix}-${Date.now()}-${Math.round(Math.random() * 1000)}`;
@@ -136,7 +402,13 @@ function log(action: string, object: string) {
 function publish(objectType: PublicationRecord['objectType'], objectTitle: string) {
   const revision = publications.filter((item) => item.objectTitle === objectTitle).length + 1;
   publications = [
-    publicationRecordSchema.parse({ id: newId('pub'), objectType, objectTitle, revision, publishedAt: now() }),
+    publicationRecordSchema.parse({
+      id: newId('pub'),
+      objectType,
+      objectTitle,
+      revision,
+      publishedAt: now(),
+    }),
     ...publications,
   ];
 }
@@ -172,9 +444,12 @@ export const mockAdapter: WebAdminDataAdapter = {
   saveBanner: async (input) => {
     const banner = siteBannerSchema.parse(input);
     const existing = banners.find((item) => item.id === banner.id);
-    banners = existing ? banners.map((item) => (item.id === banner.id ? banner : item)) : [banner, ...banners];
+    banners = existing
+      ? banners.map((item) => (item.id === banner.id ? banner : item))
+      : [banner, ...banners];
     log(existing ? 'Mengubah' : 'Membuat', `Banner: ${banner.title}`);
-    if (banner.status === 'published' && existing?.status !== 'published') publish('banner', banner.title);
+    if (banner.status === 'published' && existing?.status !== 'published')
+      publish('banner', banner.title);
   },
   deleteBanner: async (id) => {
     const banner = banners.find((item) => item.id === id);
@@ -206,4 +481,26 @@ export const mockAdapter: WebAdminDataAdapter = {
     if (asset) log('Menghapus', `Aset: ${asset.name}`);
   },
   listAudit: async () => asMock(audit),
+  getCompanySection: async (section) => asMock(pickCompanySection(company, section)),
+  saveCompanySection: async (section, data) => {
+    company = companyProfileSchema.parse({
+      ...company,
+      ...companyProfileSections[section].parse(data),
+    });
+    log('Mengubah', `Profil: ${sectionLabel[section]}`);
+  },
+  getDigiposInfo: async () => asMock(digiposInfo),
+  saveDigiposInfo: async (info) => {
+    digiposInfo = digiposInfoSchema.parse(info);
+    log('Mengubah', 'Halaman: Daftar Digipos');
+  },
+  // Mode contoh tidak tersambung ke WAHA: status jujur "belum dikonfigurasi".
+  getWaGateway: async () => asMock({ configured: false, notifications: waSettings }),
+  saveWaGateway: async (settings) => {
+    waSettings = waNotificationSettingsSchema.parse(settings);
+    log('Mengubah', 'WA Gateway');
+  },
+  testWaGateway: async () => {
+    throw new Error('Mode contoh tidak tersambung ke WAHA. Pesan uji tidak dikirim.');
+  },
 };

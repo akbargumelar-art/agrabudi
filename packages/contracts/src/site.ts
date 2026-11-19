@@ -65,15 +65,83 @@ export const companyProfileSchema = z.object({
       imageUrl: z.string().nullable(),
     }),
   ),
-  channels: z.array(
-    z.object({
-      kind: z.enum(['whatsapp', 'phone', 'email', 'instagram', 'facebook', 'website']),
-      label: z.string().min(1),
-      value: z.string().min(1),
+  channels: z
+    .array(
+      z.object({
+        kind: z.enum(['whatsapp', 'phone', 'email', 'instagram', 'facebook', 'website']),
+        label: z.string().min(1),
+        value: z.string().min(1),
+      }),
+    )
+    // Halaman kontak menampilkan satu baris per jenis kanal.
+    .refine((list) => new Set(list.map((item) => item.kind)).size === list.length, {
+      message: 'Satu jenis kanal hanya boleh muncul sekali.',
     }),
-  ),
 });
 export type CompanyProfile = z.infer<typeof companyProfileSchema>;
+
+/** Editor terpisah: tiap simpan hanya menyentuh bagian profil yang sedang dibuka. */
+export const companyProfileSections = {
+  about: companyProfileSchema
+    .pick({ about: true, history: true, vision: true, missions: true })
+    .strict(),
+  areas: companyProfileSchema.pick({ areas: true }).strict(),
+  offices: companyProfileSchema.pick({ offices: true }).strict(),
+  channels: companyProfileSchema.pick({ channels: true }).strict(),
+} as const;
+export type CompanyProfileSection = keyof typeof companyProfileSections;
+export type CompanySectionData<K extends CompanyProfileSection> = z.infer<
+  (typeof companyProfileSections)[K]
+>;
+
+export const emptyCompanyProfile: CompanyProfile = {
+  about: [],
+  history: [],
+  vision: '',
+  missions: [],
+  areas: [],
+  offices: [],
+  channels: [],
+};
+
+/** Ambil satu bagian dari profil lengkap, dalam bentuk yang diterima editornya. */
+export function pickCompanySection<K extends CompanyProfileSection>(
+  profile: CompanyProfile,
+  section: K,
+): CompanySectionData<K> {
+  return companyProfileSections[section].parse(
+    Object.fromEntries(
+      Object.keys(companyProfileSections[section].shape).map((key) => [
+        key,
+        profile[key as keyof CompanyProfile],
+      ]),
+    ),
+  ) as CompanySectionData<K>;
+}
+
+const wahaGroupId = z
+  .string()
+  .trim()
+  .regex(/^\d{5,24}(?:-\d{5,20})?@g\.us$/, 'Gunakan ID grup WAHA berakhiran @g.us.')
+  .nullable();
+export const waNotificationSettingsSchema = z.strictObject({
+  orderCustomer: z.boolean(),
+  orderGroup: wahaGroupId,
+  careerGroup: wahaGroupId,
+  digiposGroup: wahaGroupId,
+});
+export type WaNotificationSettings = z.infer<typeof waNotificationSettingsSchema>;
+export const emptyWaNotificationSettings: WaNotificationSettings = {
+  orderCustomer: false,
+  orderGroup: null,
+  careerGroup: null,
+  digiposGroup: null,
+};
+export const waGatewayStatusSchema = z.object({
+  configured: z.boolean(),
+  notifications: waNotificationSettingsSchema,
+});
+export type WaGatewayStatus = z.infer<typeof waGatewayStatusSchema>;
 
 /** Item navigasi per website. Menu milik modul bisnis terkunci: tidak bisa disembunyikan. */
 export const navItemSchema = z.object({

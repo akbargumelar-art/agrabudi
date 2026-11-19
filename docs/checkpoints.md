@@ -5,7 +5,7 @@ Untuk kembali melihat kondisinya: `git checkout checkpoint/<nama>` (lalu kembali
 
 ## checkpoint/2026-11-18-m2-backend
 
-Tanggal: 18 November 2026. Branch: `feat/m1-redesign-telkomsel-pattern`. Belum di-push (repo GitHub belum ada, T-2).
+Tanggal: 18 November 2026. Branch: `feat/m1-redesign-telkomsel-pattern`. Tag sudah di-push ke [GitHub](https://github.com/akbargumelar-art/agrabudi/tree/checkpoint/2026-11-18-m2-backend).
 
 ### Isi
 

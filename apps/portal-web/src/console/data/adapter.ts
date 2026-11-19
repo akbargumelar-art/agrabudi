@@ -1,11 +1,19 @@
 import type {
+  CompanyProfileSection,
+  CompanySectionData,
   ContentStatus,
   DataEnvelope,
+  DigiposInfo,
   PublicationRecord,
   SiteBanner,
   SitePage,
+  WaGatewayStatus,
+  WaNotificationSettings,
 } from '@agrabudi/contracts';
 import type { AuditEvent, LayoutSection, NavItem, SiteAsset } from './types';
+
+/** Grup WA yang bisa dikirimi pesan uji. */
+export type WaTestTarget = 'orderGroup' | 'careerGroup' | 'digiposGroup';
 
 /**
  * Pintu data pengaturan website (peran Admin Web). Hanya konten institusional:
@@ -26,6 +34,20 @@ export interface WebAdminDataAdapter {
   addAsset(asset: Omit<SiteAsset, 'id' | 'uploadedAt'>): Promise<void>;
   deleteAsset(id: string): Promise<void>;
   listAudit(): Promise<DataEnvelope<AuditEvent[]>>;
+  /** `data: null` = bagian profil belum pernah diisi. */
+  getCompanySection<K extends CompanyProfileSection>(
+    section: K,
+  ): Promise<DataEnvelope<CompanySectionData<K> | null>>;
+  saveCompanySection<K extends CompanyProfileSection>(
+    section: K,
+    data: CompanySectionData<K>,
+  ): Promise<void>;
+  getDigiposInfo(): Promise<DataEnvelope<DigiposInfo | null>>;
+  saveDigiposInfo(info: DigiposInfo): Promise<void>;
+  getWaGateway(): Promise<DataEnvelope<WaGatewayStatus>>;
+  saveWaGateway(settings: WaNotificationSettings): Promise<void>;
+  /** Gagal kirim = Error; tidak pernah dianggap berhasil. */
+  testWaGateway(target: WaTestTarget): Promise<void>;
 }
 
 export class DataUnavailableError extends Error {

@@ -98,6 +98,8 @@ export const outletRoutes: FastifyPluginAsync = async (app) => {
       request.id,
     );
     if (result.replayed) reply.header('idempotent-replayed', 'true');
+    // Kirim ulang (idempoten) tidak memicu notifikasi kedua. Tidak ditunggu: WA lambat tidak menahan order.
+    else void app.notifier.orderCreated(result.order, principal.accountId);
     return reply.code(result.replayed ? 200 : 201).send(result.order);
   });
 

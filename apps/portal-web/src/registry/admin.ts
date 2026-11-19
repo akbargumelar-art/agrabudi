@@ -75,12 +75,10 @@ export const admin: Section = {
       ],
     },
     {
-      label: 'Daftar Digipos',
+      label: 'Pendaftaran Digipos',
       slug: 'daftar-digipos',
-      behavior: 'Syarat, form pendaftaran, verifikasi, dan status pendaftar.',
+      behavior: 'Data pendaftar, verifikasi, dan status. Teks halaman publik diatur Admin Web.',
       children: [
-        { label: 'Informasi/syarat', slug: 'informasi-syarat' },
-        { label: 'Form field yang diizinkan', slug: 'form-field' },
         { label: 'Pendaftaran', slug: 'pendaftaran' },
         { label: 'Verifikasi', slug: 'verifikasi' },
         { label: 'Status', slug: 'status' },

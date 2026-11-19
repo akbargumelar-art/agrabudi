@@ -1,12 +1,18 @@
 import {
   auditEventSchema,
+  companyProfileSections,
+  digiposInfoSchema,
   envelopeSchema,
+  waGatewayStatusSchema,
   layoutSectionSchema,
   navItemSchema,
   publicationRecordSchema,
   siteAssetSchema,
   siteBannerSchema,
   sitePageSchema,
+  type CompanyProfileSection,
+  type CompanySectionData,
+  type DataEnvelope,
   type SiteAsset,
 } from '@agrabudi/contracts';
 import { ApiRequestError, apiRequest, apiRequestRaw } from '@agrabudi/contracts/http';
@@ -58,6 +64,17 @@ async function uploadAsset(input: Omit<SiteAsset, 'id' | 'uploadedAt'>): Promise
 
 const list = <S extends z.ZodType>(item: S) => envelopeSchema(z.array(item));
 
+/** Skema bagian dipilih saat runtime; hasilnya sudah divalidasi skema bagian yang sama. */
+async function getCompanySection<K extends CompanyProfileSection>(
+  section: K,
+): Promise<DataEnvelope<CompanySectionData<K> | null>> {
+  const envelope = await read(
+    `/company-profile/${section}`,
+    envelopeSchema(companyProfileSections[section].nullable()),
+  );
+  return envelope as DataEnvelope<CompanySectionData<K> | null>;
+}
+
 export const apiAdapter: WebAdminDataAdapter = {
   listPages: () => read('/pages', list(sitePageSchema)),
   updatePageStatus: async (id, status) => {
@@ -98,4 +115,19 @@ export const apiAdapter: WebAdminDataAdapter = {
     await send(`/assets/${encodeURIComponent(id)}`, { method: 'DELETE' });
   },
   listAudit: () => read('/audit', list(auditEventSchema)),
+  getCompanySection,
+  saveCompanySection: async (section, data) => {
+    await send(`/company-profile/${section}`, { method: 'PUT', body: data });
+  },
+  getDigiposInfo: () => read('/digipos-info', envelopeSchema(digiposInfoSchema.nullable())),
+  saveDigiposInfo: async (info) => {
+    await send('/digipos-info', { method: 'PUT', body: info });
+  },
+  getWaGateway: () => read('/wa-gateway', envelopeSchema(waGatewayStatusSchema)),
+  saveWaGateway: async (settings) => {
+    await send('/wa-gateway', { method: 'PUT', body: settings });
+  },
+  testWaGateway: async (target) => {
+    await send('/wa-gateway/test', { method: 'POST', body: { target } });
+  },
 };

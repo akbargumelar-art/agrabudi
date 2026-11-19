@@ -1,21 +1,27 @@
 import {
+  companyProfileSections,
   contentStatusSchema,
+  emptyCompanyProfile,
+  emptyWaNotificationSettings,
   layoutSectionSchema,
   navItemSchema,
+  pickCompanySection,
   siteAssetKindSchema,
   siteBannerInputSchema,
   type AuditEvent,
+  type CompanyProfileSection,
   type PublicationRecord,
   type SiteAsset,
   type SiteBanner,
   type SitePage,
+  type WaGatewayStatus,
 } from '@agrabudi/contracts';
 import type { FastifyPluginAsync, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { authenticateWebAdmin, type StaffPrincipal } from '../auth/principals';
 import type { Db } from '../db/database';
 import type { SitePublicationsTable } from '../db/types';
-import { getDocument, parseDocument, putDocument } from '../domain/content';
+import { findDocument, getDocument, parseDocument, putDocument } from '../domain/content';
 import { audit } from '../lib/audit';
 import { HttpError, conflict, invalid, notFound } from '../lib/errors';
 import { detectImage, safeDisplayName } from '../lib/file-type';
@@ -64,7 +70,7 @@ async function publish(
  * di sini (PRD 2.4, US-02).
  */
 export const cmsRoutes: FastifyPluginAsync = async (app) => {
-  const { db, storage, config } = app.deps;
+  const { db, storage, config, wa } = app.deps;
   const mediaPrefix = `${config.MEDIA_PUBLIC_BASE_URL.replace(/\/$/, '')}/`;
 
   app.addHook('preHandler', async (request) => {
@@ -454,4 +460,131 @@ export const cmsRoutes: FastifyPluginAsync = async (app) => {
       return envelope(body);
     });
   }
+
+  /**
+   * Editor per bagian profil (Tentang Kami, Area, Kantor, Hubungi Kami). Simpan satu bagian
+   * tidak menimpa bagian lain. Belum pernah diisi = `data: null`, bukan isi bawaan.
+   */
+  app.get('/company-profile/:section', async (request) => {
+    const { section } = parse(sectionParams, request.params);
+    const profile = await findDocument(db, 'company_profile');
+    if (!profile) return envelope(null);
+    return envelope(pickCompanySection(profile, section));
+  });
+  app.put('/company-profile/:section', async (request) => {
+    const { section } = parse(sectionParams, request.params);
+    const part = companyProfileSections[section].parse(request.body);
+    if ('offices' in part) {
+      for (const [index, office] of part.offices.entries()) {
+        if (office.imageUrl !== null && !office.imageUrl.startsWith(mediaPrefix)) {
+          throw invalid('Foto kantor harus diunggah lewat Aset Website.', {
+            [`offices.${index}.imageUrl`]: 'Pilih foto dari Aset Website.',
+          });
+        }
+      }
+    }
+    const next = await db.transaction().execute(async (trx) => {
+      // Kunci baris supaya dua editor bagian berbeda tidak saling menimpa.
+      const row = await trx
+        .selectFrom('siteDocuments')
+        .select('body')
+        .where('key', '=', 'company_profile')
+        .forUpdate()
+        .executeTakeFirst();
+      const current = row ? parseDocument('company_profile', row.body) : emptyCompanyProfile;
+      const merged = parseDocument('company_profile', { ...current, ...part });
+      await putDocument(trx, 'company_profile', merged, principal(request).actor.id);
+      return merged;
+    });
+    await record(
+      request,
+      `company_profile.${section}.update`,
+      'site_document',
+      'company_profile',
+      SECTION_LABEL[section],
+    );
+    return envelope(pickCompanySection(next, section));
+  });
+
+  // ---------------------------------------------------------------- teks halaman Daftar Digipos
+  app.get('/digipos-info', async () => envelope(await findDocument(db, 'digipos_info')));
+  app.put('/digipos-info', async (request) => {
+    const body = parseDocument('digipos_info', request.body);
+    await putDocument(db, 'digipos_info', body, principal(request).actor.id);
+    await record(request, 'digipos_info.update', 'site_document', 'digipos_info', 'Daftar Digipos');
+    return envelope(body);
+  });
+
+  // ---------------------------------------------------------------- WA Gateway (WAHA)
+  const waStatus = async (): Promise<WaGatewayStatus> => ({
+    configured: wa !== null,
+    notifications: (await findDocument(db, 'wa_notifications')) ?? emptyWaNotificationSettings,
+  });
+  app.get('/wa-gateway', async () => envelope(await waStatus()));
+  app.put('/wa-gateway', async (request) => {
+    const body = parseDocument('wa_notifications', request.body);
+    await putDocument(db, 'wa_notifications', body, principal(request).actor.id);
+    await record(
+      request,
+      'wa_notifications.update',
+      'site_document',
+      'wa_notifications',
+      'WA Gateway',
+    );
+    return envelope(await waStatus());
+  });
+
+  /** Kirim pesan uji ke grup yang sudah disimpan. Hasil gagal dilaporkan apa adanya. */
+  app.post(
+    '/wa-gateway/test',
+    { config: { rateLimit: { max: 5, timeWindow: '1 minute' } } },
+    async (request, reply) => {
+      const { target } = parse(waTestSchema, request.body);
+      if (!wa) throw conflict('WAHA belum dikonfigurasi di server. Hubungi pengelola teknis.');
+      const settings = (await findDocument(db, 'wa_notifications')) ?? emptyWaNotificationSettings;
+      const chatId = settings[target];
+      if (!chatId) throw conflict('ID grup ini belum disimpan. Simpan pengaturan dulu.');
+      try {
+        await wa.sendText(
+          chatId,
+          'Pesan uji dari Portal Agrabudi. Notifikasi WhatsApp untuk grup ini aktif.',
+        );
+      } catch (error) {
+        request.log.warn(
+          { event: 'wa_test_failed', reason: error instanceof Error ? error.message : 'unknown' },
+          'pesan uji WhatsApp gagal',
+        );
+        throw new HttpError(
+          503,
+          'SERVICE_UNAVAILABLE',
+          'WAHA tidak dapat mengirim pesan. Periksa sesi WAHA lalu coba lagi.',
+        );
+      }
+      await record(
+        request,
+        'wa_gateway.test',
+        'site_document',
+        'wa_notifications',
+        WA_TARGET_LABEL[target],
+      );
+      return reply.code(204).send();
+    },
+  );
+};
+
+const sectionParams = z.object({ section: z.enum(['about', 'areas', 'offices', 'channels']) });
+
+const SECTION_LABEL: Record<CompanyProfileSection, string> = {
+  about: 'Tentang Kami',
+  areas: 'Area Layanan',
+  offices: 'Lokasi Kantor',
+  channels: 'Hubungi Kami',
+};
+
+const waTestSchema = z.object({ target: z.enum(['orderGroup', 'careerGroup', 'digiposGroup']) });
+
+const WA_TARGET_LABEL: Record<z.infer<typeof waTestSchema>['target'], string> = {
+  orderGroup: 'Uji grup pesanan',
+  careerGroup: 'Uji grup lamaran',
+  digiposGroup: 'Uji grup Digipos',
 };

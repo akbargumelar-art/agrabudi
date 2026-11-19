@@ -12,6 +12,7 @@ import { up as seedSitePages } from '../src/db/migrations/0002_site_pages';
 import { newId } from '../src/lib/ids';
 import { hashPassword } from '../src/lib/password';
 import { createLocalStorage } from '../src/lib/storage';
+import type { WaSender } from '../src/lib/waha';
 
 export const ORIGIN = {
   public: 'https://agrabudi.test',
@@ -28,8 +29,24 @@ export type TestContext = {
   close: () => Promise<void>;
 };
 
+/** Pengirim WhatsApp tiruan: mencatat pesan, tidak pernah menghubungi WAHA. */
+export type FakeWa = WaSender & { sent: { chatId: string; text: string }[]; fail: boolean };
+
+export function fakeWa(): FakeWa {
+  const fake: FakeWa = {
+    sent: [],
+    fail: false,
+    async sendText(chatId, text) {
+      if (fake.fail) throw new Error('WAHA menjawab status 500.');
+      fake.sent.push({ chatId, text });
+    },
+  };
+  return fake;
+}
+
 export async function createTestContext(
   overrides: Partial<Record<string, string>> = {},
+  wa: WaSender | null = null,
 ): Promise<TestContext> {
   const mysql = inject('mysql');
   const storageDir = mkdtempSync(join(tmpdir(), 'abk-api-test-'));
@@ -52,7 +69,7 @@ export async function createTestContext(
   });
   const db = createDb(config);
   const storage = createLocalStorage(config.STORAGE_DIR, config.MEDIA_PUBLIC_BASE_URL);
-  const app = await buildApp({ config, db, storage });
+  const app = await buildApp({ config, db, storage, wa });
   return {
     app,
     db,
