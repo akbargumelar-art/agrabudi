@@ -33,7 +33,7 @@ export default async function AreaPage() {
                   <MapPin aria-hidden className="size-5 text-brand-red" />
                   {area.name}
                 </h2>
-                <p className="mt-1 text-sm text-ink-700">{area.districts.length} kecamatan</p>
+                <p className="mt-1 text-sm text-ink-700">{area.districts.length} wilayah</p>
                 <ul className="mt-3 flex flex-wrap gap-2">
                   {area.districts.map((district) => (
                     <li
