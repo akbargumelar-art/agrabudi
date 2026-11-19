@@ -1,27 +1,19 @@
 import type { CompanyProfile } from '@agrabudi/contracts';
 import { cardClass, cn } from '@agrabudi/ui';
-import {
-  AtSign,
-  Clock,
-  ExternalLink,
-  Globe,
-  Mail,
-  MapPin,
-  MessageCircle,
-  Phone,
-  ThumbsUp,
-} from 'lucide-react';
+import { Clock, ExternalLink, Globe, Mail, MapPin, Phone } from 'lucide-react';
+import { BrandIcon, type BrandName } from '@/components/BrandIcon';
 
-type Channel = CompanyProfile['channels'][number];
+/** `display` opsional: teks tampil beda dari tujuan tautan (mis. Facebook). */
+export type Channel = CompanyProfile['channels'][number] & { display?: string };
 
-const channelIcon = {
-  whatsapp: MessageCircle,
-  phone: Phone,
-  email: Mail,
-  instagram: AtSign,
-  facebook: ThumbsUp,
-  website: Globe,
-} as const;
+const lucideIcon = { phone: Phone, email: Mail, website: Globe } as const;
+const brandKinds: ReadonlySet<string> = new Set<BrandName>(['whatsapp', 'instagram', 'facebook']);
+
+function ChannelIcon({ kind }: { kind: Channel['kind'] }) {
+  if (brandKinds.has(kind)) return <BrandIcon name={kind as BrandName} className="size-5" />;
+  const Icon = lucideIcon[kind as keyof typeof lucideIcon];
+  return <Icon aria-hidden className="size-5" />;
+}
 
 /** Tautan kanal kontak. Nilai yang tidak bisa diubah jadi tautan aman tetap tampil sebagai teks. */
 export function channelHref(channel: Channel): string | null {
@@ -90,20 +82,21 @@ export function OfficeList({ offices }: { offices: CompanyProfile['offices'] }) 
   );
 }
 
-export function ChannelList({ channels }: { channels: CompanyProfile['channels'] }) {
+export function ChannelList({ channels }: { channels: Channel[] }) {
   return (
     <ul className={cn(cardClass, 'divide-y divide-surface-100')}>
       {channels.map((channel) => {
-        const Icon = channelIcon[channel.kind];
         const href = channelHref(channel);
         const body = (
           <>
             <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-brand-red-soft text-brand-red">
-              <Icon aria-hidden className="size-5" />
+              <ChannelIcon kind={channel.kind} />
             </span>
             <span className="min-w-0 flex-1">
               <span className="block text-sm text-ink-700">{channel.label}</span>
-              <span className="block font-semibold break-words">{channel.value}</span>
+              <span className="block font-semibold break-words">
+                {channel.display ?? channel.value}
+              </span>
             </span>
             {href ? <ExternalLink aria-hidden className="size-4 shrink-0 text-ink-500" /> : null}
           </>

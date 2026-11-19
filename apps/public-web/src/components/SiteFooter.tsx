@@ -81,11 +81,11 @@ export function SiteFooter() {
                 <li key={channel.kind}>
                   {href ? (
                     <a href={href} target="_blank" rel="noopener noreferrer" className={linkClass}>
-                      {channel.label}: {channel.value}
+                      {channel.label}: {channel.display ?? channel.value}
                     </a>
                   ) : (
                     <span className={linkClass}>
-                      {channel.label}: {channel.value}
+                      {channel.label}: {channel.display ?? channel.value}
                     </span>
                   )}
                 </li>
