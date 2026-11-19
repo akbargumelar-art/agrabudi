@@ -188,7 +188,9 @@ export default async function AboutPage() {
                 summary="Kanal resmi dan formulir pesan"
               >
                 <ChannelList
-                  channels={company.data.channels.length > 0 ? company.data.channels : officialChannels}
+                  channels={
+                    company.data.channels.length > 0 ? company.data.channels : officialChannels
+                  }
                 />
                 <Link href="/kontak" className={cn(linkClass, 'mt-3')}>
                   Kirim pesan lewat formulir
