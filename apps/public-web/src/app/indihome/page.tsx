@@ -1,5 +1,13 @@
-import { DataNotice, EmptyState, cardClass, cn, formatRupiah } from '@agrabudi/ui';
-import { Check } from 'lucide-react';
+import {
+  DataNotice,
+  EmptyState,
+  IconBadge,
+  cardClass,
+  cn,
+  formatRupiah,
+  type IconComponent,
+} from '@agrabudi/ui';
+import { Check, Phone, Tv, Wifi } from 'lucide-react';
 import type { Metadata } from 'next';
 import { PublicForm } from '@/components/PublicForm';
 import { AddressField, NameField, PhoneField } from '@/components/FormFields';
@@ -8,6 +16,25 @@ import { PageIntro, pageBodyClass } from '@/components/PageIntro';
 import { load } from '@/data';
 
 export const metadata: Metadata = { title: 'IndiHome' };
+
+/** Layanan IndiHome, diringkas dari halaman IndiHome situs resmi agrabudikomunika.com. */
+const services: Array<{ icon: IconComponent; title: string; note: string }> = [
+  {
+    icon: Wifi,
+    title: 'Internet',
+    note: 'Internet rumah unlimited lewat fiber optic, stabil untuk kerja, belajar, belanja online, dan main game.',
+  },
+  {
+    icon: Tv,
+    title: 'TV interaktif',
+    note: 'Tonton acara favorit, film, dan berita dengan fitur seperti Pause and Rewind dan Video on Demand.',
+  },
+  {
+    icon: Phone,
+    title: 'Telepon rumah',
+    note: 'Suara jernih untuk tetap terhubung dengan keluarga dan kerabat.',
+  },
+];
 
 export default async function IndihomePage() {
   const [packages, info] = await Promise.all([
@@ -18,10 +45,27 @@ export default async function IndihomePage() {
     <>
       <PageIntro
         title="IndiHome"
-        description="Paket internet rumah, syarat pemasangan, dan pendaftaran minat."
+        description="Internet, TV, dan telepon rumah dari Telkomsel. Isi form minat, tim kami bantu cek jaringan dan jadwal pasang."
         aside={packages.ok ? <DataNotice meta={packages.meta} /> : null}
       />
       <div className={pageBodyClass}>
+        <section aria-labelledby="layanan-indihome">
+          <h2 id="layanan-indihome" className="text-2xl font-extrabold">
+            Layanan IndiHome
+          </h2>
+          <ul className="mt-5 grid gap-4 tablet:grid-cols-3">
+            {services.map((service) => (
+              <li key={service.title} className={cn(cardClass, 'flex items-start gap-4 p-5')}>
+                <IconBadge icon={service.icon} />
+                <span>
+                  <span className="block font-semibold">{service.title}</span>
+                  <span className="mt-1 block text-sm text-ink-700">{service.note}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+
         <section aria-labelledby="paket-indihome">
           <h2 id="paket-indihome" className="text-2xl font-extrabold">
             Paket dan layanan
@@ -34,8 +78,8 @@ export default async function IndihomePage() {
               />
             ) : packages.data.length === 0 ? (
               <EmptyState
-                title="Belum ada paket terbit"
-                description="Paket tampil setelah diterbitkan Admin unit IndiHome."
+                title="Pilihan paket dibantu petugas"
+                description="Paket dan harga yang tersedia tergantung alamat. Isi form minat di bawah, petugas kami menghubungi Anda."
               />
             ) : (
               <ul className="grid gap-4 tablet:grid-cols-2 desktop:grid-cols-3">

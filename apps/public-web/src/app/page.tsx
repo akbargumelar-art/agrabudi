@@ -14,12 +14,15 @@ import {
 } from '@agrabudi/ui';
 import {
   ChevronRight,
+  Headset,
   Map,
   MapPin,
   Megaphone,
   MessageCircle,
   ShoppingCart,
+  Truck,
   Trophy,
+  Users,
   Wifi,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -75,6 +78,25 @@ const services: Array<{ href: string; label: string; icon: IconComponent }> = [
     icon: categoryIcon[id],
   })),
   { href: '/indihome', label: 'IndiHome', icon: Wifi },
+];
+
+/** Peran perusahaan, diringkas dari profil resmi agrabudikomunika.com. */
+const roles: Array<{ icon: IconComponent; title: string; note: string }> = [
+  {
+    icon: Truck,
+    title: 'Distribusi',
+    note: 'Mendistribusikan produk Telkomsel ke outlet dan pelanggan di wilayah operasional kami.',
+  },
+  {
+    icon: Users,
+    title: 'Penjualan',
+    note: 'Tim sales memberi informasi dan konsultasi untuk mitra dan pelanggan.',
+  },
+  {
+    icon: Headset,
+    title: 'Layanan pelanggan',
+    note: 'Kios layanan Telkomsel membantu kendala pelanggan di area kerja Agrabudi Komunika.',
+  },
 ];
 
 const outletBenefits: Array<{ icon: IconComponent; title: string; note: string }> = [
@@ -200,7 +222,27 @@ export default async function HomePage() {
         ) : null}
       </section>
 
-      <section aria-labelledby="pilih-layanan" className={sectionClass}>
+      <section aria-labelledby="peran-kami" className={sectionClass}>
+        <SectionHeading
+          id="peran-kami"
+          title="Mitra resmi Telkomsel di Cirebon Raya dan sekitarnya"
+          description="PT Agrabudi Komunika mendistribusikan produk Telkomsel dan melayani pelanggan di wilayah operasional kami."
+          aside={<MoreLink href="/tentang">Tentang kami</MoreLink>}
+        />
+        <ul className="mt-6 grid gap-4 tablet:grid-cols-3">
+          {roles.map((role) => (
+            <li key={role.title} className={cn(cardClass, 'flex items-start gap-4 p-5')}>
+              <IconBadge icon={role.icon} />
+              <span>
+                <span className="block font-semibold">{role.title}</span>
+                <span className="mt-1 block text-sm text-ink-700">{role.note}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section aria-labelledby="pilih-layanan" className={cn(sectionClass, 'pt-0 tablet:pt-0')}>
         <SectionHeading id="pilih-layanan" title="Pilih layanan sesuai kebutuhan" />
         <ul className="mt-6 grid grid-cols-2 gap-3 tablet:grid-cols-5 tablet:gap-4">
           {services.map((service) => (

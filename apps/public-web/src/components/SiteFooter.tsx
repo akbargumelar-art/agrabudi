@@ -1,5 +1,7 @@
 import { Wordmark, cn, containerClass } from '@agrabudi/ui';
 import Link from 'next/link';
+import { channelHref } from '@/components/company';
+import { officialChannels } from '@/lib/contact';
 import { appUrls } from '@/lib/env';
 
 const columns = [
@@ -27,14 +29,14 @@ const columns = [
 const linkClass =
   'inline-flex min-h-11 items-center text-sm text-ink-300 hover:text-white tablet:min-h-8';
 
-/** Footer tanpa alamat dan kontak: data resmi belum disahkan (keputusan terbuka D-09). */
+/** Footer dengan kanal kontak resmi. Alamat kantor ada di halaman Lokasi kantor. */
 export function SiteFooter() {
   return (
     <footer className="on-dark bg-ink-900 text-white">
       <div
         className={cn(
           containerClass,
-          'grid gap-8 py-10 tablet:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)]',
+          'grid gap-8 py-10 tablet:grid-cols-2 desktop:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.3fr)]',
         )}
       >
         <div>
@@ -68,6 +70,27 @@ export function SiteFooter() {
                 Portal karyawan
               </a>
             </li>
+          </ul>
+        </nav>
+        <nav aria-label="Kontak resmi">
+          <h2 className="text-sm font-bold">Hubungi kami</h2>
+          <ul className="mt-2 flex flex-col">
+            {officialChannels.map((channel) => {
+              const href = channelHref(channel);
+              return (
+                <li key={channel.kind}>
+                  {href ? (
+                    <a href={href} target="_blank" rel="noopener noreferrer" className={linkClass}>
+                      {channel.label}: {channel.value}
+                    </a>
+                  ) : (
+                    <span className={linkClass}>
+                      {channel.label}: {channel.value}
+                    </span>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </nav>
       </div>

@@ -1,11 +1,12 @@
 import { DataNotice, Field, Select, Textarea } from '@agrabudi/ui';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { ChannelList } from '@/components/company';
 import { PublicForm } from '@/components/PublicForm';
 import { NameField, PhoneField } from '@/components/FormFields';
-import { SectionUnavailable } from '@/components/Notices';
 import { PageIntro, pageBodyClass } from '@/components/PageIntro';
 import { load } from '@/data';
+import { officialChannels } from '@/lib/contact';
 
 export const metadata: Metadata = { title: 'Hubungi Kami' };
 
@@ -25,15 +26,17 @@ export default async function ContactPage() {
               Kanal resmi
             </h2>
             <div className="mt-4">
-              {company.ok ? (
-                <ChannelList channels={company.data.channels} />
-              ) : (
-                <SectionUnavailable
-                  title="Kanal kontak tidak dapat dimuat"
-                  message={company.message}
-                />
-              )}
+              <ChannelList channels={officialChannels} />
             </div>
+            {company.ok && company.data.offices.length > 0 ? (
+              <p className="mt-4 text-sm text-ink-700">
+                Alamat kantor ada di halaman{' '}
+                <Link href="/tentang/kantor" className="font-medium text-info underline">
+                  Lokasi kantor
+                </Link>
+                .
+              </p>
+            ) : null}
           </section>
           <section aria-labelledby="form-kontak">
             <h2 id="form-kontak" className="text-xl font-bold">

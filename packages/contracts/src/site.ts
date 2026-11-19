@@ -67,7 +67,7 @@ export const companyProfileSchema = z.object({
   ),
   channels: z.array(
     z.object({
-      kind: z.enum(['whatsapp', 'phone', 'email', 'instagram']),
+      kind: z.enum(['whatsapp', 'phone', 'email', 'instagram', 'facebook', 'website']),
       label: z.string().min(1),
       value: z.string().min(1),
     }),

@@ -41,43 +41,51 @@ export default async function AboutPage() {
                 ))}
               </div>
             </section>
-            <section
-              aria-labelledby="sejarah"
-              className="grid gap-4 tablet:grid-cols-[16rem_minmax(0,1fr)] tablet:gap-8"
-            >
-              <h2 id="sejarah" className="text-xl font-bold">
-                Sejarah
-              </h2>
-              <div className="flex max-w-prose flex-col gap-3">
-                {company.data.history.map((text) => (
-                  <p key={text}>{text}</p>
-                ))}
-              </div>
-            </section>
-            <section
-              aria-labelledby="visi-misi"
-              className="grid gap-4 tablet:grid-cols-[16rem_minmax(0,1fr)] tablet:gap-8"
-            >
-              <h2 id="visi-misi" className="text-xl font-bold">
-                Visi dan misi
-              </h2>
-              <div className="max-w-prose">
-                <p className="font-semibold">{company.data.vision}</p>
-                <ul className="mt-3 list-disc space-y-1.5 pl-5">
-                  {company.data.missions.map((mission) => (
-                    <li key={mission}>{mission}</li>
+            {company.data.history.length > 0 ? (
+              <section
+                aria-labelledby="sejarah"
+                className="grid gap-4 tablet:grid-cols-[16rem_minmax(0,1fr)] tablet:gap-8"
+              >
+                <h2 id="sejarah" className="text-xl font-bold">
+                  Sejarah
+                </h2>
+                <div className="flex max-w-prose flex-col gap-3">
+                  {company.data.history.map((text) => (
+                    <p key={text}>{text}</p>
                   ))}
-                </ul>
-              </div>
-            </section>
-            <section aria-labelledby="kantor-kami">
-              <h2 id="kantor-kami" className="text-xl font-bold">
-                Kantor kami
-              </h2>
-              <div className="mt-4">
-                <OfficeList offices={company.data.offices} />
-              </div>
-            </section>
+                </div>
+              </section>
+            ) : null}
+            {company.data.vision || company.data.missions.length > 0 ? (
+              <section
+                aria-labelledby="visi-misi"
+                className="grid gap-4 tablet:grid-cols-[16rem_minmax(0,1fr)] tablet:gap-8"
+              >
+                <h2 id="visi-misi" className="text-xl font-bold">
+                  Visi dan misi
+                </h2>
+                <div className="max-w-prose">
+                  {company.data.vision ? (
+                    <p className="font-semibold">{company.data.vision}</p>
+                  ) : null}
+                  <ul className="mt-3 list-disc space-y-1.5 pl-5">
+                    {company.data.missions.map((mission) => (
+                      <li key={mission}>{mission}</li>
+                    ))}
+                  </ul>
+                </div>
+              </section>
+            ) : null}
+            {company.data.offices.length > 0 ? (
+              <section aria-labelledby="kantor-kami">
+                <h2 id="kantor-kami" className="text-xl font-bold">
+                  Kantor kami
+                </h2>
+                <div className="mt-4">
+                  <OfficeList offices={company.data.offices} />
+                </div>
+              </section>
+            ) : null}
           </>
         )}
         <nav aria-label="Halaman terkait" className="border-t border-surface-100 pt-6">

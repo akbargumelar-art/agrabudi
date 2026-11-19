@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   appUrlsSchema,
+  companyProfileSchema,
   customerProductSchema,
   dataMetaSchema,
   outletOrderSchema,
@@ -92,5 +93,21 @@ describe('kontrak data', () => {
     );
     const parsed = staffProfileUpdateSchema.parse({ ...base, username: 'ganti' });
     expect('username' in parsed).toBe(false);
+  });
+
+  it('profil perusahaan menerima kanal Facebook dan Website', () => {
+    const parsed = companyProfileSchema.parse({
+      about: [],
+      history: [],
+      vision: '',
+      missions: [],
+      areas: [],
+      offices: [],
+      channels: [
+        { kind: 'facebook', label: 'Facebook', value: 'tsel.id/fbciraya' },
+        { kind: 'website', label: 'Website', value: 'www.agrabudikomunika.com' },
+      ],
+    });
+    expect(parsed.channels.map((channel) => channel.kind)).toEqual(['facebook', 'website']);
   });
 });
