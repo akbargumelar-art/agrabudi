@@ -20,6 +20,25 @@ Checkpoint terbaru selalu ditaruh paling atas.
    Kalau sudah merah sebelum Anda mengubah apa pun, catat dulu, jangan dianggap akibat perubahan Anda.
 5. Setelah update selesai dan teruji, tambah checkpoint baru di atas dengan format yang sama, lalu buat tag.
 
+## checkpoint/2026-11-19-m3-password-min-6
+
+Tanggal: 19 November 2026. Branch: `feat/m1-redesign-telkomsel-pattern`.
+Perubahan kecil: minimum kata sandi baru/ganti diturunkan dari 12 menjadi 6 karakter sesuai permintaan pemilik.
+Password sementara acak dari server tetap memakai formatnya sendiri dan tidak diubah.
+
+### Tes
+
+- Contracts: 13 tes lulus.
+- API password/accounts: 22 tes lulus.
+- `pnpm lint`: lulus.
+- `pnpm typecheck`: lulus.
+- `git diff --check`: lulus.
+
+### Terbuka
+
+- Belum dibuat commit/tag/push untuk checkpoint ini.
+- Pengiriman WAHA sungguhan, Docker/staging, konfigurasi produksi, dan UAT tetap terbuka.
+
 ## checkpoint/2026-11-19-m3-password-and-user-management
 
 Tanggal: 19 November 2026. Branch: `feat/m1-redesign-telkomsel-pattern`.

@@ -47,7 +47,7 @@ function NewPasswordFields({ prefix, errors }: { prefix: string; errors: Errors 
       <Field
         label="Kata sandi baru"
         htmlFor={`${prefix}-baru`}
-        hint="Minimal 12 karakter. Boleh berupa kalimat yang mudah Anda ingat."
+        hint="Minimal 6 karakter. Boleh berupa kalimat yang mudah Anda ingat."
         error={errors.newPassword}
       >
         <Input

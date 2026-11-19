@@ -158,10 +158,11 @@ describe('kontrak data', () => {
 });
 
 describe('kontrak akun dan kata sandi', () => {
-  it('kata sandi baru minimal 12 karakter dan tidak sama dengan yang lama', () => {
+  it('kata sandi baru minimal 6 karakter dan tidak sama dengan yang lama', () => {
     const ok = { currentPassword: 'lama-sekali-123', newPassword: 'baru-sekali-456' };
     expect(passwordChangeSchema.safeParse(ok).success).toBe(true);
-    expect(passwordChangeSchema.safeParse({ ...ok, newPassword: 'pendek' }).success).toBe(false);
+    expect(passwordChangeSchema.safeParse({ ...ok, newPassword: '12345' }).success).toBe(false);
+    expect(passwordChangeSchema.safeParse({ ...ok, newPassword: '123456' }).success).toBe(true);
     expect(
       passwordChangeSchema.safeParse({ ...ok, newPassword: ok.currentPassword }).success,
     ).toBe(false);

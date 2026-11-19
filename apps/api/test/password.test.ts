@@ -87,12 +87,12 @@ describe('kata sandi sementara wajib diganti', () => {
     expect(relogin.statusCode).toBe(200);
   });
 
-  it('kata sandi baru minimal 12 karakter dan berbeda dari yang lama', async () => {
+  it('kata sandi baru minimal 6 karakter dan berbeda dari yang lama', async () => {
     await createStaff(ctx.db, { username: 'pendek', role: 'manager' });
     const cookie = await loginStaff(ctx.app, 'pendek');
     const short = await post(
       '/api/v1/auth/password',
-      { currentPassword: PASSWORD, newPassword: 'pendek' },
+      { currentPassword: PASSWORD, newPassword: '12345' },
       cookie,
     );
     const same = await post(

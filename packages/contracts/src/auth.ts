@@ -107,8 +107,8 @@ export const outletLoginSchema = z.object({
 });
 export type OutletLogin = z.infer<typeof outletLoginSchema>;
 
-/** Kata sandi akun baru: minimal 12 karakter (kebijakan final mengikuti perusahaan). */
+/** Kata sandi akun baru: minimal 6 karakter (kebijakan final mengikuti perusahaan). */
 export const newPasswordSchema = z
   .string()
-  .min(12, 'Kata sandi minimal 12 karakter.')
+  .min(6, 'Kata sandi minimal 6 karakter.')
   .max(200, 'Kata sandi terlalu panjang.');
