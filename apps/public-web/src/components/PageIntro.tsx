@@ -11,21 +11,22 @@ type PageIntroProps = {
 };
 
 /**
- * Pembuka halaman dalam: panel merah lembut dengan motif sinyal, bukan hero.
- * Warnanya sengaja beda dari latar halaman (putih) dan dari kartu isi (surface-50)
- * supaya kepala halaman terbaca sebagai bagian tersendiri.
+ * Pembuka halaman dalam: panel merah brand dengan motif sinyal, bukan hero.
+ * Warna pekat dan bayangan di bawahnya membuat kepala halaman terbaca sebagai
+ * bagian tersendiri, terpisah dari latar putih dan kartu isi.
  */
 export function PageIntro({ title, description, aside, back }: PageIntroProps) {
   return (
     <div className={cn(containerClass, 'pt-4 tablet:pt-6')}>
-      <div className="relative overflow-hidden rounded-banner bg-brand-red-soft px-6 py-8 tablet:px-12 tablet:py-12">
-        <SignalRings className="pointer-events-none absolute -right-8 -bottom-8 size-48 text-brand-red opacity-15 tablet:size-72" />
+      <div className="on-dark relative overflow-hidden rounded-banner bg-brand-red px-6 py-8 text-white shadow-raised tablet:px-12 tablet:py-12">
+        <SignalRings className="pointer-events-none absolute -right-8 -bottom-8 size-48 text-white opacity-15 tablet:size-72" />
         <div className="relative">
-          {back ? <div className="mb-3 text-sm">{back}</div> : null}
+          {/* Tautan kembali dari halaman memakai warna info; di atas merah dipaksa putih. */}
+          {back ? <div className="mb-3 text-sm [&_a]:text-white">{back}</div> : null}
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
               <h1 className="text-3xl font-extrabold tablet:text-4xl">{title}</h1>
-              {description ? <p className="mt-3 max-w-prose text-ink-700">{description}</p> : null}
+              {description ? <p className="mt-3 max-w-prose text-white/90">{description}</p> : null}
             </div>
             {aside}
           </div>

@@ -2,10 +2,12 @@ import { DataNotice, IconBadge, cardClass, cn, type IconComponent } from '@agrab
 import { Handshake, MapPinned, Smartphone, Store, Trophy, Wifi } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { OfficeList } from '@/components/company';
+import { CollapsibleSection } from '@/components/Collapsible';
+import { AreaList, ChannelList, OfficeList } from '@/components/company';
 import { SectionUnavailable } from '@/components/Notices';
 import { PageIntro, pageBodyClass } from '@/components/PageIntro';
 import { load } from '@/data';
+import { officialChannels } from '@/lib/contact';
 import { splitLabeled, splitList } from '@/lib/labeled';
 
 export const metadata: Metadata = { title: 'Tentang Kami' };
@@ -163,37 +165,38 @@ export default async function AboutPage() {
                 </div>
               </section>
             ) : null}
-            {company.data.offices.length > 0 ? (
-              <section aria-labelledby="kantor-kami">
-                <h2 id="kantor-kami" className="text-xl font-bold">
-                  Kantor kami
-                </h2>
-                <div className="mt-4">
+            <div className="flex flex-col gap-3" data-about-sections>
+              <CollapsibleSection
+                id="area-layanan"
+                title="Area layanan"
+                summary={`${company.data.areas.length} wilayah`}
+              >
+                <AreaList areas={company.data.areas} headingLevel="h3" />
+              </CollapsibleSection>
+              {company.data.offices.length > 0 ? (
+                <CollapsibleSection
+                  id="lokasi-kantor"
+                  title="Lokasi kantor"
+                  summary={`${company.data.offices.length} kantor`}
+                >
                   <OfficeList offices={company.data.offices} />
-                </div>
-              </section>
-            ) : null}
+                </CollapsibleSection>
+              ) : null}
+              <CollapsibleSection
+                id="hubungi-kami"
+                title="Hubungi Kami"
+                summary="Kanal resmi dan formulir pesan"
+              >
+                <ChannelList
+                  channels={company.data.channels.length > 0 ? company.data.channels : officialChannels}
+                />
+                <Link href="/kontak" className={cn(linkClass, 'mt-3')}>
+                  Kirim pesan lewat formulir
+                </Link>
+              </CollapsibleSection>
+            </div>
           </>
         )}
-        <nav aria-label="Halaman terkait" className="border-t border-surface-100 pt-6">
-          <ul className="flex flex-wrap gap-x-6">
-            <li>
-              <Link href="/tentang/area" className={linkClass}>
-                Area layanan
-              </Link>
-            </li>
-            <li>
-              <Link href="/tentang/kantor" className={linkClass}>
-                Lokasi kantor
-              </Link>
-            </li>
-            <li>
-              <Link href="/kontak" className={linkClass}>
-                Hubungi Kami
-              </Link>
-            </li>
-          </ul>
-        </nav>
       </div>
     </>
   );
