@@ -45,7 +45,7 @@
   --radius-panel: 1.25rem;
   --radius-banner: 1.75rem;
 
-  /* Hanya untuk elemen yang melayang di atas isi: header menempel dan navigasi bawah. */
+  /* Untuk elemen yang melayang di atas isi (header menempel, navigasi bawah) dan panel kepala halaman Publik. */
   --shadow-raised: 0 10px 30px -18px rgb(46 40 52 / 0.4);
   --shadow-raised-up: 0 -10px 30px -18px rgb(46 40 52 / 0.4);
 
