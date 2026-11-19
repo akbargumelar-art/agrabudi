@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   appUrlsSchema,
+  createOutletAccountSchema,
+  createStaffAccountSchema,
+  maskPhone,
+  passwordChangeSchema,
+  passwordResetConfirmSchema,
   companyProfileSections,
   customerProductSchema,
   dataMetaSchema,
@@ -149,5 +154,61 @@ describe('kontrak data', () => {
     );
     const parsed = staffProfileUpdateSchema.parse({ ...base, username: 'ganti' });
     expect('username' in parsed).toBe(false);
+  });
+});
+
+describe('kontrak akun dan kata sandi', () => {
+  it('kata sandi baru minimal 12 karakter dan tidak sama dengan yang lama', () => {
+    const ok = { currentPassword: 'lama-sekali-123', newPassword: 'baru-sekali-456' };
+    expect(passwordChangeSchema.safeParse(ok).success).toBe(true);
+    expect(passwordChangeSchema.safeParse({ ...ok, newPassword: 'pendek' }).success).toBe(false);
+    expect(
+      passwordChangeSchema.safeParse({ ...ok, newPassword: ok.currentPassword }).success,
+    ).toBe(false);
+  });
+
+  it('kode reset tepat 6 angka', () => {
+    const base = { identifier: 'adminmobile', newPassword: 'baru-sekali-456' };
+    expect(passwordResetConfirmSchema.safeParse({ ...base, code: '012345' }).success).toBe(true);
+    expect(passwordResetConfirmSchema.safeParse({ ...base, code: '12345' }).success).toBe(false);
+    expect(passwordResetConfirmSchema.safeParse({ ...base, code: '12a456' }).success).toBe(false);
+  });
+
+  it('akun baru wajib nomor WhatsApp; tidak ada kolom kata sandi; Manager/Admin Web ditolak', () => {
+    const base = {
+      username: 'SF.Baru',
+      displayName: 'Nama',
+      phone: '081234567890',
+      role: 'salesforce',
+      unit: 'mobile',
+      permissions: [],
+    };
+    const parsed = createStaffAccountSchema.parse({ ...base, password: 'diabaikan' });
+    expect(parsed.username).toBe('sf.baru');
+    expect('password' in parsed).toBe(false);
+    expect(createStaffAccountSchema.safeParse({ ...base, phone: '' }).success).toBe(false);
+    expect(createStaffAccountSchema.safeParse({ ...base, role: 'manager' }).success).toBe(false);
+    expect(createStaffAccountSchema.safeParse({ ...base, role: 'web_admin' }).success).toBe(false);
+    expect(
+      createStaffAccountSchema.safeParse({ ...base, permissions: ['user.manage'] }).success,
+    ).toBe(false);
+  });
+
+  it('ID Digipos akun outlet tetap teks dengan nol di depan', () => {
+    const parsed = createOutletAccountSchema.parse({
+      digiposId: ' 0012345 ',
+      outletName: 'Outlet',
+      ownerName: 'Pemilik',
+      tap: null,
+      phone: '081234567890',
+      registeredAt: '2026-11-01',
+    });
+    expect(parsed.digiposId).toBe('0012345');
+  });
+
+  it('nomor HP disamarkan untuk ditampilkan', () => {
+    expect(maskPhone('081234567890')).toBe('0812****7890');
+    expect(maskPhone('+6281234567890')).toBe('6281****7890');
+    expect(maskPhone('123')).toBe('****');
   });
 });

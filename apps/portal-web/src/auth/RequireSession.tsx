@@ -19,5 +19,7 @@ export function RequireSession() {
       <Navigate to="/login" replace state={leftVoluntarily ? null : { from: location.pathname }} />
     );
   }
+  // Kata sandi sementara: server menolak API lain sampai diganti, jadi langsung ke halaman ganti.
+  if (session.mustChangePassword) return <Navigate to="/ganti-kata-sandi" replace />;
   return <Outlet />;
 }

@@ -19,6 +19,7 @@ import { Link, Navigate, useLocation, useNavigate } from 'react-router';
 import { getAuthAdapter } from '../../auth';
 import { useOutletSession } from '../../auth/SessionContext';
 import { useOutletProfile } from '../../data/queries';
+import { ChangePasswordForm } from './PasswordPages';
 
 /** Login mitra outlet dengan ID Digipos dan kata sandi. */
 export function LoginPage() {
@@ -32,7 +33,12 @@ export function LoginPage() {
   const target =
     typeof from === 'string' && from.startsWith('/') && !from.startsWith('//') ? from : '/';
 
-  if (session) return <Navigate to={target} replace />;
+  const resetDone = (location.state as { notice?: unknown } | null)?.notice === 'password-reset';
+
+  // Kata sandi sementara: ganti dulu, baru ke halaman tujuan.
+  if (session) {
+    return <Navigate to={session.mustChangePassword ? '/ganti-kata-sandi' : target} replace />;
+  }
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -41,13 +47,12 @@ export function LoginPage() {
     setError(null);
     try {
       const adapter = await getAuthAdapter();
-      signIn(
-        await adapter.signIn({
-          digiposId: String(form.get('digiposId') ?? ''),
-          password: String(form.get('password') ?? ''),
-        }),
-      );
-      navigate(target, { replace: true });
+      const next = await adapter.signIn({
+        digiposId: String(form.get('digiposId') ?? ''),
+        password: String(form.get('password') ?? ''),
+      });
+      signIn(next);
+      navigate(next.mustChangePassword ? '/ganti-kata-sandi' : target, { replace: true });
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Login gagal. Coba lagi beberapa saat.');
     } finally {
@@ -61,6 +66,12 @@ export function LoginPage() {
         title="Masuk ke akun outlet"
         description="Khusus mitra outlet yang sudah terdaftar."
       />
+      {resetDone && !error ? (
+        <p role="status" className="flex flex-wrap items-center gap-2 text-sm">
+          <StatusBadge tone="success">Kata sandi diganti</StatusBadge>
+          Masuk dengan kata sandi baru Anda.
+        </p>
+      ) : null}
       {error ? <ErrorState title="Belum bisa masuk" description={error} /> : null}
       <form className="flex flex-col gap-4" onSubmit={onSubmit}>
         <Field label="ID Digipos" htmlFor="login-id">
@@ -80,36 +91,7 @@ export function LoginPage() {
         </Button>
       </form>
       <Link to="/lupa-akses" className="text-sm font-medium text-info underline">
-        Lupa akses akun?
-      </Link>
-    </div>
-  );
-}
-
-export function RecoverAccessPage() {
-  return (
-    <div className="mx-auto flex w-full max-w-md flex-col gap-6">
-      <PageHeader
-        title="Pulihkan akses akun"
-        description="Masukkan ID Digipos. Petunjuk pemulihan dikirim ke kontak yang tercatat."
-      />
-      <form
-        className="flex flex-col gap-4"
-        onSubmit={(event) => event.preventDefault()}
-        aria-describedby="catatan-pulih"
-      >
-        <Field label="ID Digipos" htmlFor="pulih-id">
-          <Input id="pulih-id" name="digiposId" autoComplete="username" disabled />
-        </Field>
-        <Button type="submit" block disabled>
-          Kirim petunjuk pemulihan
-        </Button>
-        <p id="catatan-pulih" className="text-sm font-medium text-ink-900">
-          Pemulihan akses belum aktif. Kanal pengiriman petunjuk belum ditentukan.
-        </p>
-      </form>
-      <Link to="/login" className="text-sm font-medium text-info underline">
-        Kembali ke halaman masuk
+        Lupa kata sandi?
       </Link>
     </div>
   );
@@ -134,6 +116,7 @@ export function AccountPage() {
       </div>
     );
   }
+  if (session.mustChangePassword) return <Navigate to="/ganti-kata-sandi" replace />;
   return <AccountProfile digiposId={session.digiposId} onSignOut={() => void signOut()} />;
 }
 
@@ -145,6 +128,7 @@ const programStatus = {
 
 function AccountProfile({ digiposId, onSignOut }: { digiposId: string; onSignOut: () => void }) {
   const profile = useOutletProfile(digiposId);
+  const [passwordChanged, setPasswordChanged] = useState(false);
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
@@ -226,6 +210,29 @@ function AccountProfile({ digiposId, onSignOut }: { digiposId: string; onSignOut
                   Data outlet diubah lewat salesforce atau Admin. Hubungi mereka bila ada yang
                   salah.
                 </p>
+                <section
+                  aria-labelledby="ganti-sandi"
+                  className={cn(cardClass, 'flex flex-col gap-4 p-5')}
+                >
+                  <div>
+                    <h2 id="ganti-sandi" className="text-lg font-bold">
+                      Ganti kata sandi
+                    </h2>
+                    <p className="mt-1 text-sm text-ink-700">
+                      Setelah diganti, sesi di perangkat lain otomatis keluar.
+                    </p>
+                  </div>
+                  <ChangePasswordForm
+                    currentLabel="Kata sandi saat ini"
+                    submitLabel="Ganti kata sandi"
+                    onDone={() => setPasswordChanged(true)}
+                  />
+                  {passwordChanged ? (
+                    <p role="status" className="flex items-center gap-2 text-sm">
+                      <StatusBadge tone="success">Kata sandi diganti</StatusBadge>
+                    </p>
+                  ) : null}
+                </section>
                 <div>
                   <Button variant="secondary" onClick={onSignOut}>
                     Keluar

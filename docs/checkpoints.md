@@ -20,6 +20,36 @@ Checkpoint terbaru selalu ditaruh paling atas.
    Kalau sudah merah sebelum Anda mengubah apa pun, catat dulu, jangan dianggap akibat perubahan Anda.
 5. Setelah update selesai dan teruji, tambah checkpoint baru di atas dengan format yang sama, lalu buat tag.
 
+## checkpoint/2026-11-19-m3-password-and-user-management
+
+Tanggal: 19 November 2026. Branch: `feat/m1-redesign-telkomsel-pattern`.
+Commit dasar: `2eb26ea` `feat: add image fallbacks and portal updates`; branch masih belum merge ke `main`.
+Perubahan checkpoint ini menambahkan siklus kata sandi dan User Management Portal.
+
+### Keputusan yang dikunci
+
+- Akun baru dibuat dengan kata sandi sementara acak dari server; tidak ada kolom kata sandi di form admin.
+- Kata sandi sementara dikirim hanya ke nomor WhatsApp pemilik akun melalui WA Gateway; bila WAHA gagal, pembuatan/reset dibatalkan dan kata sandi lama tetap berlaku.
+- Login pertama dan login setelah reset admin wajib mengganti kata sandi. Server memblokir API lain sampai penggantian selesai.
+- Reset mandiri memakai kode 6 angka lewat WhatsApp, hash di database, berlaku 10 menit, maksimal 5 percobaan, anti-enumerasi, dan maksimal 3 kode per akun per jam.
+- Admin dengan izin `user.manage` mengelola akun Portal dalam cakupan unitnya; akun Outlet dikelola Admin Mobile. Manager dan Admin Web tetap dibuat lewat CLI.
+- WAHA hanya dari env server; pengiriman nyata, Docker/staging, konfigurasi produksi, dan UAT belum dilakukan.
+
+### Tes pada checkpoint
+
+- `pnpm lint`: lulus.
+- `pnpm typecheck`: lulus.
+- API: 106 tes lulus (termasuk password lifecycle, reset WhatsApp tiruan, dan User Management).
+- Contracts: 13 tes lulus; UI 8; Portal 22; Outlet 14.
+- `pnpm build` mode mock: lulus (env localhost + `*_DATA_SOURCE=mock`).
+- `pnpm e2e` mode mock pada 360/390/768/1024/1440: 212 lulus, 8 dilewati, 0 gagal setelah tes reset Outlet diperbarui.
+
+### Terbuka
+
+- Pengiriman ke WAHA sungguhan, Docker/compose, staging, konfigurasi produksi, dan UAT.
+- Editor UI IndiHome/Kalkulator Cuan, menu pesan Hubungi Kami, pembatalan order, status pembayaran, stok/reservasi, impor CSV, email, MFA Admin Web, rollback, pemisahan CMS API/DB, backup, dan S3.
+- Branch belum merge ke `main`.
+
 ## checkpoint/2026-11-19-m2-konten-institusi
 
 Tanggal: 19 November 2026. Branch: `feat/m1-redesign-telkomsel-pattern`.

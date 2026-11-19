@@ -12,6 +12,7 @@ import {
 import { useState, type FormEvent } from 'react';
 import { getAuthAdapter } from '../../auth';
 import { roleLabel, scopeLabel } from '../../auth/access';
+import { ChangePasswordForm } from '../../auth/PasswordPages';
 import { useSession, useSessionApi } from '../../auth/SessionContext';
 
 type FieldErrors = Partial<Record<'displayName' | 'email' | 'phone', string>>;
@@ -131,7 +132,26 @@ export function AccountPage() {
           </div>
         </form>
 
-        <div className="flex flex-col gap-4">
+        <section
+          aria-labelledby="ganti-sandi"
+          className={cn(cardClass, 'flex flex-col gap-4 p-5 tablet:p-6 desktop:col-start-1')}
+        >
+          <div>
+            <h2 id="ganti-sandi" className="text-lg font-bold">
+              Ganti kata sandi
+            </h2>
+            <p className="mt-1 text-sm text-ink-700">
+              Setelah diganti, sesi di perangkat lain otomatis keluar.
+            </p>
+          </div>
+          <ChangePasswordForm
+            currentLabel="Kata sandi saat ini"
+            submitLabel="Ganti kata sandi"
+            onDone={() => toast.show({ tone: 'success', message: 'Kata sandi diganti.' })}
+          />
+        </section>
+
+        <div className="flex flex-col gap-4 desktop:col-start-2 desktop:row-start-1">
           <dl className={cn(cardClass, 'grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 p-5 text-sm')}>
             <dt className="text-ink-700">Peran</dt>
             <dd data-testid="profil-peran" className="font-medium">

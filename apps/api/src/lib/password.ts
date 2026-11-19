@@ -1,4 +1,11 @@
-import { randomBytes, scrypt, timingSafeEqual, type ScryptOptions } from 'node:crypto';
+import {
+  createHash,
+  randomBytes,
+  randomInt,
+  scrypt,
+  timingSafeEqual,
+  type ScryptOptions,
+} from 'node:crypto';
 
 /**
  * Hash kata sandi dengan scrypt dari modul crypto Node (dipelihara bersama runtime, tanpa
@@ -57,4 +64,33 @@ let dummyHash: Promise<string> | undefined;
 export function dummyPasswordHash(): Promise<string> {
   dummyHash ??= hashPassword(randomBytes(16).toString('hex'));
   return dummyHash;
+}
+
+/** Tanpa huruf/angka yang mirip (0/O, 1/l/I) supaya kata sandi dari WhatsApp mudah diketik di HP. */
+const TEMP_ALPHABET = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+/**
+ * Kata sandi sementara untuk akun baru atau reset oleh admin: 3 kelompok x 4 karakter acak
+ * (sekitar 69 bit), mis. `Kx7m-Pq4r-Zt9w`. Selalu ditandai wajib diganti saat login.
+ */
+export function generateTemporaryPassword(): string {
+  const group = () =>
+    Array.from({ length: 4 }, () => TEMP_ALPHABET[randomInt(TEMP_ALPHABET.length)]).join('');
+  return [group(), group(), group()].join('-');
+}
+
+/** Kode reset 6 angka. Yang disimpan hanya hash-nya, terikat ke akun. */
+export function generateResetCode(): string {
+  return String(randomInt(1_000_000)).padStart(6, '0');
+}
+
+export function hashResetCode(accountId: string, code: string): string {
+  return createHash('sha256').update(`${accountId}:${code}`).digest('hex');
+}
+
+/** Bandingkan hash heksadesimal dengan waktu tetap. */
+export function sameHash(a: string, b: string): boolean {
+  const left = Buffer.from(a, 'hex');
+  const right = Buffer.from(b, 'hex');
+  return left.length === right.length && left.length > 0 && timingSafeEqual(left, right);
 }

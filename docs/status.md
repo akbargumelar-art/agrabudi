@@ -1,6 +1,7 @@
 # Status fitur
 
-Terakhir diperbarui: 19 November 2026, checkpoint `checkpoint/2026-11-19-m2-konten-institusi` (lihat `docs/checkpoints.md`).
+Terakhir diperbarui: 19 November 2026, checkpoint `checkpoint/2026-11-19-m3-password-and-user-management` (lihat `docs/checkpoints.md`).
+Perubahan sesi ini: `2eb26ea` (fallback gambar dan pembaruan Portal) sudah tercatat; User Management dan siklus kata sandi kini terintegrasi dan diuji API.
 Arti status: **planned** belum dikerjakan, **mock** tampil dengan data contoh berlabel atau aksi dinonaktifkan,
 **integrated** tersambung backend, **tested** lulus tes otomatis yang relevan, **accepted** lolos UAT pemilik modul.
 Belum ada fitur berstatus accepted. "integrated" di bawah berarti tersambung ke API dan lulus tes integrasi API
@@ -66,14 +67,31 @@ Stack dan alasannya: `docs/adr/0001-backend-stack.md`. Tes: `pnpm --filter @agra
 | Smoke browser mode `api`                                          | tested manual      | 18 Nov 2026, 390 px: login Outlet, tabel, harga final Rp1.565.000, ajukan, detail setelah refresh; Portal Admin melihat order nyata; menu tanpa kamus data tampil "belum tersambung"                                                                                                                                                                                                                                                                |
 | Image Docker, Nginx tiga host, compose                            | planned            | Image API terbangun di CI `efa33f7`; image Publik gagal (lihat CI), image web dan `nginx -t` belum sampai. Compose belum dijalankan                                                                                                                                                                                                                                                                                                                 |
 
+## Siklus akun dan kata sandi
+
+| Item | Status | Catatan |
+| --- | --- | --- |
+| Kata sandi acak saat membuat akun Portal/Outlet | integrated, tested | User Management dan CLI mendukung kata sandi sementara acak; dikirim ke nomor WhatsApp pemilik lewat WAHA; tidak pernah dikembalikan ke browser atau log. |
+| Login pertama wajib ganti kata sandi | integrated, tested | `must_change_password` di server; API selain `me`, logout, dan ganti sandi ditolak sampai selesai. Sesi perangkat lain dicabut setelah ganti. |
+| Reset mandiri sebelum login | integrated, tested | Kode 6 angka via WhatsApp, hash di DB, TTL 10 menit, maksimal 5 percobaan, anti-enumerasi, batas 3 kode/akun/jam. |
+| Reset oleh Admin | integrated, tested | Admin Portal dengan izin `user.manage`; Portal/Outlet sesuai cakupan unit; password baru hanya dikirim via WAHA dan wajib diganti. |
+| WA Gateway untuk password | integrated, tested | Unit/integrasi memakai WA tiruan. Pengiriman WAHA sungguhan, Docker/staging, konfigurasi produksi, dan UAT belum dilakukan. |
+
 ## Belum ada
 
 Editor UI untuk info IndiHome dan kontak Kalkulator Cuan (API sudah ada).
 Menu untuk membaca pesan Hubungi Kami (kiriman tersimpan di `form_submissions`, belum ada menu Portal).
-User Management di Portal (akun dibuat lewat CLI). Pembatalan order oleh outlet. Status pembayaran (tetap Belum ditagih).
+Pembatalan order oleh outlet. Status pembayaran (tetap Belum ditagih).
 Stok/reservasi, impor CSV, notifikasi email, MFA Admin Web, rollback revisi konten, pemisahan CMS API ke proses dan
 akun DB sendiri, backup otomatis, object storage S3 (sekarang volume disk).
 
+Catatan: "sudah selesai" di atas berarti planned lama yang sudah dipindahkan statusnya: fallback gambar (`2eb26ea`),
+WA Gateway (`integrated, tested` untuk unit/integrasi), dan User Management/siklus kata sandi. Fitur yang masih
+memerlukan infrastruktur tetap terbuka: WAHA sungguhan, Docker/compose, staging, konfigurasi produksi, dan UAT.
+
+## Keputusan terbuka yang menahan pekerjaan berikutnya
+
+| ID         | Hal                                     | Dampak                                                                             |
 ## Keputusan terbuka yang menahan pekerjaan berikutnya
 
 | ID         | Hal                                     | Dampak                                                                             |

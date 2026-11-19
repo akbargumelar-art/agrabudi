@@ -1,6 +1,6 @@
-import { AppSwitcher, Button, ErrorState, Field, Input, Wordmark } from '@agrabudi/ui';
+import { AppSwitcher, Button, ErrorState, Field, Input, StatusBadge, Wordmark } from '@agrabudi/ui';
 import { useState, type FormEvent } from 'react';
-import { Navigate, useLocation, useNavigate } from 'react-router';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router';
 import { appUrls } from '../app/env';
 import { StageNotice } from '../app/StageNotice';
 import { getAuthAdapter } from './index';
@@ -12,6 +12,14 @@ function targetAfterLogin(state: unknown): string {
     if (typeof from === 'string' && from.startsWith('/') && from !== '/login') return from;
   }
   return '/';
+}
+
+function resetNotice(state: unknown): boolean {
+  return (
+    typeof state === 'object' &&
+    state !== null &&
+    (state as { notice?: unknown }).notice === 'password-reset'
+  );
 }
 
 /**
@@ -60,6 +68,12 @@ export function LoginPage() {
           <p className="mt-2 text-ink-700">Masuk dengan akun karyawan Anda.</p>
         </div>
 
+        {resetNotice(location.state) && !error ? (
+          <p role="status" className="flex flex-wrap items-center gap-2 text-sm">
+            <StatusBadge tone="success">Kata sandi diganti</StatusBadge>
+            Masuk dengan kata sandi baru Anda.
+          </p>
+        ) : null}
         {error ? <ErrorState title="Belum bisa masuk" description={error} /> : null}
 
         <form className="flex flex-col gap-4" onSubmit={onSubmit}>
@@ -85,6 +99,9 @@ export function LoginPage() {
             Masuk
           </Button>
         </form>
+        <Link to="/lupa-kata-sandi" className="text-sm font-medium text-info underline">
+          Lupa kata sandi?
+        </Link>
       </main>
     </>
   );

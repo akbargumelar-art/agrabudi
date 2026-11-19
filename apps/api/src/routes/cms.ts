@@ -27,6 +27,7 @@ import { HttpError, conflict, invalid, notFound } from '../lib/errors';
 import { detectImage, safeDisplayName } from '../lib/file-type';
 import { envelope, parse } from '../lib/http';
 import { newId } from '../lib/ids';
+import { PASSWORD_CHANGE_RATE, handlePasswordChange } from './password';
 import { logout, updateOwnProfile } from './staff-auth';
 
 const idParams = z.object({ id: z.string().regex(/^[A-Za-z0-9_-]{1,64}$/) });
@@ -74,9 +75,12 @@ export const cmsRoutes: FastifyPluginAsync = async (app) => {
   const mediaPrefix = `${config.MEDIA_PUBLIC_BASE_URL.replace(/\/$/, '')}/`;
 
   app.addHook('preHandler', async (request) => {
+    const url = request.routeOptions.url ?? '';
     // Logout harus tetap bisa membersihkan cookie walau sesi sudah habis.
-    if (request.routeOptions.url?.endsWith('/auth/logout')) return;
-    request.webAdmin = await authenticateWebAdmin(request);
+    if (url.endsWith('/auth/logout')) return;
+    // Selama kata sandi sementara, hanya `me` dan ganti kata sandi yang terbuka.
+    const allowPendingPassword = url.endsWith('/auth/me') || url.endsWith('/auth/password');
+    request.webAdmin = await authenticateWebAdmin(request, { allowPendingPassword });
   });
 
   const record = (
@@ -99,6 +103,9 @@ export const cmsRoutes: FastifyPluginAsync = async (app) => {
   app.post('/auth/logout', async (request, reply) => logout(request, reply, 'web_admin'));
   app.patch('/auth/profile', async (request) =>
     updateOwnProfile(db, principal(request), request.body, request.id),
+  );
+  app.post('/auth/password', { config: PASSWORD_CHANGE_RATE }, async (request, reply) =>
+    handlePasswordChange(request, reply, 'staff', 'web_admin', principal(request).actor),
   );
 
   // ---------------------------------------------------------------- halaman

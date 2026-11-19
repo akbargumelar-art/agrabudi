@@ -14,6 +14,14 @@ import { audit } from '../lib/audit';
 import { HttpError } from '../lib/errors';
 import { parse } from '../lib/http';
 import { dummyPasswordHash, verifyPassword } from '../lib/password';
+import {
+  PASSWORD_CHANGE_RATE,
+  RESET_CONFIRM_RATE,
+  RESET_REQUEST_RATE,
+  handlePasswordChange,
+  handleResetConfirm,
+  handleResetRequest,
+} from './password';
 
 /** 10 percobaan login per IP per 5 menit (PRD 4.3, 4.13). */
 export const LOGIN_RATE = { rateLimit: { max: 10, timeWindow: '5 minutes' } };
@@ -100,9 +108,26 @@ export const staffAuthRoutes: FastifyPluginAsync = async (app) => {
 
   app.post('/auth/logout', async (request, reply) => logout(request, reply, 'staff'));
 
-  app.get('/auth/me', async (request) => (await authenticateStaff(request)).session);
+  // `me` tetap terbuka saat kata sandi sementara supaya browser tahu harus ke halaman ganti sandi.
+  app.get(
+    '/auth/me',
+    async (request) => (await authenticateStaff(request, { allowPendingPassword: true })).session,
+  );
 
   app.patch('/auth/profile', async (request) =>
     updateOwnProfile(db, await authenticateStaff(request), request.body, request.id),
+  );
+
+  app.post('/auth/password', { config: PASSWORD_CHANGE_RATE }, async (request, reply) => {
+    const principal = await authenticateStaff(request, { allowPendingPassword: true });
+    return handlePasswordChange(request, reply, 'staff', 'staff', principal.actor);
+  });
+
+  // Reset mandiri berlaku untuk semua akun Portal, termasuk Admin Web (satu tabel akun).
+  app.post('/auth/password-reset/request', { config: RESET_REQUEST_RATE }, async (request, reply) =>
+    handleResetRequest(request, reply, 'staff', 'Portal Agrabudi'),
+  );
+  app.post('/auth/password-reset/confirm', { config: RESET_CONFIRM_RATE }, async (request, reply) =>
+    handleResetConfirm(request, reply, 'staff'),
   );
 };

@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Link, Route, Routes } from 'react-router';
 import { PortalLayout } from './app/PortalLayout';
 import { LoginPage } from './auth/LoginPage';
+import { ForceChangePasswordPage, ForgotPasswordPage } from './auth/PasswordPages';
 import { RequireSession } from './auth/RequireSession';
 import { SessionProvider } from './auth/SessionContext';
 import { AccountPage } from './features/account/AccountPages';
@@ -41,6 +42,8 @@ export function App() {
         <SessionProvider>
           <Routes>
             <Route path="login" element={<LoginPage />} />
+            <Route path="lupa-kata-sandi" element={<ForgotPasswordPage />} />
+            <Route path="ganti-kata-sandi" element={<ForceChangePasswordPage />} />
             <Route element={<RequireSession />}>
               <Route element={<PortalLayout />}>
                 <Route index element={<DashboardPage />} />

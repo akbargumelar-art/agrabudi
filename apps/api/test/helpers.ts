@@ -110,6 +110,8 @@ export async function createStaff(
     scope?: DataScope;
     permissions?: StaffPermission[];
     status?: 'active' | 'disabled';
+    phone?: string | null;
+    mustChangePassword?: boolean;
   },
 ) {
   const id = newId();
@@ -120,11 +122,12 @@ export async function createStaff(
       username: input.username,
       displayName: `Akun uji ${input.username}`,
       email: null,
-      phone: null,
+      phone: input.phone ?? null,
       role: input.role,
       unit: input.unit ?? null,
       scope: input.scope ?? (input.role === 'web_admin' ? 'site' : 'cluster'),
       passwordHash: await testHash(),
+      mustChangePassword: input.mustChangePassword ?? false,
       status: input.status ?? 'active',
     })
     .execute();
@@ -134,7 +137,11 @@ export async function createStaff(
   return id;
 }
 
-export async function createOutlet(db: Db, digiposId: string) {
+export async function createOutlet(
+  db: Db,
+  digiposId: string,
+  options: { phone?: string; mustChangePassword?: boolean } = {},
+) {
   const id = newId();
   await db
     .insertInto('outletAccounts')
@@ -144,10 +151,12 @@ export async function createOutlet(db: Db, digiposId: string) {
       outletName: `Outlet uji ${digiposId}`,
       ownerName: 'Pemilik uji',
       tap: null,
+      ...(options.phone === undefined ? {} : { phone: options.phone }),
       registeredAt: '2026-01-02',
       salesforceName: null,
       photoUrl: null,
       passwordHash: await testHash(),
+      mustChangePassword: options.mustChangePassword ?? false,
     })
     .execute();
   return id;

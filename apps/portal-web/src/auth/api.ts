@@ -1,6 +1,6 @@
 import { staffSessionSchema, type StaffSession } from '@agrabudi/contracts';
 import { ApiRequestError, apiRequest, apiRequestRaw } from '@agrabudi/contracts/http';
-import { InvalidCredentialsError, type AuthAdapter } from './adapter';
+import { FieldError, InvalidCredentialsError, type AuthAdapter } from './adapter';
 
 /**
  * Login Portal lewat API. Satu form; server menentukan realm dari akun: akun Admin Web
@@ -16,6 +16,18 @@ async function me(base: string): Promise<StaffSession | null> {
     return await apiRequest(`${base}/me`, staffSessionSchema);
   } catch (error) {
     if (error instanceof ApiRequestError && error.status === 401) return null;
+    throw error;
+  }
+}
+
+/** Pesan per kolom dari server (422) diteruskan ke form; selain itu dilempar apa adanya. */
+async function send(url: string, body: unknown): Promise<void> {
+  try {
+    await apiRequestRaw(url, { method: 'POST', body });
+  } catch (error) {
+    if (error instanceof ApiRequestError && error.status === 422) {
+      throw new FieldError(error.message, error.fields);
+    }
     throw error;
   }
 }
@@ -42,4 +54,13 @@ export const apiAuthAdapter: AuthAdapter = {
   signOut: async (session) => {
     await apiRequestRaw(`${realmBase(session)}/logout`, { method: 'POST' });
   },
+  changePassword: async (session, input) => {
+    const base = realmBase(session);
+    await send(`${base}/password`, input);
+    const fresh = await me(base);
+    if (!fresh) throw new Error('Kata sandi sudah diganti. Silakan masuk lagi.');
+    return fresh;
+  },
+  requestPasswordReset: (identifier) => send(`${STAFF}/password-reset/request`, { identifier }),
+  confirmPasswordReset: (input) => send(`${STAFF}/password-reset/confirm`, input),
 };

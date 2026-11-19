@@ -18,6 +18,8 @@ export const apiErrorCodeSchema = z.enum([
   'UNSUPPORTED_FILE',
   'RATE_LIMITED',
   'ORIGIN_REJECTED',
+  /** Akun masih memakai kata sandi sementara; hanya ganti kata sandi yang diizinkan. */
+  'PASSWORD_CHANGE_REQUIRED',
   'SERVICE_UNAVAILABLE',
   'INTERNAL',
 ]);

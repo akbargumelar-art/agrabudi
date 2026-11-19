@@ -40,6 +40,9 @@ export interface StaffAccountsTable {
   unit: BusinessUnit | null;
   scope: DataScope;
   passwordHash: string;
+  /** Kata sandi sementara (akun baru atau direset admin): wajib diganti sebelum memakai API. */
+  mustChangePassword: ColumnType<boolean, boolean | undefined, boolean>;
+  passwordChangedAt: ColumnType<Date | null, Date | null | undefined, Date | null>;
   status: ColumnType<AccountStatus, AccountStatus | undefined, AccountStatus>;
   createdAt: CreatedAt;
   updatedAt: UpdatedAt;
@@ -63,6 +66,8 @@ export interface OutletAccountsTable {
   registeredAt: DateText;
   photoUrl: string | null;
   passwordHash: string;
+  mustChangePassword: ColumnType<boolean, boolean | undefined, boolean>;
+  passwordChangedAt: ColumnType<Date | null, Date | null | undefined, Date | null>;
   status: ColumnType<AccountStatus, AccountStatus | undefined, AccountStatus>;
   createdAt: CreatedAt;
   updatedAt: UpdatedAt;
@@ -85,6 +90,20 @@ export interface SessionsTable {
   expiresAt: Date;
   idleSeconds: number;
   revokedAt: Date | null;
+}
+
+/** Realm akun yang bisa reset mandiri. Admin Web memakai tabel staff, jadi realm `staff`. */
+export type PasswordResetRealm = 'staff' | 'outlet';
+
+export interface PasswordResetCodesTable {
+  id: string;
+  realm: PasswordResetRealm;
+  accountId: string;
+  codeHash: string;
+  attempts: ColumnType<number, number | undefined, number>;
+  createdAt: CreatedAt;
+  expiresAt: Date;
+  usedAt: Date | null;
 }
 
 export interface CustomerProductsTable {
@@ -366,6 +385,7 @@ export interface Database {
   outletAccounts: OutletAccountsTable;
   outletProgramProgress: OutletProgramProgressTable;
   sessions: SessionsTable;
+  passwordResetCodes: PasswordResetCodesTable;
   customerProducts: CustomerProductsTable;
   outletCategories: OutletCategoriesTable;
   outletPackages: OutletPackagesTable;

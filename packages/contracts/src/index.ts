@@ -1,4 +1,5 @@
 export * from './access';
+export * from './accounts';
 export * from './api';
 export * from './apps';
 export * from './auth';

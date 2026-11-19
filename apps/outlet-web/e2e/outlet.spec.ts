@@ -320,9 +320,14 @@ test('kalkulator cuan: rekomendasi dan pilih sendiri mengikuti modal', async ({ 
   ).toBeDisabled();
 });
 
-test('aksi yang belum ada dinonaktifkan dengan alasan, bukan sukses palsu', async ({ page }) => {
+test('reset akses menjelaskan pengiriman kode WhatsApp sebelum meminta kode', async ({ page }) => {
   await page.goto(`${base}/lupa-akses`);
-  await expect(page.getByRole('button', { name: 'Kirim petunjuk pemulihan' })).toBeDisabled();
+  await expect(page.getByRole('heading', { name: 'Pulihkan akses akun' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Kirim kode ke WhatsApp' })).toBeEnabled();
+  await page.getByLabel('ID Digipos').fill('CONTOH001');
+  await page.getByRole('button', { name: 'Kirim kode ke WhatsApp' }).click();
+  await expect(page.getByText('Cek WhatsApp Anda')).toBeVisible();
+  await expect(page.getByLabel('Kode dari WhatsApp')).toBeVisible();
 });
 
 test('menu aktif mengikuti halaman', async ({ page }) => {

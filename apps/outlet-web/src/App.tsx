@@ -2,7 +2,8 @@ import { Route, Routes } from 'react-router';
 import { NotFoundPage } from './app/NotFoundPage';
 import { OutletLayout } from './app/OutletLayout';
 import { AbkShopPage } from './features/abkshop/AbkShopPage';
-import { AccountPage, LoginPage, RecoverAccessPage } from './features/account/AccountPages';
+import { AccountPage, LoginPage } from './features/account/AccountPages';
+import { ForceChangePasswordPage, RecoverAccessPage } from './features/account/PasswordPages';
 import { CalculatorPage } from './features/calculator/CalculatorPage';
 import { CheckoutPage } from './features/checkout/CheckoutPage';
 import { HomePage } from './features/home/HomePage';
@@ -21,6 +22,7 @@ export function App() {
         <Route index element={<HomePage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="lupa-akses" element={<RecoverAccessPage />} />
+        <Route path="ganti-kata-sandi" element={<ForceChangePasswordPage />} />
         <Route path="kalkulator" element={<CalculatorPage />} />
         <Route path="abkshop" element={<AbkShopPage />} />
         <Route path="checkout" element={<CheckoutPage />} />

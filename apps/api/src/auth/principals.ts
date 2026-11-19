@@ -3,8 +3,21 @@ import type { FastifyRequest } from 'fastify';
 import type { Kysely } from 'kysely';
 import type { Database, OutletAccountRow, StaffAccountRow } from '../db/types';
 import type { Actor } from '../lib/audit';
-import { unauthenticated } from '../lib/errors';
+import { HttpError, unauthenticated } from '../lib/errors';
 import { readSessionCookie, resolveSession } from './sessions';
+
+/**
+ * Selama kata sandi sementara belum diganti, sesi hanya boleh membaca dirinya, keluar, dan
+ * mengganti kata sandi. Diperiksa server, bukan hanya dialihkan di browser (PRD 4.13).
+ */
+export type AuthOptions = { allowPendingPassword?: boolean };
+
+const passwordChangeRequired = () =>
+  new HttpError(
+    403,
+    'PASSWORD_CHANGE_REQUIRED',
+    'Ganti kata sandi sementara Anda dulu sebelum melanjutkan.',
+  );
 
 /** Siapa yang sedang memanggil API, setelah sesi diverifikasi server. */
 export type StaffPrincipal = { session: StaffSession; token: string; actor: Actor };
@@ -34,6 +47,7 @@ export async function staffSessionFromRow(
     unit: row.unit,
     scope: row.scope,
     permissions: permissions.map((item) => item.permission as StaffPermission).sort(),
+    mustChangePassword: row.mustChangePassword,
   };
 }
 
@@ -43,6 +57,7 @@ export function outletSessionFromRow(row: OutletAccountRow): OutletSession {
     outletName: row.outletName,
     ownerName: row.ownerName,
     tap: row.tap,
+    mustChangePassword: row.mustChangePassword,
   };
 }
 
@@ -59,7 +74,10 @@ async function activeStaff(db: Kysely<Database>, id: string) {
  * Sesi Portal operasional. Hanya cookie realm `staff`; akun Admin Web tidak pernah
  * mendapat sesi realm ini, dan diperiksa lagi di sini (deny by default).
  */
-export async function authenticateStaff(request: FastifyRequest): Promise<StaffPrincipal> {
+export async function authenticateStaff(
+  request: FastifyRequest,
+  options: AuthOptions = {},
+): Promise<StaffPrincipal> {
   const { db, config } = request.server.deps;
   const token = readSessionCookie(request, 'staff', config.COOKIE_SECURE);
   if (!token) throw unauthenticated();
@@ -67,12 +85,16 @@ export async function authenticateStaff(request: FastifyRequest): Promise<StaffP
   if (!accountId) throw unauthenticated();
   const row = await activeStaff(db, accountId);
   if (!row || row.role === 'web_admin') throw unauthenticated();
+  if (row.mustChangePassword && !options.allowPendingPassword) throw passwordChangeRequired();
   const session = await staffSessionFromRow(db, row);
   return { session, token, actor: { realm: 'staff', id: row.id, label: row.username } };
 }
 
 /** Sesi console website. Hanya cookie realm `web_admin`; cookie staff diabaikan (PRD 4.3). */
-export async function authenticateWebAdmin(request: FastifyRequest): Promise<StaffPrincipal> {
+export async function authenticateWebAdmin(
+  request: FastifyRequest,
+  options: AuthOptions = {},
+): Promise<StaffPrincipal> {
   const { db, config } = request.server.deps;
   const token = readSessionCookie(request, 'web_admin', config.COOKIE_SECURE);
   if (!token) throw unauthenticated();
@@ -80,11 +102,15 @@ export async function authenticateWebAdmin(request: FastifyRequest): Promise<Sta
   if (!accountId) throw unauthenticated();
   const row = await activeStaff(db, accountId);
   if (!row || row.role !== 'web_admin') throw unauthenticated();
+  if (row.mustChangePassword && !options.allowPendingPassword) throw passwordChangeRequired();
   const session = await staffSessionFromRow(db, row);
   return { session, token, actor: { realm: 'web_admin', id: row.id, label: row.username } };
 }
 
-export async function authenticateOutlet(request: FastifyRequest): Promise<OutletPrincipal> {
+export async function authenticateOutlet(
+  request: FastifyRequest,
+  options: AuthOptions = {},
+): Promise<OutletPrincipal> {
   const { db, config } = request.server.deps;
   const token = readSessionCookie(request, 'outlet', config.COOKIE_SECURE);
   if (!token) throw unauthenticated();
@@ -97,6 +123,7 @@ export async function authenticateOutlet(request: FastifyRequest): Promise<Outle
     .where('status', '=', 'active')
     .executeTakeFirst();
   if (!row) throw unauthenticated();
+  if (row.mustChangePassword && !options.allowPendingPassword) throw passwordChangeRequired();
   return {
     session: outletSessionFromRow(row),
     accountId: row.id,

@@ -1,7 +1,7 @@
 import type { OutletSession } from '@agrabudi/contracts';
 import { LoadingBlock, PageHeader, buttonClass, cardClass, cn } from '@agrabudi/ui';
 import type { ReactNode } from 'react';
-import { Link, useLocation } from 'react-router';
+import { Link, Navigate, useLocation } from 'react-router';
 import { useOutletSession } from './SessionContext';
 
 type RequireOutletProps = {
@@ -20,6 +20,8 @@ type RequireOutletProps = {
 export function RequireOutlet({ title, reason, children }: RequireOutletProps) {
   const { session, status } = useOutletSession();
   const { pathname } = useLocation();
+  // Kata sandi sementara: server menolak katalog dan order sampai diganti.
+  if (session?.mustChangePassword) return <Navigate to="/ganti-kata-sandi" replace />;
   if (session) return <>{children(session)}</>;
   if (status === 'checking') return <LoadingBlock label="Memeriksa sesi" />;
   return (

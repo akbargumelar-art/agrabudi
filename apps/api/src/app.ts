@@ -10,6 +10,7 @@ import { registerErrorHandling } from './lib/errors';
 import type { FileStorage } from './lib/storage';
 import { createWahaSender, type WaSender } from './lib/waha';
 import { createNotifier, type Notifier } from './domain/notifications';
+import { accountRoutes } from './routes/accounts';
 import { cmsRoutes } from './routes/cms';
 import { formRoutes } from './routes/forms';
 import { healthRoutes } from './routes/health';
@@ -80,6 +81,7 @@ export async function buildApp(deps: AppDeps, logger: FastifyServerOptions['logg
   await app.register(outletRoutes, { prefix: '/api/v1/outlet' });
   await app.register(staffAuthRoutes, { prefix: '/api/v1' });
   await app.register(portalRoutes, { prefix: '/api/v1' });
+  await app.register(accountRoutes, { prefix: '/api/v1' });
   await app.register(cmsRoutes, { prefix: '/web-admin/api/v1' });
 
   return app;

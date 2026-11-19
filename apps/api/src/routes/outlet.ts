@@ -28,6 +28,14 @@ import { audit } from '../lib/audit';
 import { HttpError } from '../lib/errors';
 import { envelope, parse } from '../lib/http';
 import { dummyPasswordHash, verifyPassword } from '../lib/password';
+import {
+  PASSWORD_CHANGE_RATE,
+  RESET_CONFIRM_RATE,
+  RESET_REQUEST_RATE,
+  handlePasswordChange,
+  handleResetConfirm,
+  handleResetRequest,
+} from './password';
 import { LOGIN_RATE, logout } from './staff-auth';
 
 const slugParams = z.object({ slug: z.string().min(1).max(120) });
@@ -70,7 +78,21 @@ export const outletRoutes: FastifyPluginAsync = async (app) => {
   });
 
   app.post('/auth/logout', async (request, reply) => logout(request, reply, 'outlet'));
-  app.get('/auth/me', async (request) => (await authenticateOutlet(request)).session);
+  app.get(
+    '/auth/me',
+    async (request) => (await authenticateOutlet(request, { allowPendingPassword: true })).session,
+  );
+
+  app.post('/auth/password', { config: PASSWORD_CHANGE_RATE }, async (request, reply) => {
+    const principal = await authenticateOutlet(request, { allowPendingPassword: true });
+    return handlePasswordChange(request, reply, 'outlet', 'outlet', principal.actor);
+  });
+  app.post('/auth/password-reset/request', { config: RESET_REQUEST_RATE }, async (request, reply) =>
+    handleResetRequest(request, reply, 'outlet', 'Agrabudi Outlet'),
+  );
+  app.post('/auth/password-reset/confirm', { config: RESET_CONFIRM_RATE }, async (request, reply) =>
+    handleResetConfirm(request, reply, 'outlet'),
+  );
 
   app.get('/catalog', async (request) => {
     await authenticateOutlet(request);

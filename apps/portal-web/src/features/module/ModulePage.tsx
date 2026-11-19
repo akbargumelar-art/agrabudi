@@ -5,6 +5,7 @@ import { accessModeLabel, routeAccess, scopePhrase, visibleSections } from '../.
 import { useSession } from '../../auth/SessionContext';
 import { consolePages } from '../../console/ConsolePage';
 import { useDataset } from '../../data/queries';
+import { UserManagementContent } from '../users/UserManagementPage';
 import { findModuleRoute, findSection, type ModuleLeaf } from '../../registry';
 import { DataView } from './DataView';
 
@@ -135,6 +136,9 @@ export function ModulePage() {
             ))}
           </ul>
         </section>
+      ) : route.section.id === 'admin' && route.group.slug === 'user-management' ? (
+        // Akun dan kata sandi punya model dan aksinya sendiri, bukan tabel modul generik (AS-10).
+        <UserManagementContent />
       ) : (
         <ModuleData path={pathname.replace(/\/$/, '')} />
       )}

@@ -1,4 +1,6 @@
 import {
+  passwordChangeSchema,
+  passwordResetConfirmSchema,
   staffProfileUpdateSchema,
   staffSessionSchema,
   type BusinessUnit,
@@ -8,7 +10,7 @@ import {
   type StaffSession,
 } from '@agrabudi/contracts';
 import { personByUsername } from '../data/mock/org';
-import { InvalidCredentialsError, type AuthAdapter } from './adapter';
+import { FieldError, InvalidCredentialsError, type AuthAdapter } from './adapter';
 
 /**
  * AKUN CONTOH untuk kerangka tampilan. Bukan akun sungguhan dan tidak ikut ke build
@@ -16,6 +18,19 @@ import { InvalidCredentialsError, type AuthAdapter } from './adapter';
  * contoh dan hanya berlaku di mock; akun sungguhan dibuat pengelola akses di server.
  */
 export const DEMO_PASSWORD = 'contoh123';
+
+/**
+ * Akun contoh yang masih memakai kata sandi sementara, untuk mencoba alur "login pertama
+ * wajib ganti kata sandi". Kata sandinya juga contoh dan hanya berlaku di mock.
+ */
+export const DEMO_PENDING_USERNAME = 'sfbaru';
+export const DEMO_TEMP_PASSWORD = 'Contoh-Sementara-1';
+
+/**
+ * Mode contoh tidak mengirim WhatsApp. Kode reset contoh ini tampil berlabel di halaman
+ * lupa kata sandi supaya alurnya bisa dicoba; server sungguhan tidak pernah menampilkannya.
+ */
+export const DEMO_RESET_CODE = '123456';
 
 function account(
   username: string,
@@ -35,6 +50,7 @@ function account(
     unit,
     scope,
     permissions,
+    mustChangePassword: false,
   });
 }
 
@@ -54,14 +70,56 @@ export const demoAccounts: StaffSession[] = [
   account('sfdirect', 'salesforce', 'direct_sales', 'self', 'Salesforce Direct Sales'),
 ];
 
-/** Perubahan profil di mode kerangka hanya hidup selama halaman terbuka. */
-const profiles = new Map<string, StaffSession>(demoAccounts.map((item) => [item.username, item]));
+/** Akun baru contoh: belum mengganti kata sandi sementara. Tidak ikut daftar menu per peran. */
+const pendingAccount = staffSessionSchema.parse({
+  ...account(DEMO_PENDING_USERNAME, 'salesforce', 'mobile', 'self', 'Salesforce Baru'),
+  mustChangePassword: true,
+});
+
+/** Perubahan profil dan kata sandi di mode kerangka hanya hidup selama halaman terbuka. */
+const profiles = new Map<string, StaffSession>(
+  [...demoAccounts, pendingAccount].map((item) => [item.username, item]),
+);
+const passwords = new Map<string, string>([[DEMO_PENDING_USERNAME, DEMO_TEMP_PASSWORD]]);
+const passwordOf = (username: string) => passwords.get(username) ?? DEMO_PASSWORD;
+
+const wrongCode = () =>
+  new FieldError('Kode salah atau sudah tidak berlaku. Minta kode baru bila perlu.', {
+    code: 'Kode salah atau sudah tidak berlaku.',
+  });
 
 export const mockAuthAdapter: AuthAdapter = {
   signIn: async ({ username, password }) => {
-    const found = profiles.get(username.trim().toLowerCase());
-    if (!found || password !== DEMO_PASSWORD) throw new InvalidCredentialsError();
+    const key = username.trim().toLowerCase();
+    const found = profiles.get(key);
+    if (!found || password !== passwordOf(key)) throw new InvalidCredentialsError();
     return found;
+  },
+  changePassword: async (session, input) => {
+    const parsed = passwordChangeSchema.safeParse(input);
+    if (!parsed.success) {
+      const issue = parsed.error.issues[0];
+      throw new FieldError(issue?.message ?? 'Isian belum sesuai.', {
+        [String(issue?.path[0] ?? '_')]: issue?.message ?? 'Isian belum sesuai.',
+      });
+    }
+    if (parsed.data.currentPassword !== passwordOf(session.username)) {
+      throw new FieldError('Kata sandi saat ini salah.', {
+        currentPassword: 'Kata sandi saat ini salah.',
+      });
+    }
+    passwords.set(session.username, parsed.data.newPassword);
+    const current = profiles.get(session.username) ?? session;
+    const next = staffSessionSchema.parse({ ...current, mustChangePassword: false });
+    profiles.set(next.username, next);
+    return next;
+  },
+  requestPasswordReset: async () => undefined,
+  confirmPasswordReset: async (input) => {
+    const { identifier, code, newPassword } = passwordResetConfirmSchema.parse(input);
+    const key = identifier.trim().toLowerCase();
+    if (!profiles.has(key) || code !== DEMO_RESET_CODE) throw wrongCode();
+    passwords.set(key, newPassword);
   },
   updateProfile: async (session, update) => {
     const current = profiles.get(session.username) ?? session;

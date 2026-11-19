@@ -1,4 +1,4 @@
-import type { OutletSession } from '@agrabudi/contracts';
+import type { OutletSession, PasswordChange, PasswordResetConfirm } from '@agrabudi/contracts';
 
 /**
  * Login mitra outlet: ID Digipos dan kata sandi, seperti aplikasi poin-outlet lama.
@@ -10,6 +10,23 @@ export interface OutletAuthAdapter {
   restore(): Promise<OutletSession | null>;
   /** Cabut sesi di server. */
   signOut(): Promise<void>;
+  /** Ganti kata sandi sendiri. Sesi di perangkat lain dicabut; hasilnya sesi terbaru browser ini. */
+  changePassword(session: OutletSession, input: PasswordChange): Promise<OutletSession>;
+  /** Minta kode reset ke WhatsApp. Jawabannya tidak membedakan ada atau tidaknya akun. */
+  requestPasswordReset(digiposId: string): Promise<void>;
+  confirmPasswordReset(input: PasswordResetConfirm): Promise<void>;
+}
+
+/** Kegagalan isian dari server: pesan umum plus pesan per kolom. */
+export class FieldError extends Error {
+  readonly code = 'FIELD_ERROR';
+  constructor(
+    message: string,
+    readonly fields: Record<string, string>,
+  ) {
+    super(message);
+    this.name = 'FieldError';
+  }
 }
 
 export class AuthUnavailableError extends Error {

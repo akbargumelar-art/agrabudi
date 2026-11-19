@@ -42,6 +42,11 @@ export const staffSessionSchema = z.object({
   unit: businessUnitSchema.nullable(),
   scope: dataScopeSchema,
   permissions: z.array(staffPermissionSchema),
+  /**
+   * `true` selama akun masih memakai kata sandi sementara (akun baru atau direset admin).
+   * Server menolak semua API kecuali sesi, keluar, dan ganti kata sandi sampai diganti.
+   */
+  mustChangePassword: z.boolean(),
 });
 export type StaffSession = z.infer<typeof staffSessionSchema>;
 
@@ -65,11 +70,13 @@ export const outletSessionSchema = z.object({
   outletName: z.string().min(1),
   ownerName: z.string().min(1),
   tap: z.string().nullable(),
+  /** Sama seperti akun Portal: kata sandi sementara wajib diganti sebelum memakai aplikasi. */
+  mustChangePassword: z.boolean(),
 });
 export type OutletSession = z.infer<typeof outletSessionSchema>;
 
 /** Profil outlet yang tampil di halaman Akun aplikasi Outlet. */
-export const outletProfileSchema = outletSessionSchema.extend({
+export const outletProfileSchema = outletSessionSchema.omit({ mustChangePassword: true }).extend({
   phone: z.string(),
   address: z.string(),
   district: z.string(),

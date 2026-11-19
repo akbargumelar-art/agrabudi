@@ -33,7 +33,12 @@ const bottomItems: BottomNavItem[] = [
   { label: 'ABKShop', href: '/abkshop', alsoActiveOn: ['/checkout'], icon: ShoppingCart },
   { label: 'Pesanan', href: '/pesanan', icon: ReceiptText },
   { label: 'Program', href: '/program', icon: Megaphone },
-  { label: 'Akun', href: '/akun', alsoActiveOn: ['/login', '/lupa-akses'], icon: UserRound },
+  {
+    label: 'Akun',
+    href: '/akun',
+    alsoActiveOn: ['/login', '/lupa-akses', '/ganti-kata-sandi'],
+    icon: UserRound,
+  },
 ];
 
 export function OutletLayout() {

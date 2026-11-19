@@ -1,4 +1,9 @@
-import type { StaffProfileUpdate, StaffSession } from '@agrabudi/contracts';
+import type {
+  PasswordChange,
+  PasswordResetConfirm,
+  StaffProfileUpdate,
+  StaffSession,
+} from '@agrabudi/contracts';
 
 /**
  * Pintu autentikasi Portal. Satu form login untuk semua peran; peran ditentukan server
@@ -13,6 +18,26 @@ export interface AuthAdapter {
   restore(): Promise<StaffSession | null>;
   /** Cabut sesi di server, sesuai realm akun yang sedang masuk. */
   signOut(session: StaffSession): Promise<void>;
+  /**
+   * Ganti kata sandi sendiri (termasuk kata sandi sementara). Server mencabut sesi di perangkat
+   * lain dan memberi browser ini sesi baru; hasilnya sesi terbaru.
+   */
+  changePassword(session: StaffSession, input: PasswordChange): Promise<StaffSession>;
+  /** Minta kode reset ke WhatsApp. Selalu berhasil tanpa membocorkan ada atau tidaknya akun. */
+  requestPasswordReset(identifier: string): Promise<void>;
+  confirmPasswordReset(input: PasswordResetConfirm): Promise<void>;
+}
+
+/** Kegagalan isian dari server: pesan umum plus pesan per kolom. */
+export class FieldError extends Error {
+  readonly code = 'FIELD_ERROR';
+  constructor(
+    message: string,
+    readonly fields: Record<string, string>,
+  ) {
+    super(message);
+    this.name = 'FieldError';
+  }
 }
 
 export class AuthUnavailableError extends Error {
