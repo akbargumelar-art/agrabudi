@@ -1,6 +1,6 @@
 # Status fitur
 
-Terakhir diperbarui: 18 November 2026, setelah backend M2 (`apps/api`), adapter HTTP tiga aplikasi, dan infrastruktur deploy.
+Terakhir diperbarui: 19 November 2026, checkpoint `checkpoint/2026-11-19-m2-konten-institusi` (lihat `docs/checkpoints.md`).
 Arti status: **planned** belum dikerjakan, **mock** tampil dengan data contoh berlabel atau aksi dinonaktifkan,
 **integrated** tersambung backend, **tested** lulus tes otomatis yang relevan, **accepted** lolos UAT pemilik modul.
 Belum ada fitur berstatus accepted. "integrated" di bawah berarti tersambung ke API dan lulus tes integrasi API

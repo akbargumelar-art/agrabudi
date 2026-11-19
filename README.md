@@ -3,6 +3,8 @@
 Monorepo tiga website PT Agrabudi Komunika. Pengaturan website (peran Admin Web) ada di dalam Portal, di bawah `/web-admin`.
 Acuan: `prd.md` v2.0 dan `rancangan-build.md` di Project "Portal Agrabudi.id". Aturan kerja agen coding: `AGENTS.md`.
 Status tiap fitur: `docs/status.md`.
+**Sebelum mengubah apa pun, baca checkpoint teratas di `docs/checkpoints.md`.** Isinya kondisi terakhir yang sudah
+diuji, keputusan yang dikunci, dan hal yang masih terbuka.
 
 | Aplikasi | Folder            | Stack                    | Tujuan deploy                                                 |
 | -------- | ----------------- | ------------------------ | ------------------------------------------------------------- |

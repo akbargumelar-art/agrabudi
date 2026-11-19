@@ -3,9 +3,15 @@
 Sumber keputusan: `prd.md` v2.0 dan `rancangan-build.md` (keduanya di Project "Portal Agrabudi.id").
 Jika aturan di sini bertentangan dengan PRD, PRD yang berlaku.
 
+## Sebelum update apa pun
+
+Baca dulu checkpoint teratas di `docs/checkpoints.md`: branch dan commit terakhir yang diuji, keputusan yang
+dikunci, dan hal yang masih terbuka. Ikuti langkah "Cara memakai checkpoint sebelum update" di sana.
+Keputusan yang dikunci tidak diubah balik tanpa permintaan pemilik. Setelah update teruji, tambah checkpoint baru.
+
 ## Urutan kerja per task
 
-1. Baca PRD dan aturan repo yang relevan.
+1. Baca checkpoint teratas di `docs/checkpoints.md`, PRD, dan aturan repo yang relevan.
 2. Audit file yang akan disentuh.
 3. Pilih perubahan kecil yang bisa diverifikasi.
 4. Implementasi.
