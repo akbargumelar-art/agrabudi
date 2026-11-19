@@ -20,6 +20,24 @@ Checkpoint terbaru selalu ditaruh paling atas.
    Kalau sudah merah sebelum Anda mengubah apa pun, catat dulu, jangan dianggap akibat perubahan Anda.
 5. Setelah update selesai dan teruji, tambah checkpoint baru di atas dengan format yang sama, lalu buat tag.
 
+## checkpoint/2026-11-19-live-preview-mock-accounts
+
+Tanggal: 19 November 2026. Branch: `feat/m1-redesign-telkomsel-pattern`.
+Live preview mode mock didokumentasikan lengkap dengan URL, akun Portal semua role, akun Outlet, password dummy, akun pending wajib ganti password, dan kode reset mock.
+Kredensial hanya berlaku pada `mock`; tidak masuk ke API/produksi dan tidak mengirim WhatsApp.
+
+### Tes
+
+- `pnpm lint`: lulus.
+- `pnpm typecheck`: lulus.
+- Endpoint `http://localhost:3000`, `:3001/login`, dan `:3002/login`: merespons HTTP 200 dari preview lokal.
+- `pnpm dev` kedua mendeteksi port 3001/3002 sudah dipakai proses preview yang berjalan; tidak ada perubahan port atau konfigurasi.
+
+### Terbuka
+
+- Preview interaktif browser penuh tetap perlu dijalankan dari terminal pemilik; proses lokal sebelumnya sudah memakai port 3001/3002.
+- WAHA sungguhan, Docker/staging, konfigurasi produksi, dan UAT tetap terbuka.
+
 ## checkpoint/2026-11-19-m3-password-min-6
 
 Tanggal: 19 November 2026. Branch: `feat/m1-redesign-telkomsel-pattern`.

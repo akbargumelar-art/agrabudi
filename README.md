@@ -36,19 +36,54 @@ biner MySQL resmi diunduh sekali (sekitar 1 menit) lalu di-cache.
 `pnpm build` mewajibkan variabel di `.env.example` terisi. Build digagalkan bila URL aplikasi atau sumber data
 tidak diisi, supaya tidak ada tautan produksi atau data contoh yang ikut tanpa sengaja.
 
-## Akun contoh (mode mock)
+## Live preview lengkap (mode mock)
 
-Kata sandi semua akun contoh: `contoh123`. Hanya ada di build `mock`.
+Jalankan dari root repo:
 
-| Aplikasi | Username / ID                         | Peran                                      |
-| -------- | ------------------------------------- | ------------------------------------------ |
-| Portal   | `adminweb`                            | Admin Web (menu Website)                   |
-| Portal   | `adminmobile`                         | Admin Mobile, juga izin Karir dan Pengguna |
-| Portal   | `adminhousehold`                      | Admin Household                            |
-| Portal   | `manager`                             | Manager, lihat seluruh cluster             |
-| Portal   | `spvmobile`, `spvhousehold`           | Supervisor, lihat tim sendiri              |
-| Portal   | `sfmobile`, `sfhousehold`, `sfdirect` | Salesforce, lihat data sendiri             |
-| Outlet   | `CONTOH001`, `CONTOH002`, `CONTOH003` | Mitra outlet (login ID Digipos)            |
+```bash
+$env:NEXT_PUBLIC_APP_URL_PUBLIC='http://localhost:3000'
+$env:NEXT_PUBLIC_APP_URL_OUTLET='http://localhost:3001'
+$env:NEXT_PUBLIC_APP_URL_PORTAL='http://localhost:3002'
+$env:VITE_APP_URL_PUBLIC='http://localhost:3000'
+$env:VITE_APP_URL_OUTLET='http://localhost:3001'
+$env:VITE_APP_URL_PORTAL='http://localhost:3002'
+$env:NEXT_PUBLIC_DATA_SOURCE='mock'
+$env:VITE_DATA_SOURCE='mock'
+pnpm dev
+```
+
+Buka:
+
+- Publik: http://localhost:3000
+- Outlet: http://localhost:3001/login
+- Portal: http://localhost:3002/login
+
+Semua data di bawah adalah data dummy berlabel `Data contoh`. Password hanya aktif pada mode `mock`, perubahan password hanya tersimpan di memori browser, dan tidak ada WhatsApp yang dikirim.
+
+### Portal — semua role
+
+| Username | Password | Role / cakupan |
+| -------- | -------- | -------------- |
+| `adminweb` | `contoh123` | Admin Web, menu Website |
+| `adminmobile` | `contoh123` | Admin Mobile, izin Karir dan User Management |
+| `adminhousehold` | `contoh123` | Admin Household |
+| `manager` | `contoh123` | Manager, seluruh cluster |
+| `spvmobile` | `contoh123` | Supervisor Mobile, tim |
+| `spvhousehold` | `contoh123` | Supervisor Household, tim |
+| `sfmobile` | `contoh123` | Salesforce Mobile, data sendiri |
+| `sfhousehold` | `contoh123` | Salesforce Household, data sendiri |
+| `sfdirect` | `contoh123` | Salesforce Direct Sales, data sendiri |
+| `sfbaru` | `Contoh-Sementara-1` | Salesforce Mobile baru, wajib ganti password |
+
+### Outlet — semua akun dummy
+
+| ID Digipos | Password | Akun |
+| ---------- | -------- | ---- |
+| `CONTOH001` | `contoh123` | Cell Berkah Jaya |
+| `CONTOH002` | `contoh123` | Outlet contoh kedua |
+| `CONTOH003` | `contoh123` | Outlet contoh ketiga |
+
+Untuk mencoba reset password di mode mock, gunakan kode `123456` pada Portal maupun Outlet. Untuk kembali ke kondisi awal, refresh halaman atau mulai ulang dev server.
 
 ## Sumber data
 
