@@ -1,6 +1,6 @@
 import type { CompanyProfile } from '@agrabudi/contracts';
 import { cardClass, cn } from '@agrabudi/ui';
-import { AtSign, Clock, Mail, MapPin, MessageCircle, Phone } from 'lucide-react';
+import { AtSign, Clock, ExternalLink, Mail, MapPin, MessageCircle, Phone } from 'lucide-react';
 
 const channelIcon = {
   whatsapp: MessageCircle,
@@ -8,6 +8,67 @@ const channelIcon = {
   email: Mail,
   instagram: AtSign,
 } as const;
+
+/** Tautan ke peta, bukan peta tertanam: tanpa skrip pihak ketiga dan tanpa iframe. */
+function mapUrl(latitude: number, longitude: number): string {
+  return `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+}
+
+/** Daftar wilayah layanan; dipakai di /tentang/area dan bagian Area layanan di /tentang. */
+export function AreaList({
+  areas,
+  headingLevel = 'h2',
+}: {
+  areas: CompanyProfile['areas'];
+  headingLevel?: 'h2' | 'h3';
+}) {
+  const Heading = headingLevel;
+  return (
+    <ul className="grid gap-4 tablet:grid-cols-3">
+      {areas.map((area) => (
+        <li key={area.name} className={cn(cardClass, 'flex flex-col overflow-hidden')}>
+          {area.imageUrl ? (
+            <img
+              src={area.imageUrl}
+              alt={`Foto wilayah ${area.name}`}
+              loading="lazy"
+              className="aspect-3/2 w-full object-cover"
+            />
+          ) : null}
+          <div className="flex flex-1 flex-col p-5">
+            <Heading className="flex items-center gap-2 text-lg font-bold">
+              <MapPin aria-hidden className="size-5 text-brand-red" />
+              {area.name}
+            </Heading>
+            <p className="mt-1 text-sm text-ink-700">{area.districts.length} kecamatan</p>
+            <ul className="mt-3 flex flex-wrap gap-2">
+              {area.districts.map((district) => (
+                <li
+                  key={district}
+                  className="rounded-full bg-surface-50 px-3 py-1 text-sm text-ink-900"
+                >
+                  {district}
+                </li>
+              ))}
+            </ul>
+            {area.latitude !== null && area.longitude !== null ? (
+              <a
+                href={mapUrl(area.latitude, area.longitude)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-flex min-h-11 items-center gap-2 self-start text-sm font-medium text-info underline"
+              >
+                <ExternalLink aria-hidden className="size-4" />
+                Buka {area.name} di peta
+                <span className="sr-only">(tab baru)</span>
+              </a>
+            ) : null}
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 export function OfficeList({ offices }: { offices: CompanyProfile['offices'] }) {
   return (

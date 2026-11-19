@@ -118,6 +118,39 @@ test('halaman perusahaan berisi data contoh berlabel', async ({ page }) => {
   await expect(mapLinks.first()).toHaveAttribute('href', /query=-6\.732,108\.5523$/);
 });
 
+test('Tentang Kami: area, kantor, dan kontak bisa dibuka-tutup', async ({ page }) => {
+  await page.goto(`${base}/tentang`);
+  const sections = page.locator('[data-about-sections] > details');
+  await expect(sections).toHaveCount(3);
+  await expect(sections.locator('summary h2')).toHaveText([
+    'Area layanan',
+    'Lokasi kantor',
+    'Hubungi Kami',
+  ]);
+
+  const area = page.locator('details#area-layanan');
+  // Tertutup di awal: isinya belum terlihat.
+  await expect(area).not.toHaveAttribute('open');
+  await expect(area.getByText('Kabupaten Kuningan')).toBeHidden();
+
+  await area.locator('summary').click();
+  await expect(area).toHaveAttribute('open');
+  await expect(area.getByText('Kabupaten Kuningan')).toBeVisible();
+  await expect(area.getByRole('link', { name: /di peta/ })).toHaveCount(1);
+  await expectNoPageOverflow(page, '/tentang area terbuka');
+
+  // Keyboard juga bisa membuka dan menutup.
+  const contact = page.locator('details#hubungi-kami');
+  await contact.locator('summary').focus();
+  await page.keyboard.press('Enter');
+  await expect(contact.getByRole('link', { name: 'Kirim pesan lewat formulir' })).toBeVisible();
+  await page.keyboard.press('Enter');
+  await expect(contact).not.toHaveAttribute('open');
+
+  await area.locator('summary').click();
+  await expect(area.getByText('Kabupaten Kuningan')).toBeHidden();
+});
+
 test('filter kategori produk hanya menampilkan kategori itu', async ({ page }) => {
   await page.goto(`${base}/produk?kategori=voucher`);
   const tiles = page.locator('main ul li a[href^="/produk/"]');
