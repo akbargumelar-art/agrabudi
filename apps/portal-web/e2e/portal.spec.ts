@@ -19,10 +19,13 @@ async function fillLogin(page: Page, username: string, password: string) {
   await page.getByRole('button', { name: 'Masuk' }).click();
 }
 
+/** Admin Web punya console sendiri; Dashboard umum mengalihkannya ke `/web-admin/dashboard`. */
+const landingPath: Record<string, string> = { adminweb: '/web-admin/dashboard' };
+
 async function signInAs(page: Page, username: string) {
   await page.goto(`${base}/login`);
   await fillLogin(page, username, DEMO_PASSWORD);
-  await expect(page).toHaveURL(`${base}/`);
+  await expect(page).toHaveURL(`${base}${landingPath[username] ?? '/'}`);
 }
 
 /** Navigasi Portal ada di sidebar; di HP sidebar dibuka dari tombol Menu. */

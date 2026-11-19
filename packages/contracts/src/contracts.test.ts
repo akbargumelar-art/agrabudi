@@ -1,11 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import {
   appUrlsSchema,
+  companyProfileSections,
   customerProductSchema,
   dataMetaSchema,
+  emptyCompanyProfile,
   outletOrderSchema,
   outletPackageSchema,
+  pickCompanySection,
   staffProfileUpdateSchema,
+  waNotificationSettingsSchema,
 } from './index';
 
 describe('kontrak data', () => {
@@ -79,6 +83,41 @@ describe('kontrak data', () => {
         outlet: 'http://a.test',
         portal: 'http://b.test',
       }).success,
+    ).toBe(false);
+  });
+
+  it('profil perusahaan: satu jenis kanal sekali; editor bagian menolak kolom bagian lain', () => {
+    const email = { kind: 'email', label: 'Email', value: 'a@contoh.test' };
+    expect(companyProfileSections.channels.safeParse({ channels: [email] }).success).toBe(true);
+    expect(companyProfileSections.channels.safeParse({ channels: [email, email] }).success).toBe(
+      false,
+    );
+    expect(companyProfileSections.areas.safeParse({ areas: [], vision: 'x' }).success).toBe(false);
+    const profile = {
+      ...emptyCompanyProfile,
+      vision: 'Visi',
+      areas: [{ name: 'A', districts: [] }],
+    };
+    expect(pickCompanySection(profile, 'areas')).toEqual({ areas: profile.areas });
+    expect(pickCompanySection(profile, 'about')).toEqual({
+      about: [],
+      history: [],
+      vision: 'Visi',
+      missions: [],
+    });
+  });
+
+  it('WA Gateway: hanya ID grup @g.us atau kosong', () => {
+    const base = { orderCustomer: false, careerGroup: null, digiposGroup: null };
+    const ok = (orderGroup: string | null) =>
+      waNotificationSettingsSchema.safeParse({ ...base, orderGroup }).success;
+    expect(ok(null)).toBe(true);
+    expect(ok('120363000000000001@g.us')).toBe(true);
+    expect(ok('6281234567890-1600000000@g.us')).toBe(true);
+    expect(ok('6281234567890@c.us')).toBe(false);
+    expect(ok('https://chat.whatsapp.com/abc')).toBe(false);
+    expect(
+      waNotificationSettingsSchema.safeParse({ ...base, orderGroup: null, x: 1 }).success,
     ).toBe(false);
   });
 

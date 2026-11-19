@@ -17,7 +17,6 @@ import { Link } from 'react-router';
 import { useBanners, usePages, usePublications, useUpdatePageStatus } from './data/queries';
 import { ContentStatusBadge, contentStatusLabel, objectTypeLabel, siteLabel } from './labels';
 
-
 export function DashboardPage() {
   const pages = usePages();
   const banners = useBanners();
@@ -65,7 +64,7 @@ export function DashboardPage() {
             to="/web-admin/pages"
             className="mt-3 inline-flex min-h-11 items-center text-sm font-medium text-brand-red-strong underline"
           >
-            Buka Halaman Perusahaan
+            Buka Halaman Publik
           </Link>
         </section>
         <section aria-labelledby="ringkas-banner">
@@ -119,8 +118,8 @@ export function PagesPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        title="Halaman Perusahaan"
-        description="Profil, Tentang Kami, area, kantor, kontak, dan informasi institusional lain."
+        title="Halaman Publik"
+        description="Status terbit halaman institusional. Isi tiap halaman diubah lewat menu Tentang Kami, Area Layanan, Lokasi Kantor, dan Hubungi Kami."
         aside={pages.data ? <DataNotice meta={pages.data.meta} /> : null}
       />
       <AsyncView
@@ -188,14 +187,22 @@ export function PagesPage() {
         }
       </AsyncView>
       <p className="max-w-prose text-sm text-ink-700">
-        Alur terbit: Draft, lalu Menunggu review, lalu Terbit. Setiap perubahan status tercatat di Audit
-        Konten, dan setiap terbit tercatat di Riwayat Publikasi.
+        Alur terbit: Draft, lalu Menunggu review, lalu Terbit. Setiap perubahan status tercatat di
+        Audit Konten, dan setiap terbit tercatat di Riwayat Publikasi.
       </p>
     </div>
   );
 }
 
-function PageStatusSelect({ id, title, status }: { id: string; title: string; status: ContentStatus }) {
+function PageStatusSelect({
+  id,
+  title,
+  status,
+}: {
+  id: string;
+  title: string;
+  status: ContentStatus;
+}) {
   const update = useUpdatePageStatus();
   const toast = useToast();
   return (
@@ -208,7 +215,9 @@ function PageStatusSelect({ id, title, status }: { id: string; title: string; st
           const next = event.target.value as ContentStatus;
           update.mutate(
             { id, status: next },
-            { onSuccess: () => toast.show({ tone: 'success', message: `Status ${title} diubah.` }) },
+            {
+              onSuccess: () => toast.show({ tone: 'success', message: `Status ${title} diubah.` }),
+            },
           );
         }}
         className="min-w-44"
@@ -284,7 +293,9 @@ export function PublicationsPage() {
           )
         }
       </AsyncView>
-      <p className="text-sm text-ink-700">Pemulihan ke versi sebelumnya aktif setelah CMS API tersedia.</p>
+      <p className="text-sm text-ink-700">
+        Pemulihan ke versi sebelumnya aktif setelah CMS API tersedia.
+      </p>
     </div>
   );
 }

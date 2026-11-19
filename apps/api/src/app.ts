@@ -8,6 +8,8 @@ import { trustProxyValue, type AppConfig } from './config';
 import type { Db } from './db/database';
 import { registerErrorHandling } from './lib/errors';
 import type { FileStorage } from './lib/storage';
+import { createWahaSender, type WaSender } from './lib/waha';
+import { createNotifier, type Notifier } from './domain/notifications';
 import { cmsRoutes } from './routes/cms';
 import { formRoutes } from './routes/forms';
 import { healthRoutes } from './routes/health';
@@ -16,11 +18,16 @@ import { portalRoutes } from './routes/portal';
 import { publicRoutes } from './routes/public';
 import { staffAuthRoutes } from './routes/staff-auth';
 
-export type AppDeps = { config: AppConfig; db: Db; storage: FileStorage };
+/**
+ * `wa` bawaan dibuat dari WAHA_* di konfigurasi (`null` bila tidak diisi = notifikasi mati).
+ * Tes mengisi pengirim tiruan supaya tidak pernah menghubungi WAHA sungguhan.
+ */
+export type AppDeps = { config: AppConfig; db: Db; storage: FileStorage; wa?: WaSender | null };
 
 declare module 'fastify' {
   interface FastifyInstance {
-    deps: AppDeps;
+    deps: AppDeps & { wa: WaSender | null };
+    notifier: Notifier;
   }
 }
 
@@ -41,7 +48,9 @@ export async function buildApp(deps: AppDeps, logger: FastifyServerOptions['logg
         : randomUUID();
     },
   });
-  app.decorate('deps', deps);
+  const wa = deps.wa === undefined ? createWahaSender(config) : deps.wa;
+  app.decorate('deps', { ...deps, wa });
+  app.decorate('notifier', createNotifier(deps.db, wa, app.log));
 
   registerErrorHandling(app);
   registerOriginCheck(app, config);

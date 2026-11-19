@@ -3,6 +3,7 @@ import { Migrator, type Migration, type MigrationProvider } from 'kysely/migrati
 import type { Database } from './types';
 import * as m0001 from './migrations/0001_init';
 import * as m0002 from './migrations/0002_site_pages';
+import * as m0003 from './migrations/0003_wa_notifications';
 
 /**
  * Daftar migrasi diimpor statis supaya ikut bundel build. Migrasi baru ditambahkan di sini
@@ -11,6 +12,7 @@ import * as m0002 from './migrations/0002_site_pages';
 const migrations: Record<string, Migration> = {
   '0001_init': m0001,
   '0002_site_pages': m0002,
+  '0003_wa_notifications': m0003,
 };
 
 const provider: MigrationProvider = {

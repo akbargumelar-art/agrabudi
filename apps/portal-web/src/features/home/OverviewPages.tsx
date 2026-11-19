@@ -1,6 +1,14 @@
 import type { StaffSession } from '@agrabudi/contracts';
-import { AsyncView, DataNotice, EmptyState, IconBadge, PageHeader, cardClass, cn } from '@agrabudi/ui';
-import { Link } from 'react-router';
+import {
+  AsyncView,
+  DataNotice,
+  EmptyState,
+  IconBadge,
+  PageHeader,
+  cardClass,
+  cn,
+} from '@agrabudi/ui';
+import { Link, Navigate } from 'react-router';
 import { roleLabel, routeAccess, scopePhrase, visibleSections } from '../../auth/access';
 import { useSession } from '../../auth/SessionContext';
 import { sectionIcon } from '../../app/Sidebar';
@@ -42,6 +50,7 @@ function ShortcutList({ items, emptyTitle }: { items: Shortcut[]; emptyTitle: st
 
 export function DashboardPage() {
   const session = useSession();
+  if (session.role === 'web_admin') return <Navigate to="/web-admin/dashboard" replace />;
   const summaries = permitted(session, [
     { to: '/telkomsel/dashboard', label: 'Telkomsel', note: '' },
     { to: '/indihome/dashboard', label: 'IndiHome', note: '' },
@@ -90,7 +99,11 @@ function DashboardSummary({ to, label }: { to: string; label: string }) {
           Buka dashboard {label}
         </Link>
       </div>
-      <AsyncView state={dataset} errorTitle={`Ringkasan ${label} tidak dapat dimuat`} loadingLabel="Memuat ringkasan">
+      <AsyncView
+        state={dataset}
+        errorTitle={`Ringkasan ${label} tidak dapat dimuat`}
+        loadingLabel="Memuat ringkasan"
+      >
         {(envelope) =>
           envelope.data ? (
             <div className="flex flex-col gap-3">
@@ -108,7 +121,10 @@ function DashboardSummary({ to, label }: { to: string; label: string }) {
               </ul>
             </div>
           ) : (
-            <EmptyState title="Ringkasan belum tersedia" description="Sumber data ringkasan belum tersedia." />
+            <EmptyState
+              title="Ringkasan belum tersedia"
+              description="Sumber data ringkasan belum tersedia."
+            />
           )
         }
       </AsyncView>
@@ -127,8 +143,16 @@ function WebsiteShortcuts() {
         emptyTitle="Tidak ada pintasan"
         items={permitted(session, [
           { to: '/web-admin/banners', label: 'Banner', note: 'Slide utama halaman depan Publik' },
-          { to: '/web-admin/pages', label: 'Halaman', note: 'Isi halaman Tentang, Kontak, dan lainnya' },
-          { to: '/web-admin/abkshop', label: 'Halaman ABKShop', note: 'Alamat halaman pemesanan di aplikasi Outlet' },
+          {
+            to: '/web-admin/pages',
+            label: 'Halaman',
+            note: 'Isi halaman Tentang, Kontak, dan lainnya',
+          },
+          {
+            to: '/web-admin/abkshop',
+            label: 'Halaman ABKShop',
+            note: 'Alamat halaman pemesanan di aplikasi Outlet',
+          },
           { to: '/web-admin/preview', label: 'Pratinjau', note: 'Buka situs Publik dan Outlet' },
         ])}
       />

@@ -3,6 +3,7 @@ import {
   cuanContactSchema,
   digiposInfoSchema,
   indihomeInfoSchema,
+  waNotificationSettingsSchema,
   type CuanProduct,
   type CustomerProduct,
   type IndihomePackage,
@@ -222,6 +223,7 @@ const DOCUMENT_SCHEMAS = {
   indihome_info: indihomeInfoSchema,
   digipos_info: digiposInfoSchema,
   cuan_contact: cuanContactSchema,
+  wa_notifications: waNotificationSettingsSchema,
 } as const satisfies Record<SiteDocumentKey, z.ZodType>;
 
 export type DocumentOf<K extends SiteDocumentKey> = z.infer<(typeof DOCUMENT_SCHEMAS)[K]>;
@@ -234,13 +236,21 @@ export async function getDocument<K extends SiteDocumentKey>(
   db: Db,
   key: K,
 ): Promise<DocumentOf<K>> {
+  const document = await findDocument(db, key);
+  if (document === null) throw notFound('Informasi ini belum diterbitkan.');
+  return document;
+}
+
+export async function findDocument<K extends SiteDocumentKey>(
+  db: Db,
+  key: K,
+): Promise<DocumentOf<K> | null> {
   const row = await db
     .selectFrom('siteDocuments')
     .select('body')
     .where('key', '=', key)
     .executeTakeFirst();
-  if (!row) throw notFound('Informasi ini belum diterbitkan.');
-  return DOCUMENT_SCHEMAS[key].parse(row.body) as DocumentOf<K>;
+  return row ? parseDocument(key, row.body) : null;
 }
 
 export function parseDocument<K extends SiteDocumentKey>(key: K, value: unknown): DocumentOf<K> {

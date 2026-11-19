@@ -125,6 +125,8 @@ export const formRoutes: FastifyPluginAsync = async (app) => {
       const key = idempotencyKey(request);
       const payload = parse(schema, request.body);
       const { receipt, created } = await store(db, { kind, key, payload }, request.id);
+      if (created && kind === 'digipos_registration')
+        void app.notifier.formReceived(kind, receipt.reference);
       return reply.code(created ? 201 : 200).send(receipt);
     });
   };
@@ -209,6 +211,7 @@ export const formRoutes: FastifyPluginAsync = async (app) => {
         request.id,
       );
       if (!created) await storage.remove('private', fileKey);
+      else void app.notifier.formReceived('job_application', receipt.reference);
       return reply.code(created ? 201 : 200).send(receipt);
     } catch (error) {
       // Jangan tinggalkan CV yatim tanpa catatan lamaran.

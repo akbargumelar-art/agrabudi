@@ -17,9 +17,39 @@ export const website: Section = {
       behavior: 'Ringkasan status website dan publikasi.',
     },
     {
-      label: 'Halaman Perusahaan',
+      label: 'Halaman Publik',
       slug: 'pages',
-      behavior: 'Profil, Tentang Kami, area, kantor, kontak, informasi institusional.',
+      behavior: 'Daftar halaman institusional dan pintasan ke editor isinya.',
+    },
+    {
+      label: 'Tentang Kami',
+      slug: 'tentang-kami',
+      behavior: 'Profil, sejarah, visi, dan misi perusahaan.',
+    },
+    {
+      label: 'Area Layanan',
+      slug: 'area-layanan',
+      behavior: 'Wilayah dan kecamatan layanan yang tampil di Publik.',
+    },
+    {
+      label: 'Lokasi Kantor',
+      slug: 'lokasi-kantor',
+      behavior: 'Alamat, jam buka, telepon, dan foto kantor.',
+    },
+    {
+      label: 'Hubungi Kami',
+      slug: 'hubungi-kami',
+      behavior: 'Kanal resmi yang tampil di halaman kontak.',
+    },
+    {
+      label: 'Daftar Digipos',
+      slug: 'daftar-digipos',
+      behavior: 'Syarat dan langkah pendaftaran yang tampil di Publik, tanpa data pendaftar.',
+    },
+    {
+      label: 'WA Gateway',
+      slug: 'wa-gateway',
+      behavior: 'Notifikasi WhatsApp melalui WAHA untuk pesanan, lamaran, dan pendaftaran Digipos.',
     },
     {
       label: 'Banner',

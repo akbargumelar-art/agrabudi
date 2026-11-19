@@ -60,7 +60,7 @@ type Random = () => number;
 
 const between = (random: Random, min: number, max: number) =>
   Math.round(min + random() * (max - min));
-const pickOne = <T,>(random: Random, items: readonly T[]): T =>
+const pickOne = <T>(random: Random, items: readonly T[]): T =>
   items[Math.floor(random() * items.length)] as T;
 const round1 = (value: number) => Math.round(value * 10) / 10;
 const pct = (real: number, target: number) => (target > 0 ? round1((real / target) * 100) : 0);
@@ -84,12 +84,20 @@ function anyDate(random: Random): string {
   return `2026-${month}-${String(between(random, 1, month === '11' ? 15 : 28)).padStart(2, '0')}`;
 }
 
-function row(id: string, owner: Person | null, cells: Record<string, string | number | null>): DataRow {
+function row(
+  id: string,
+  owner: Person | null,
+  cells: Record<string, string | number | null>,
+): DataRow {
   return { id, ownerId: owner?.id ?? null, teamId: owner?.teamId ?? null, cells };
 }
 
 const sumBy = (rows: DataRow[], key: string) =>
-  rows.reduce((total, item) => total + (typeof item.cells[key] === 'number' ? (item.cells[key] as number) : 0), 0);
+  rows.reduce(
+    (total, item) =>
+      total + (typeof item.cells[key] === 'number' ? (item.cells[key] as number) : 0),
+    0,
+  );
 
 function personCol(label = 'Salesforce'): Column {
   return { key: 'salesforce', label, kind: 'person', editable: true, required: true };
@@ -186,7 +194,10 @@ function transactions(seed: string, options: TransactionOptions): DatasetSpec {
     const qty = between(random, 1, 40);
     const place = options.places
       ? pickOne(random, options.places)
-      : pickOne(random, outlets.filter((outlet) => outlet.salesforceId === person.id)).name;
+      : pickOne(
+          random,
+          outlets.filter((outlet) => outlet.salesforceId === person.id),
+        ).name;
     return row(`${seed}-${index}`, person, {
       tanggal: novDate(random),
       nomor: `${options.prefix}-2611-${String(1000 + index * 7).padStart(5, '0')}`,
@@ -202,7 +213,13 @@ function transactions(seed: string, options: TransactionOptions): DatasetSpec {
     columns: [
       { key: 'tanggal', label: 'Tanggal', kind: 'date', editable: true, required: true },
       { key: 'nomor', label: 'No. transaksi', kind: 'id', editable: true, required: true },
-      { key: 'tempat', label: options.placeLabel ?? 'Outlet', kind: 'text', editable: true, required: true },
+      {
+        key: 'tempat',
+        label: options.placeLabel ?? 'Outlet',
+        kind: 'text',
+        editable: true,
+        required: true,
+      },
       {
         key: 'produk',
         label: 'Produk',
@@ -253,7 +270,14 @@ const outletColumns: Column[] = [
     options: ['TAP Kota Cirebon', 'TAP Sumber', 'TAP Kuningan'],
   },
   personCol(),
-  { key: 'status', label: 'Status', kind: 'status', editable: true, required: true, options: ['Aktif', 'Tidak aktif'] },
+  {
+    key: 'status',
+    label: 'Status',
+    kind: 'status',
+    editable: true,
+    required: true,
+    options: ['Aktif', 'Tidak aktif'],
+  },
   { key: 'terdaftar', label: 'Terdaftar', kind: 'date', editable: true },
 ];
 
@@ -316,7 +340,12 @@ function outletStock(seed: string, description: string, product: string): Datase
     columns: [
       { key: 'digipos', label: 'ID Digipos', kind: 'id' },
       { key: 'nama', label: 'Outlet', kind: 'text' },
-      { key: 'tap', label: 'TAP', kind: 'status', options: ['TAP Kota Cirebon', 'TAP Sumber', 'TAP Kuningan'] },
+      {
+        key: 'tap',
+        label: 'TAP',
+        kind: 'status',
+        options: ['TAP Kota Cirebon', 'TAP Sumber', 'TAP Kuningan'],
+      },
       { key: 'produk', label: 'Produk', kind: 'text' },
       { key: 'awal', label: 'Stok awal', kind: 'number', editable: true, required: true },
       { key: 'masuk', label: 'Masuk', kind: 'number', editable: true, required: true },
@@ -330,7 +359,11 @@ function outletStock(seed: string, description: string, product: string): Datase
     editable: true,
     personUnits: ['mobile'],
     stats: (scoped) => [
-      { label: 'Stok sisa', value: num(sumBy(scoped, 'sisa')), note: 'Data snapshot, bukan real-time' },
+      {
+        label: 'Stok sisa',
+        value: num(sumBy(scoped, 'sisa')),
+        note: 'Data snapshot, bukan real-time',
+      },
       { label: 'Terjual', value: num(sumBy(scoped, 'terjual')) },
       {
         label: 'Outlet stok menipis',
@@ -362,7 +395,12 @@ function outletOmzet(seed: string): DatasetSpec {
     columns: [
       { key: 'digipos', label: 'ID Digipos', kind: 'id' },
       { key: 'nama', label: 'Outlet', kind: 'text' },
-      { key: 'tap', label: 'TAP', kind: 'status', options: ['TAP Kota Cirebon', 'TAP Sumber', 'TAP Kuningan'] },
+      {
+        key: 'tap',
+        label: 'TAP',
+        kind: 'status',
+        options: ['TAP Kota Cirebon', 'TAP Sumber', 'TAP Kuningan'],
+      },
       { key: 'okt', label: 'Omzet Okt', kind: 'rupiah' },
       { key: 'nov', label: 'Omzet Nov', kind: 'rupiah' },
       { key: 'tumbuh', label: 'Pertumbuhan', kind: 'percent' },
@@ -376,7 +414,10 @@ function outletOmzet(seed: string): DatasetSpec {
       return [
         { label: 'Omzet Okt', value: rupiahShort(before) },
         { label: 'Omzet Nov', value: rupiahShort(now) },
-        { label: 'Pertumbuhan', value: `${round1(((now - before) / Math.max(before, 1)) * 100).toLocaleString('id-ID')}%` },
+        {
+          label: 'Pertumbuhan',
+          value: `${round1(((now - before) / Math.max(before, 1)) * 100).toLocaleString('id-ID')}%`,
+        },
       ];
     },
     chart: (scoped) => ({
@@ -394,7 +435,13 @@ type PhotoKind = 'visit' | 'pop' | 'video' | 'doc' | 'booth';
 
 function photoLog(
   seed: string,
-  options: { unit: BusinessUnit; description: string; kind: PhotoKind; count: number; notes: string[] },
+  options: {
+    unit: BusinessUnit;
+    description: string;
+    kind: PhotoKind;
+    count: number;
+    notes: string[];
+  },
 ): DatasetSpec {
   const random = seeded(seed);
   const salesforce = salesforceOf(options.unit);
@@ -404,7 +451,13 @@ function photoLog(
     const place =
       options.unit === 'mobile' && ownOutlets.length > 0
         ? pickOne(random, ownOutlets).name
-        : pickOne(random, ['Perum Griya Contoh', 'Pasar Contoh', 'Balai Desa Contoh', 'Alun-alun Contoh', 'Kampus Contoh']);
+        : pickOne(random, [
+            'Perum Griya Contoh',
+            'Pasar Contoh',
+            'Balai Desa Contoh',
+            'Alun-alun Contoh',
+            'Kampus Contoh',
+          ]);
     const note = pickOne(random, options.notes);
     const image =
       options.kind === 'pop'
@@ -426,12 +479,34 @@ function photoLog(
   return {
     description: options.description,
     columns: [
-      { key: 'foto', label: options.kind === 'video' ? 'Video' : options.kind === 'doc' ? 'Berkas' : 'Foto', kind: 'image', editable: true },
+      {
+        key: 'foto',
+        label: options.kind === 'video' ? 'Video' : options.kind === 'doc' ? 'Berkas' : 'Foto',
+        kind: 'image',
+        editable: true,
+      },
       { key: 'tanggal', label: 'Tanggal', kind: 'date', editable: true, required: true },
-      { key: 'tempat', label: options.unit === 'mobile' ? 'Outlet' : 'Lokasi', kind: 'text', editable: true, required: true },
-      { key: 'catatan', label: options.kind === 'video' ? 'Judul' : 'Catatan', kind: 'longtext', editable: true, required: true },
+      {
+        key: 'tempat',
+        label: options.unit === 'mobile' ? 'Outlet' : 'Lokasi',
+        kind: 'text',
+        editable: true,
+        required: true,
+      },
+      {
+        key: 'catatan',
+        label: options.kind === 'video' ? 'Judul' : 'Catatan',
+        kind: 'longtext',
+        editable: true,
+        required: true,
+      },
       personCol(),
-      { key: 'status', label: 'Status', kind: 'status', options: ['Terverifikasi', 'Menunggu verifikasi'] },
+      {
+        key: 'status',
+        label: 'Status',
+        kind: 'status',
+        options: ['Terverifikasi', 'Menunggu verifikasi'],
+      },
     ],
     rows,
     filters: ['salesforce', 'status'],
@@ -440,7 +515,10 @@ function photoLog(
     personUnits: [options.unit],
     stats: (scoped) => [
       { label: 'Dokumentasi', value: num(scoped.length), note: '1–15 Nov 2026' },
-      { label: 'Menunggu verifikasi', value: num(scoped.filter((item) => item.cells.status === 'Menunggu verifikasi').length) },
+      {
+        label: 'Menunggu verifikasi',
+        value: num(scoped.filter((item) => item.cells.status === 'Menunggu verifikasi').length),
+      },
     ],
   };
 }
@@ -456,8 +534,11 @@ function tickets(seed: string, unit: BusinessUnit): DatasetSpec {
     const person = pickOne(random, salesforce);
     const reporter =
       unit === 'household'
-        ? (pickOne(random, customers).name)
-        : pickOne(random, outlets.filter((outlet) => outlet.salesforceId === person.id)).name;
+        ? pickOne(random, customers).name
+        : pickOne(
+            random,
+            outlets.filter((outlet) => outlet.salesforceId === person.id),
+          ).name;
     return row(`${seed}-${index}`, person, {
       nomor: `TKT-2611-${String(201 + index).padStart(4, '0')}`,
       tanggal: novDate(random),
@@ -474,10 +555,24 @@ function tickets(seed: string, unit: BusinessUnit): DatasetSpec {
       { key: 'nomor', label: 'No. tiket', kind: 'id', editable: true, required: true },
       { key: 'tanggal', label: 'Tanggal', kind: 'date', editable: true, required: true },
       { key: 'pelapor', label: 'Pelapor', kind: 'text', editable: true, required: true },
-      { key: 'kategori', label: 'Kategori', kind: 'status', editable: true, required: true, options: categories },
+      {
+        key: 'kategori',
+        label: 'Kategori',
+        kind: 'status',
+        editable: true,
+        required: true,
+        options: categories,
+      },
       { key: 'uraian', label: 'Uraian', kind: 'longtext', editable: true, required: true },
       personCol('Penanggung jawab'),
-      { key: 'status', label: 'Status', kind: 'status', editable: true, required: true, options: ['Baru', 'Diproses', 'Selesai'] },
+      {
+        key: 'status',
+        label: 'Status',
+        kind: 'status',
+        editable: true,
+        required: true,
+        options: ['Baru', 'Diproses', 'Selesai'],
+      },
     ],
     rows,
     filters: ['status', 'kategori'],
@@ -487,8 +582,14 @@ function tickets(seed: string, unit: BusinessUnit): DatasetSpec {
     stats: (scoped) => [
       { label: 'Tiket', value: num(scoped.length) },
       { label: 'Baru', value: num(scoped.filter((item) => item.cells.status === 'Baru').length) },
-      { label: 'Diproses', value: num(scoped.filter((item) => item.cells.status === 'Diproses').length) },
-      { label: 'Selesai', value: num(scoped.filter((item) => item.cells.status === 'Selesai').length) },
+      {
+        label: 'Diproses',
+        value: num(scoped.filter((item) => item.cells.status === 'Diproses').length),
+      },
+      {
+        label: 'Selesai',
+        value: num(scoped.filter((item) => item.cells.status === 'Selesai').length),
+      },
     ],
   };
 }
@@ -497,7 +598,11 @@ function fees(seed: string, unit: BusinessUnit, component: string): DatasetSpec 
   const random = seeded(seed);
   const periods = ['Agu 2026', 'Sep 2026', 'Okt 2026', 'Nov 2026'];
   const rows = periods.map((period, index) => {
-    const base = between(random, unit === 'mobile' ? 800_000_000 : 300_000_000, unit === 'mobile' ? 1_400_000_000 : 600_000_000);
+    const base = between(
+      random,
+      unit === 'mobile' ? 800_000_000 : 300_000_000,
+      unit === 'mobile' ? 1_400_000_000 : 600_000_000,
+    );
     const rate = round1(1 + random() * 2);
     return row(`${seed}-${index}`, null, {
       periode: period,
@@ -516,19 +621,32 @@ function fees(seed: string, unit: BusinessUnit, component: string): DatasetSpec 
       { key: 'dasar', label: 'Dasar perhitungan', kind: 'rupiah', editable: true, required: true },
       { key: 'tarif', label: 'Tarif', kind: 'percent', editable: true, required: true },
       { key: 'nilai', label: 'Nilai', kind: 'rupiah', editable: true, required: true },
-      { key: 'status', label: 'Status', kind: 'status', editable: true, required: true, options: ['Draft', 'Final'] },
+      {
+        key: 'status',
+        label: 'Status',
+        kind: 'status',
+        editable: true,
+        required: true,
+        options: ['Draft', 'Final'],
+      },
     ],
     rows,
     filters: ['status'],
     editable: true,
     stats: (scoped) => [
       { label: 'Total 4 bulan', value: rupiahShort(sumBy(scoped, 'nilai')) },
-      { label: 'Periode final', value: num(scoped.filter((item) => item.cells.status === 'Final').length) },
+      {
+        label: 'Periode final',
+        value: num(scoped.filter((item) => item.cells.status === 'Final').length),
+      },
     ],
     chart: (scoped) => ({
       title: 'Nilai per periode',
       unit: 'number',
-      bars: scoped.map((item) => ({ label: String(item.cells.periode), value: Number(item.cells.nilai) })),
+      bars: scoped.map((item) => ({
+        label: String(item.cells.periode),
+        value: Number(item.cells.nilai),
+      })),
     }),
   };
 }
@@ -633,22 +751,53 @@ function users(seed: string, units: BusinessUnit[]): DatasetSpec {
       }),
     );
   return {
-    description: 'Pengguna operasional. Akun dengan username bisa dipakai login di pratinjau dengan kata sandi contoh123.',
+    description:
+      'Pengguna operasional. Akun dengan username bisa dipakai login di pratinjau dengan kata sandi contoh123.',
     columns: [
       { key: 'foto', label: 'Foto', kind: 'image' },
       { key: 'nama', label: 'Nama', kind: 'text', editable: true, required: true },
       { key: 'username', label: 'Username', kind: 'id', editable: true, required: true },
-      { key: 'peran', label: 'Peran', kind: 'status', editable: true, required: true, options: ['Admin', 'Manager', 'Supervisor', 'Salesforce'] },
-      { key: 'unit', label: 'Unit', kind: 'status', editable: true, required: true, options: ['Mobile', 'Household', 'Direct Sales', 'Lintas unit'] },
-      { key: 'tim', label: 'Tim', kind: 'status', editable: true, options: teams.map((team) => team.name) },
-      { key: 'status', label: 'Status', kind: 'status', editable: true, required: true, options: ['Aktif', 'Belum aktif', 'Nonaktif'] },
+      {
+        key: 'peran',
+        label: 'Peran',
+        kind: 'status',
+        editable: true,
+        required: true,
+        options: ['Admin', 'Manager', 'Supervisor', 'Salesforce'],
+      },
+      {
+        key: 'unit',
+        label: 'Unit',
+        kind: 'status',
+        editable: true,
+        required: true,
+        options: ['Mobile', 'Household', 'Direct Sales', 'Lintas unit'],
+      },
+      {
+        key: 'tim',
+        label: 'Tim',
+        kind: 'status',
+        editable: true,
+        options: teams.map((team) => team.name),
+      },
+      {
+        key: 'status',
+        label: 'Status',
+        kind: 'status',
+        editable: true,
+        required: true,
+        options: ['Aktif', 'Belum aktif', 'Nonaktif'],
+      },
     ],
     rows,
     filters: ['peran', 'unit', 'status'],
     editable: true,
     stats: (scoped) => [
       { label: 'Pengguna', value: num(scoped.length) },
-      { label: 'Punya akun', value: num(scoped.filter((item) => item.cells.status === 'Aktif').length) },
+      {
+        label: 'Punya akun',
+        value: num(scoped.filter((item) => item.cells.status === 'Aktif').length),
+      },
     ],
   };
 }
@@ -663,36 +812,45 @@ function staticList(
   return {
     description,
     columns,
-    rows: cells.map((item, index) => row(`static-${index}-${String(item[columns[0]?.key ?? ''] ?? index)}`, null, item)),
+    rows: cells.map((item, index) =>
+      row(`static-${index}-${String(item[columns[0]?.key ?? ''] ?? index)}`, null, item),
+    ),
     ...options,
   };
 }
 
 // ---------------------------------------------------------------- Household
 
-function householdOrders(seed: string, variant: 'penjualan' | 'funnel' | 'database' | 'input' | 'admin'): DatasetSpec {
+function householdOrders(
+  seed: string,
+  variant: 'penjualan' | 'funnel' | 'database' | 'input' | 'admin',
+): DatasetSpec {
   const random = seeded(seed);
-  const rows = customers.map((customer, index) => {
-    const person = personById(customer.salesforceId) ?? null;
-    const status = pickOne(random, ['IO', 'RE', 'PS', 'PS', 'PS', 'Batal']);
-    const io = novDate(random);
-    const day = Number(io.slice(-2));
-    const re = status === 'IO' ? null : `2026-11-${String(Math.min(day + 1, 28)).padStart(2, '0')}`;
-    const ps = status === 'PS' ? `2026-11-${String(Math.min(day + 3, 28)).padStart(2, '0')}` : null;
-    return row(`${seed}-${customer.id}`, person, {
-      nomor: `ORD-2611-${String(3001 + index).padStart(5, '0')}`,
-      tanggal: io,
-      pelanggan: customer.name,
-      layanan: customer.serviceNo,
-      alamat: customer.address,
-      paket: customer.packageName,
-      io,
-      re,
-      ps,
-      status,
-      salesforce: person?.name ?? '-',
-    });
-  }).sort((a, b) => String(b.cells.tanggal).localeCompare(String(a.cells.tanggal)));
+  const rows = customers
+    .map((customer, index) => {
+      const person = personById(customer.salesforceId) ?? null;
+      const status = pickOne(random, ['IO', 'RE', 'PS', 'PS', 'PS', 'Batal']);
+      const io = novDate(random);
+      const day = Number(io.slice(-2));
+      const re =
+        status === 'IO' ? null : `2026-11-${String(Math.min(day + 1, 28)).padStart(2, '0')}`;
+      const ps =
+        status === 'PS' ? `2026-11-${String(Math.min(day + 3, 28)).padStart(2, '0')}` : null;
+      return row(`${seed}-${customer.id}`, person, {
+        nomor: `ORD-2611-${String(3001 + index).padStart(5, '0')}`,
+        tanggal: io,
+        pelanggan: customer.name,
+        layanan: customer.serviceNo,
+        alamat: customer.address,
+        paket: customer.packageName,
+        io,
+        re,
+        ps,
+        status,
+        salesforce: person?.name ?? '-',
+      });
+    })
+    .sort((a, b) => String(b.cells.tanggal).localeCompare(String(a.cells.tanggal)));
 
   const statusCol: Column = {
     key: 'status',
@@ -755,7 +913,8 @@ function householdOrders(seed: string, variant: 'penjualan' | 'funnel' | 'databa
   }
   if (variant === 'database') {
     return {
-      description: 'Data pelanggan. Nomor layanan disimpan sebagai teks supaya nol di depan tetap utuh.',
+      description:
+        'Data pelanggan. Nomor layanan disimpan sebagai teks supaya nol di depan tetap utuh.',
       columns: [
         { key: 'pelanggan', label: 'Pelanggan', kind: 'text', editable: true, required: true },
         { key: 'layanan', label: 'No. layanan', kind: 'id', editable: true, required: true },
@@ -777,7 +936,12 @@ function householdOrders(seed: string, variant: 'penjualan' | 'funnel' | 'databa
       variant === 'input'
         ? 'Order baru dari salesforce. Salesforce bisa menambah order miliknya sendiri; Admin bisa mengubah dan menghapus.'
         : 'Order IndiHome dan statusnya.',
-    columns: [...base, { key: 'alamat', label: 'Alamat', kind: 'longtext', editable: true, required: true }, statusCol, personCol()],
+    columns: [
+      ...base,
+      { key: 'alamat', label: 'Alamat', kind: 'longtext', editable: true, required: true },
+      statusCol,
+      personCol(),
+    ],
     rows,
     filters: ['status', 'paket', 'salesforce'],
     editable: true,
@@ -792,7 +956,11 @@ function billing(seed: string): DatasetSpec {
   const random = seeded(seed);
   const rows = customers.map((customer) => {
     const person = personById(customer.salesforceId) ?? null;
-    const amount = customer.packageName.includes('100') ? 525000 : customer.packageName.includes('50') ? 350000 : 280000;
+    const amount = customer.packageName.includes('100')
+      ? 525000
+      : customer.packageName.includes('50')
+        ? 350000
+        : 280000;
     return row(`${seed}-${customer.id}`, person, {
       pelanggan: customer.name,
       layanan: customer.serviceNo,
@@ -809,7 +977,14 @@ function billing(seed: string): DatasetSpec {
       { key: 'layanan', label: 'No. layanan', kind: 'id' },
       { key: 'periode', label: 'Periode', kind: 'text' },
       { key: 'tagihan', label: 'Tagihan', kind: 'rupiah' },
-      { key: 'status', label: 'Status', kind: 'status', editable: true, required: true, options: ['Lunas', 'Belum bayar'] },
+      {
+        key: 'status',
+        label: 'Status',
+        kind: 'status',
+        editable: true,
+        required: true,
+        options: ['Lunas', 'Belum bayar'],
+      },
       personCol(),
     ],
     rows,
@@ -821,7 +996,10 @@ function billing(seed: string): DatasetSpec {
       return [
         { label: 'Total tagihan', value: rupiahShort(sumBy(scoped, 'tagihan')), note: 'Okt 2026' },
         { label: 'Terbayar', value: rupiahShort(sumBy(paid, 'tagihan')) },
-        { label: 'Collection', value: `${pct(sumBy(paid, 'tagihan'), sumBy(scoped, 'tagihan')).toLocaleString('id-ID')}%` },
+        {
+          label: 'Collection',
+          value: `${pct(sumBy(paid, 'tagihan'), sumBy(scoped, 'tagihan')).toLocaleString('id-ID')}%`,
+        },
         { label: 'Belum bayar', value: `${scoped.length - paid.length} pelanggan` },
       ];
     },
@@ -839,7 +1017,11 @@ function clockIn(seed: string): DatasetSpec {
         row(`${seed}-${person.id}-${day}`, person, {
           tanggal: `2026-11-${day}`,
           salesforce: person.name,
-          masuk: leave ? null : late ? `08:${between(random, 16, 45)}` : `07:${between(random, 40, 59)}`,
+          masuk: leave
+            ? null
+            : late
+              ? `08:${between(random, 16, 45)}`
+              : `07:${between(random, 40, 59)}`,
           keluar: leave ? null : `16:${String(between(random, 0, 40)).padStart(2, '0')}`,
           lokasi: pickOne(random, ['Kantor Cirebon', 'Booth Pasar Contoh', 'Perum Griya Contoh']),
           status: leave ? 'Izin' : late ? 'Terlambat' : 'Hadir',
@@ -855,7 +1037,14 @@ function clockIn(seed: string): DatasetSpec {
       { key: 'masuk', label: 'Jam masuk', kind: 'time' },
       { key: 'keluar', label: 'Jam keluar', kind: 'time' },
       { key: 'lokasi', label: 'Lokasi', kind: 'text' },
-      { key: 'status', label: 'Status', kind: 'status', editable: true, required: true, options: ['Hadir', 'Terlambat', 'Izin'] },
+      {
+        key: 'status',
+        label: 'Status',
+        kind: 'status',
+        editable: true,
+        required: true,
+        options: ['Hadir', 'Terlambat', 'Izin'],
+      },
     ],
     rows,
     filters: ['status', 'salesforce'],
@@ -864,7 +1053,10 @@ function clockIn(seed: string): DatasetSpec {
     stats: (scoped) => [
       { label: 'Catatan', value: num(scoped.length), note: '11–15 Nov 2026' },
       { label: 'Hadir', value: num(scoped.filter((item) => item.cells.status === 'Hadir').length) },
-      { label: 'Terlambat', value: num(scoped.filter((item) => item.cells.status === 'Terlambat').length) },
+      {
+        label: 'Terlambat',
+        value: num(scoped.filter((item) => item.cells.status === 'Terlambat').length),
+      },
       { label: 'Izin', value: num(scoped.filter((item) => item.cells.status === 'Izin').length) },
     ],
   };
@@ -893,7 +1085,12 @@ function programParticipants(seed: string, program: string): DatasetSpec {
     description: `Peserta program ${program} dan pencapaiannya. Mekanisme resmi mengikuti aturan program.`,
     columns: [
       { key: 'outlet', label: 'Outlet', kind: 'text' },
-      { key: 'tap', label: 'TAP', kind: 'status', options: ['TAP Kota Cirebon', 'TAP Sumber', 'TAP Kuningan'] },
+      {
+        key: 'tap',
+        label: 'TAP',
+        kind: 'status',
+        options: ['TAP Kota Cirebon', 'TAP Sumber', 'TAP Kuningan'],
+      },
       { key: 'program', label: 'Program', kind: 'text' },
       { key: 'target', label: 'Target', kind: 'number', editable: true, required: true },
       { key: 'capaian', label: 'Pencapaian', kind: 'number', editable: true, required: true },
@@ -907,7 +1104,10 @@ function programParticipants(seed: string, program: string): DatasetSpec {
     personUnits: ['mobile'],
     stats: (scoped) => [
       { label: 'Peserta', value: num(scoped.length) },
-      { label: 'Tercapai', value: num(scoped.filter((item) => item.cells.status === 'Tercapai').length) },
+      {
+        label: 'Tercapai',
+        value: num(scoped.filter((item) => item.cells.status === 'Tercapai').length),
+      },
     ],
   };
 }
@@ -922,7 +1122,11 @@ function doaAllocation(seed: string): DatasetSpec {
     return row(`${seed}-${index}`, person, {
       tanggal: novDate(random),
       outlet: outlet.name,
-      produk: pickOne(random, ['Perdana Internet 15GB', 'Perdana Internet 30GB', 'Voucher Data 10GB']),
+      produk: pickOne(random, [
+        'Perdana Internet 15GB',
+        'Perdana Internet 30GB',
+        'Voucher Data 10GB',
+      ]),
       awal: `0${start}`,
       akhir: `0${start + qty - 1}`,
       jumlah: qty,
@@ -930,7 +1134,8 @@ function doaAllocation(seed: string): DatasetSpec {
     });
   });
   return {
-    description: 'Alokasi nomor seri (SN) ke outlet. SN disimpan sebagai teks supaya nol di depan tidak hilang.',
+    description:
+      'Alokasi nomor seri (SN) ke outlet. SN disimpan sebagai teks supaya nol di depan tidak hilang.',
     columns: [
       { key: 'tanggal', label: 'Tanggal', kind: 'date', editable: true, required: true },
       { key: 'outlet', label: 'Outlet', kind: 'text', editable: true, required: true },
@@ -979,14 +1184,23 @@ function doaSerials(seed: string): DatasetSpec {
     filters: ['status', 'produk'],
     stats: (scoped) => [
       { label: 'SN', value: num(scoped.length) },
-      { label: 'Terjual', value: num(scoped.filter((item) => item.cells.status === 'Terjual').length) },
+      {
+        label: 'Terjual',
+        value: num(scoped.filter((item) => item.cells.status === 'Terjual').length),
+      },
     ],
   };
 }
 
 function doaStock(seed: string): DatasetSpec {
   const random = seeded(seed);
-  const items = ['Perdana Internet 15GB', 'Perdana Internet 30GB', 'Perdana Nelpon', 'Voucher Data 10GB', 'Voucher Data 25GB'];
+  const items = [
+    'Perdana Internet 15GB',
+    'Perdana Internet 30GB',
+    'Perdana Nelpon',
+    'Voucher Data 10GB',
+    'Voucher Data 25GB',
+  ];
   return staticList(
     'Posisi stok gudang cluster. Data snapshot per tanggal unggah.',
     [
@@ -1000,7 +1214,14 @@ function doaStock(seed: string): DatasetSpec {
     items.map((item) => {
       const stock = between(random, 2000, 9000);
       const allocated = between(random, 500, stock);
-      return { produk: item, gudang: 'Gudang Cirebon', stok: stock, teralokasi: allocated, sisa: stock - allocated, diperbarui: '2026-11-15' };
+      return {
+        produk: item,
+        gudang: 'Gudang Cirebon',
+        stok: stock,
+        teralokasi: allocated,
+        sisa: stock - allocated,
+        diperbarui: '2026-11-15',
+      };
     }),
     {
       editable: true,
@@ -1008,7 +1229,10 @@ function doaStock(seed: string): DatasetSpec {
       chart: (scoped) => ({
         title: 'Sisa stok per produk',
         unit: 'number',
-        bars: scoped.map((item) => ({ label: String(item.cells.produk), value: Number(item.cells.sisa) })),
+        bars: scoped.map((item) => ({
+          label: String(item.cells.produk),
+          value: Number(item.cells.sisa),
+        })),
       }),
     },
   );
@@ -1018,14 +1242,32 @@ function d2cTargets(seed: string, kind: 'sekolah' | 'instansi'): DatasetSpec {
   const random = seeded(seed);
   const names =
     kind === 'sekolah'
-      ? ['SMA Contoh 1', 'SMK Contoh 2', 'Kampus Contoh', 'SMA Contoh 3', 'Politeknik Contoh', 'MA Contoh']
-      : ['Komunitas Ojek Contoh', 'Koperasi Contoh', 'Paguyuban Pedagang Contoh', 'Karang Taruna Contoh', 'Instansi Contoh'];
+      ? [
+          'SMA Contoh 1',
+          'SMK Contoh 2',
+          'Kampus Contoh',
+          'SMA Contoh 3',
+          'Politeknik Contoh',
+          'MA Contoh',
+        ]
+      : [
+          'Komunitas Ojek Contoh',
+          'Koperasi Contoh',
+          'Paguyuban Pedagang Contoh',
+          'Karang Taruna Contoh',
+          'Instansi Contoh',
+        ];
   const salesforce = salesforceOf('direct_sales');
   const rows = names.map((name, index) => {
     const person = pickOne(random, salesforce);
     return row(`${seed}-${index}`, person, {
       nama: name,
-      jenis: kind === 'sekolah' ? (name.includes('Kampus') || name.includes('Politeknik') ? 'Kampus' : 'Sekolah') : 'Komunitas',
+      jenis:
+        kind === 'sekolah'
+          ? name.includes('Kampus') || name.includes('Politeknik')
+            ? 'Kampus'
+            : 'Sekolah'
+          : 'Komunitas',
       pic: `PIC ${name.split(' ')[0]}`,
       kunjungan: novDate(random),
       penjualan: between(random, 5, 120),
@@ -1034,7 +1276,10 @@ function d2cTargets(seed: string, kind: 'sekolah' | 'instansi'): DatasetSpec {
     });
   });
   return {
-    description: kind === 'sekolah' ? 'Sasaran penjualan langsung di sekolah dan kampus.' : 'Sasaran penjualan langsung di instansi dan komunitas.',
+    description:
+      kind === 'sekolah'
+        ? 'Sasaran penjualan langsung di sekolah dan kampus.'
+        : 'Sasaran penjualan langsung di instansi dan komunitas.',
     columns: [
       { key: 'nama', label: 'Nama sasaran', kind: 'text', editable: true, required: true },
       { key: 'jenis', label: 'Jenis', kind: 'text', editable: true, required: true },
@@ -1042,7 +1287,14 @@ function d2cTargets(seed: string, kind: 'sekolah' | 'instansi'): DatasetSpec {
       { key: 'kunjungan', label: 'Kunjungan terakhir', kind: 'date', editable: true },
       { key: 'penjualan', label: 'Perdana terjual', kind: 'number', editable: true },
       personCol(),
-      { key: 'status', label: 'Status', kind: 'status', editable: true, required: true, options: ['Aktif', 'Penjajakan', 'Tidak aktif'] },
+      {
+        key: 'status',
+        label: 'Status',
+        kind: 'status',
+        editable: true,
+        required: true,
+        options: ['Aktif', 'Penjajakan', 'Tidak aktif'],
+      },
     ],
     rows,
     filters: ['status'],
@@ -1059,7 +1311,13 @@ function d2cTargets(seed: string, kind: 'sekolah' | 'instansi'): DatasetSpec {
 function d2cEvents(seed: string): DatasetSpec {
   const random = seeded(seed);
   const salesforce = salesforceOf('direct_sales');
-  const events = ['Car Free Day Contoh', 'Bazar Kampus Contoh', 'Pameran Mall Contoh', 'Festival Kuliner Contoh', 'Jalan Sehat Contoh'];
+  const events = [
+    'Car Free Day Contoh',
+    'Bazar Kampus Contoh',
+    'Pameran Mall Contoh',
+    'Festival Kuliner Contoh',
+    'Jalan Sehat Contoh',
+  ];
   const rows = events.map((name, index) => {
     const person = pickOne(random, salesforce);
     return row(`${seed}-${index}`, person, {
@@ -1081,7 +1339,14 @@ function d2cEvents(seed: string): DatasetSpec {
       { key: 'lokasi', label: 'Lokasi', kind: 'text', editable: true, required: true },
       { key: 'terjual', label: 'Perdana terjual', kind: 'number', editable: true },
       personCol(),
-      { key: 'status', label: 'Status', kind: 'status', editable: true, required: true, options: ['Terjadwal', 'Selesai', 'Batal'] },
+      {
+        key: 'status',
+        label: 'Status',
+        kind: 'status',
+        editable: true,
+        required: true,
+        options: ['Terjadwal', 'Selesai', 'Batal'],
+      },
     ],
     rows,
     filters: ['status'],
@@ -1098,15 +1363,55 @@ function d2cEvents(seed: string): DatasetSpec {
 // ---------------------------------------------------------------- Admin operasional
 
 const vacancyRows = [
-  { judul: 'Salesforce Mobile', unit: 'Mobile', lokasi: 'Kota Cirebon', jenis: 'Kontrak', ditutup: '2026-12-15', pelamar: 18, status: 'Dibuka' },
-  { judul: 'Sales IndiHome', unit: 'Household', lokasi: 'Kabupaten Kuningan', jenis: 'Kontrak', ditutup: '2026-12-20', pelamar: 11, status: 'Dibuka' },
-  { judul: 'Admin Data', unit: 'Support', lokasi: 'Kota Cirebon', jenis: 'Penuh waktu', ditutup: '2026-12-31', pelamar: 27, status: 'Dibuka' },
-  { judul: 'Supervisor Direct Sales', unit: 'Direct Sales', lokasi: 'Kabupaten Cirebon', jenis: 'Penuh waktu', ditutup: '2026-10-31', pelamar: 9, status: 'Ditutup' },
+  {
+    judul: 'Salesforce Mobile',
+    unit: 'Mobile',
+    lokasi: 'Kota Cirebon',
+    jenis: 'Kontrak',
+    ditutup: '2026-12-15',
+    pelamar: 18,
+    status: 'Dibuka',
+  },
+  {
+    judul: 'Sales IndiHome',
+    unit: 'Household',
+    lokasi: 'Kabupaten Kuningan',
+    jenis: 'Kontrak',
+    ditutup: '2026-12-20',
+    pelamar: 11,
+    status: 'Dibuka',
+  },
+  {
+    judul: 'Admin Data',
+    unit: 'Support',
+    lokasi: 'Kota Cirebon',
+    jenis: 'Penuh waktu',
+    ditutup: '2026-12-31',
+    pelamar: 27,
+    status: 'Dibuka',
+  },
+  {
+    judul: 'Supervisor Direct Sales',
+    unit: 'Direct Sales',
+    lokasi: 'Kabupaten Cirebon',
+    jenis: 'Penuh waktu',
+    ditutup: '2026-10-31',
+    pelamar: 9,
+    status: 'Ditutup',
+  },
 ];
 
 const applicantNames = [
-  'Ahmad Fauzi', 'Bella Safitri', 'Candra Wijaya', 'Dina Marlina', 'Eka Putra', 'Fani Oktaviani',
-  'Gita Ramadhani', 'Hadi Susanto', 'Intan Permatasari', 'Jefri Kurniawan',
+  'Ahmad Fauzi',
+  'Bella Safitri',
+  'Candra Wijaya',
+  'Dina Marlina',
+  'Eka Putra',
+  'Fani Oktaviani',
+  'Gita Ramadhani',
+  'Hadi Susanto',
+  'Intan Permatasari',
+  'Jefri Kurniawan',
 ];
 
 function applications(seed: string): DatasetSpec {
@@ -1115,18 +1420,27 @@ function applications(seed: string): DatasetSpec {
     row(`${seed}-${index}`, null, {
       cv: documentArt(`CV ${name}.pdf`),
       pelamar: name,
-      posisi: pickOne(random, vacancyRows.slice(0, 3).map((item) => item.judul)),
+      posisi: pickOne(
+        random,
+        vacancyRows.slice(0, 3).map((item) => item.judul),
+      ),
       tanggal: novDate(random),
       hp: `0812000010${String(index).padStart(2, '0')}`,
       status: pickOne(random, ['Baru', 'Seleksi berkas', 'Wawancara', 'Diterima', 'Ditolak']),
     }),
   );
   return {
-    description: 'Lamaran masuk. CV berkas privat: hanya petugas dengan izin rekrutmen yang bisa membukanya.',
+    description:
+      'Lamaran masuk. CV berkas privat: hanya petugas dengan izin rekrutmen yang bisa membukanya.',
     columns: [
       { key: 'cv', label: 'CV', kind: 'image' },
       { key: 'pelamar', label: 'Pelamar', kind: 'text' },
-      { key: 'posisi', label: 'Posisi', kind: 'status', options: vacancyRows.map((item) => item.judul) },
+      {
+        key: 'posisi',
+        label: 'Posisi',
+        kind: 'status',
+        options: vacancyRows.map((item) => item.judul),
+      },
       { key: 'tanggal', label: 'Tanggal', kind: 'date' },
       { key: 'hp', label: 'Nomor HP', kind: 'id' },
       {
@@ -1144,7 +1458,10 @@ function applications(seed: string): DatasetSpec {
     stats: (scoped) => [
       { label: 'Lamaran', value: num(scoped.length) },
       { label: 'Baru', value: num(scoped.filter((item) => item.cells.status === 'Baru').length) },
-      { label: 'Wawancara', value: num(scoped.filter((item) => item.cells.status === 'Wawancara').length) },
+      {
+        label: 'Wawancara',
+        value: num(scoped.filter((item) => item.cells.status === 'Wawancara').length),
+      },
     ],
   };
 }
@@ -1166,7 +1483,8 @@ function catalogProducts(seed: string, channel: 'pelanggan' | 'outlet'): Dataset
       gambar: productArt(art as 'perdana', name, `${channel}-${name}`),
       nama: channel === 'outlet' ? `Paket ${name}` : name,
       kategori: category,
-      isi: channel === 'outlet' ? `${pickOne(seeded(name), [10, 20, 25, 50])} unit per paket` : null,
+      isi:
+        channel === 'outlet' ? `${pickOne(seeded(name), [10, 20, 25, 50])} unit per paket` : null,
       harga: price === null ? null : channel === 'outlet' ? Math.round(price * 0.88) * 10 : price,
       status: price === null ? 'Draft' : 'Terbit',
     }),
@@ -1178,18 +1496,51 @@ function catalogProducts(seed: string, channel: 'pelanggan' | 'outlet'): Dataset
         : 'Paket ABKShop Outlet. Halaman pemesanan disematkan dari alamat yang diatur Admin Web.',
     columns: [
       { key: 'gambar', label: 'Gambar', kind: 'image', editable: true },
-      { key: 'nama', label: channel === 'outlet' ? 'Paket' : 'Produk', kind: 'text', editable: true, required: true },
-      { key: 'kategori', label: 'Kategori', kind: 'status', editable: true, required: true, options: ['Perdana', 'Voucher', 'Orbit', 'Soundbox'] },
-      ...(channel === 'outlet' ? [{ key: 'isi', label: 'Isi paket', kind: 'text', editable: true, required: true } satisfies Column] : []),
+      {
+        key: 'nama',
+        label: channel === 'outlet' ? 'Paket' : 'Produk',
+        kind: 'text',
+        editable: true,
+        required: true,
+      },
+      {
+        key: 'kategori',
+        label: 'Kategori',
+        kind: 'status',
+        editable: true,
+        required: true,
+        options: ['Perdana', 'Voucher', 'Orbit', 'Soundbox'],
+      },
+      ...(channel === 'outlet'
+        ? [
+            {
+              key: 'isi',
+              label: 'Isi paket',
+              kind: 'text',
+              editable: true,
+              required: true,
+            } satisfies Column,
+          ]
+        : []),
       { key: 'harga', label: 'Harga', kind: 'rupiah', editable: true },
-      { key: 'status', label: 'Status', kind: 'status', editable: true, required: true, options: ['Terbit', 'Draft', 'Diarsipkan'] },
+      {
+        key: 'status',
+        label: 'Status',
+        kind: 'status',
+        editable: true,
+        required: true,
+        options: ['Terbit', 'Draft', 'Diarsipkan'],
+      },
     ],
     rows,
     filters: ['kategori', 'status'],
     editable: true,
     stats: (scoped) => [
       { label: channel === 'outlet' ? 'Paket' : 'Produk', value: num(scoped.length) },
-      { label: 'Terbit', value: num(scoped.filter((item) => item.cells.status === 'Terbit').length) },
+      {
+        label: 'Terbit',
+        value: num(scoped.filter((item) => item.cells.status === 'Terbit').length),
+      },
       { label: 'Draft', value: num(scoped.filter((item) => item.cells.status === 'Draft').length) },
     ],
   };
@@ -1198,8 +1549,16 @@ function catalogProducts(seed: string, channel: 'pelanggan' | 'outlet'): Dataset
 function programsAdmin(seed: string, audience: string): DatasetSpec {
   const random = seeded(seed);
   const titles: Record<string, string[]> = {
-    Pelanggan: ['Bonus Kuota untuk Perdana Baru', 'Diskon Biaya Pasang IndiHome', 'Undian Isi Ulang Akhir Tahun'],
-    Outlet: ['Target Perdana November', 'Undian Voucher Akhir Tahun', 'Outlet Rapi dengan Materi Promosi'],
+    Pelanggan: [
+      'Bonus Kuota untuk Perdana Baru',
+      'Diskon Biaya Pasang IndiHome',
+      'Undian Isi Ulang Akhir Tahun',
+    ],
+    Outlet: [
+      'Target Perdana November',
+      'Undian Voucher Akhir Tahun',
+      'Outlet Rapi dengan Materi Promosi',
+    ],
     Internal: ['Kompetisi Salesforce Terbaik', 'Insentif Kunjungan Outlet'],
   };
   const rows = (titles[audience] ?? []).map((title, index) =>
@@ -1217,30 +1576,65 @@ function programsAdmin(seed: string, audience: string): DatasetSpec {
     columns: [
       { key: 'gambar', label: 'Gambar', kind: 'image', editable: true },
       { key: 'judul', label: 'Judul', kind: 'text', editable: true, required: true },
-      { key: 'audiens', label: 'Audiens', kind: 'status', editable: true, required: true, options: ['Pelanggan', 'Outlet', 'Internal'] },
+      {
+        key: 'audiens',
+        label: 'Audiens',
+        kind: 'status',
+        editable: true,
+        required: true,
+        options: ['Pelanggan', 'Outlet', 'Internal'],
+      },
       { key: 'mulai', label: 'Mulai', kind: 'date', editable: true, required: true },
       { key: 'selesai', label: 'Selesai', kind: 'date', editable: true, required: true },
-      { key: 'status', label: 'Status', kind: 'status', editable: true, required: true, options: ['Terbit', 'Draft', 'Diarsipkan'] },
+      {
+        key: 'status',
+        label: 'Status',
+        kind: 'status',
+        editable: true,
+        required: true,
+        options: ['Terbit', 'Draft', 'Diarsipkan'],
+      },
     ],
     rows,
     filters: ['status'],
     editable: true,
     stats: (scoped) => [
       { label: 'Program', value: num(scoped.length) },
-      { label: 'Terbit', value: num(scoped.filter((item) => item.cells.status === 'Terbit').length) },
+      {
+        label: 'Terbit',
+        value: num(scoped.filter((item) => item.cells.status === 'Terbit').length),
+      },
     ],
   };
 }
 
-function digiposRegistrations(seed: string, variant: 'pendaftaran' | 'verifikasi' | 'status'): DatasetSpec {
+function digiposRegistrations(
+  seed: string,
+  variant: 'pendaftaran' | 'verifikasi' | 'status',
+): DatasetSpec {
   const random = seeded(seed);
-  const names = ['Cell Harapan Baru', 'Toko Pulsa Mandiri', 'Mekar Cell', 'Sejahtera Phone', 'Amanah Cell', 'Bunda Pulsa', 'Cemerlang Cell', 'Dua Putra Ponsel'];
+  const names = [
+    'Cell Harapan Baru',
+    'Toko Pulsa Mandiri',
+    'Mekar Cell',
+    'Sejahtera Phone',
+    'Amanah Cell',
+    'Bunda Pulsa',
+    'Cemerlang Cell',
+    'Dua Putra Ponsel',
+  ];
   const rows = names.map((name, index) =>
     row(`${seed}-${index}`, null, {
       foto: storeArt(name, `${seed}-${index}`),
       referensi: `DGP-2611${String(index + 2).padStart(2, '0')}-${String(1000 + index * 37)}`,
       outlet: name,
-      pemilik: pickOne(random, ['Usep Saepulloh', 'Rina Rahayu', 'Dadang Sudrajat', 'Ela Nurlaela', 'Tono Sugiarto']),
+      pemilik: pickOne(random, [
+        'Usep Saepulloh',
+        'Rina Rahayu',
+        'Dadang Sudrajat',
+        'Ela Nurlaela',
+        'Tono Sugiarto',
+      ]),
       hp: `0813000020${String(index).padStart(2, '0')}`,
       tanggal: novDate(random),
       petugas: pickOne(random, ['Rizky Pratama', 'Dimas Saputra', 'Ilham Ramadhan']),
@@ -1254,7 +1648,14 @@ function digiposRegistrations(seed: string, variant: 'pendaftaran' | 'verifikasi
           { key: 'outlet', label: 'Outlet', kind: 'text' },
           { key: 'petugas', label: 'Petugas', kind: 'text', editable: true, required: true },
           { key: 'tanggal', label: 'Tanggal kunjungan', kind: 'date', editable: true },
-          { key: 'status', label: 'Hasil', kind: 'status', editable: true, required: true, options: ['Baru', 'Verifikasi', 'Disetujui', 'Ditolak'] },
+          {
+            key: 'status',
+            label: 'Hasil',
+            kind: 'status',
+            editable: true,
+            required: true,
+            options: ['Baru', 'Verifikasi', 'Disetujui', 'Ditolak'],
+          },
         ]
       : [
           { key: 'referensi', label: 'No. referensi', kind: 'id' },
@@ -1262,7 +1663,14 @@ function digiposRegistrations(seed: string, variant: 'pendaftaran' | 'verifikasi
           { key: 'pemilik', label: 'Pemilik', kind: 'text' },
           { key: 'hp', label: 'Nomor HP', kind: 'id' },
           { key: 'tanggal', label: 'Tanggal daftar', kind: 'date' },
-          { key: 'status', label: 'Status', kind: 'status', editable: true, required: true, options: ['Baru', 'Verifikasi', 'Disetujui', 'Ditolak'] },
+          {
+            key: 'status',
+            label: 'Status',
+            kind: 'status',
+            editable: true,
+            required: true,
+            options: ['Baru', 'Verifikasi', 'Disetujui', 'Ditolak'],
+          },
         ];
   return {
     description:
@@ -1276,7 +1684,10 @@ function digiposRegistrations(seed: string, variant: 'pendaftaran' | 'verifikasi
     stats: (scoped) => [
       { label: 'Pendaftar', value: num(scoped.length) },
       { label: 'Baru', value: num(scoped.filter((item) => item.cells.status === 'Baru').length) },
-      { label: 'Disetujui', value: num(scoped.filter((item) => item.cells.status === 'Disetujui').length) },
+      {
+        label: 'Disetujui',
+        value: num(scoped.filter((item) => item.cells.status === 'Disetujui').length),
+      },
     ],
   };
 }
@@ -1301,10 +1712,24 @@ function leads(seed: string): DatasetSpec {
       { key: 'nama', label: 'Nama', kind: 'text', editable: true, required: true },
       { key: 'hp', label: 'Nomor HP', kind: 'id', editable: true, required: true },
       { key: 'alamat', label: 'Alamat', kind: 'longtext', editable: true, required: true },
-      { key: 'sumber', label: 'Sumber', kind: 'status', editable: true, required: true, options: ['Website', 'Booth', 'Door to door'] },
+      {
+        key: 'sumber',
+        label: 'Sumber',
+        kind: 'status',
+        editable: true,
+        required: true,
+        options: ['Website', 'Booth', 'Door to door'],
+      },
       { key: 'tanggal', label: 'Tanggal', kind: 'date', editable: true, required: true },
       personCol('Ditugaskan ke'),
-      { key: 'status', label: 'Status', kind: 'status', editable: true, required: true, options: ['Baru', 'Dihubungi', 'Survei', 'Jadi order', 'Tidak tercakup'] },
+      {
+        key: 'status',
+        label: 'Status',
+        kind: 'status',
+        editable: true,
+        required: true,
+        options: ['Baru', 'Dihubungi', 'Survei', 'Jadi order', 'Tidak tercakup'],
+      },
     ],
     rows,
     filters: ['status', 'sumber'],
@@ -1312,7 +1737,10 @@ function leads(seed: string): DatasetSpec {
     personUnits: ['household'],
     stats: (scoped) => [
       { label: 'Lead', value: num(scoped.length) },
-      { label: 'Jadi order', value: num(scoped.filter((item) => item.cells.status === 'Jadi order').length) },
+      {
+        label: 'Jadi order',
+        value: num(scoped.filter((item) => item.cells.status === 'Jadi order').length),
+      },
     ],
   };
 }
@@ -1379,14 +1807,32 @@ function buildRegistry(): Record<string, () => DatasetSpec> {
         { key: 'status', label: 'Tautan', kind: 'status', options: ['Belum diatur'] },
       ],
       [
-        { nama: 'Sellthru harian cluster', unit: 'Mobile', diperbarui: '2026-11-15', status: 'Belum diatur' },
-        { nama: 'Aktivasi perdana per TAP', unit: 'Mobile', diperbarui: '2026-11-14', status: 'Belum diatur' },
-        { nama: 'Market share per kecamatan', unit: 'Mobile', diperbarui: '2026-11-10', status: 'Belum diatur' },
+        {
+          nama: 'Sellthru harian cluster',
+          unit: 'Mobile',
+          diperbarui: '2026-11-15',
+          status: 'Belum diatur',
+        },
+        {
+          nama: 'Aktivasi perdana per TAP',
+          unit: 'Mobile',
+          diperbarui: '2026-11-14',
+          status: 'Belum diatur',
+        },
+        {
+          nama: 'Market share per kecamatan',
+          unit: 'Mobile',
+          diperbarui: '2026-11-10',
+          status: 'Belum diatur',
+        },
       ],
     );
-  reg[`${t}/outlet/register-outlet`] = () => outletRegister('t-outlet', 'Master outlet beserta penugasan salesforce.');
-  reg[`${t}/outlet/stock-perdana`] = () => outletStock('t-stock-p', 'Posisi stok perdana di outlet.', 'Perdana');
-  reg[`${t}/outlet/stock-voucher`] = () => outletStock('t-stock-v', 'Posisi stok voucher fisik di outlet.', 'Voucher fisik');
+  reg[`${t}/outlet/register-outlet`] = () =>
+    outletRegister('t-outlet', 'Master outlet beserta penugasan salesforce.');
+  reg[`${t}/outlet/stock-perdana`] = () =>
+    outletStock('t-stock-p', 'Posisi stok perdana di outlet.', 'Perdana');
+  reg[`${t}/outlet/stock-voucher`] = () =>
+    outletStock('t-stock-v', 'Posisi stok voucher fisik di outlet.', 'Voucher fisik');
   reg[`${t}/outlet/omzet-outlet`] = () => outletOmzet('t-omzet');
   for (const [slug, label, target] of [
     ['perdana', 'perdana', [120, 300]],
@@ -1403,9 +1849,21 @@ function buildRegistry(): Record<string, () => DatasetSpec> {
       });
   }
   reg[`${t}/sellthru/st-nota`] = () =>
-    transactions('t-st-nota', { unit: 'mobile', description: 'Penjualan ke outlet berdasarkan nota.', products: mobileProducts, count: 36, prefix: 'NOTA' });
+    transactions('t-st-nota', {
+      unit: 'mobile',
+      description: 'Penjualan ke outlet berdasarkan nota.',
+      products: mobileProducts,
+      count: 36,
+      prefix: 'NOTA',
+    });
   reg[`${t}/sellthru/st-digipos`] = () =>
-    transactions('t-st-dgp', { unit: 'mobile', description: 'Penjualan ke outlet lewat Digipos.', products: mobileProducts, count: 40, prefix: 'DGP' });
+    transactions('t-st-dgp', {
+      unit: 'mobile',
+      description: 'Penjualan ke outlet lewat Digipos.',
+      products: mobileProducts,
+      count: 40,
+      prefix: 'DGP',
+    });
   reg[`${t}/sellthru/penjualan-d2c`] = () =>
     transactions('t-st-d2c', {
       unit: 'direct_sales',
@@ -1445,15 +1903,32 @@ function buildRegistry(): Record<string, () => DatasetSpec> {
       ].map((item) => {
         const [indikator, bobot, target, realisasi] = item as [string, number, number, number];
         const ach = pct(Number(realisasi), Number(target));
-        return { indikator, bobot, target, realisasi, capaian: ach, skor: round1((Math.min(ach, 120) * Number(bobot)) / 100) };
+        return {
+          indikator,
+          bobot,
+          target,
+          realisasi,
+          capaian: ach,
+          skor: round1((Math.min(ach, 120) * Number(bobot)) / 100),
+        };
       }),
       {
         editable: true,
-        stats: (scoped) => [{ label: 'Total skor', value: round1(sumBy(scoped, 'skor')).toLocaleString('id-ID'), note: 'Skor maksimum contoh 120' }],
+        stats: (scoped) => [
+          {
+            label: 'Total skor',
+            value: round1(sumBy(scoped, 'skor')).toLocaleString('id-ID'),
+            note: 'Skor maksimum contoh 120',
+          },
+        ],
         chart: (scoped) => ({
           title: 'Capaian per indikator',
           unit: 'percent',
-          bars: scoped.map((item) => ({ label: String(item.cells.indikator), value: Number(item.cells.capaian), target: 100 })),
+          bars: scoped.map((item) => ({
+            label: String(item.cells.indikator),
+            value: Number(item.cells.capaian),
+            target: 100,
+          })),
         }),
       },
     );
@@ -1523,7 +1998,12 @@ function buildRegistry(): Record<string, () => DatasetSpec> {
       kind: 'visit',
       count: 16,
       description: 'Foto kunjungan outlet oleh salesforce.',
-      notes: ['Cek stok dan materi promosi', 'Penawaran program November', 'Kunjungan rutin', 'Edukasi aktivasi perdana'],
+      notes: [
+        'Cek stok dan materi promosi',
+        'Penawaran program November',
+        'Kunjungan rutin',
+        'Edukasi aktivasi perdana',
+      ],
     });
   reg[`${t}/dokumentasi/dokumen`] = () =>
     photoLog('t-doc', {
@@ -1539,7 +2019,11 @@ function buildRegistry(): Record<string, () => DatasetSpec> {
       kind: 'video',
       count: 8,
       description: 'Video latihan penawaran produk.',
-      notes: ['Roleplay penawaran perdana', 'Roleplay menangani keluhan', 'Roleplay program outlet'],
+      notes: [
+        'Roleplay penawaran perdana',
+        'Roleplay menangani keluhan',
+        'Roleplay program outlet',
+      ],
     });
   reg[`${t}/setting/target`] = () => targets('t-target', 'mobile');
   reg[`${t}/setting/upload-data`] = () => uploads('t-upload', 'Data Sellthru', mobileUpload);
@@ -1548,12 +2032,27 @@ function buildRegistry(): Record<string, () => DatasetSpec> {
       'Tautan kerja yang sering dipakai. Alamat asli diisi Admin.',
       [
         { key: 'judul', label: 'Judul', kind: 'text', editable: true, required: true },
-        { key: 'kategori', label: 'Kategori', kind: 'status', editable: true, required: true, options: ['Aplikasi', 'Panduan', 'Formulir'] },
+        {
+          key: 'kategori',
+          label: 'Kategori',
+          kind: 'status',
+          editable: true,
+          required: true,
+          options: ['Aplikasi', 'Panduan', 'Formulir'],
+        },
         { key: 'alamat', label: 'Alamat', kind: 'text', editable: true, required: true },
       ],
       [
-        { judul: 'Aplikasi Digipos', kategori: 'Aplikasi', alamat: 'https://contoh.invalid/digipos' },
-        { judul: 'Panduan program November', kategori: 'Panduan', alamat: 'https://contoh.invalid/panduan' },
+        {
+          judul: 'Aplikasi Digipos',
+          kategori: 'Aplikasi',
+          alamat: 'https://contoh.invalid/digipos',
+        },
+        {
+          judul: 'Panduan program November',
+          kategori: 'Panduan',
+          alamat: 'https://contoh.invalid/panduan',
+        },
         { judul: 'Form izin cuti', kategori: 'Formulir', alamat: 'https://contoh.invalid/cuti' },
       ],
       { editable: true, filters: ['kategori'] },
@@ -1581,7 +2080,8 @@ function buildRegistry(): Record<string, () => DatasetSpec> {
   reg[`${h}/ctb/tagihan`] = () => billing('h-ctb');
   reg[`${h}/user-management`] = () => users('h-users', ['household']);
   reg[`${h}/setting/target`] = () => targets('h-target', 'household');
-  reg[`${h}/setting/upload-data-performance`] = () => uploads('h-upload', 'Data Performance', householdUpload);
+  reg[`${h}/setting/upload-data-performance`] = () =>
+    uploads('h-upload', 'Data Performance', householdUpload);
   reg[`${h}/pop-material`] = () =>
     photoLog('h-pop', {
       unit: 'household',
@@ -1627,15 +2127,46 @@ function buildRegistry(): Record<string, () => DatasetSpec> {
       'Lowongan yang tampil di halaman Karir website Publik.',
       [
         { key: 'judul', label: 'Posisi', kind: 'text', editable: true, required: true },
-        { key: 'unit', label: 'Unit', kind: 'status', editable: true, required: true, options: ['Mobile', 'Household', 'Direct Sales', 'Support'] },
+        {
+          key: 'unit',
+          label: 'Unit',
+          kind: 'status',
+          editable: true,
+          required: true,
+          options: ['Mobile', 'Household', 'Direct Sales', 'Support'],
+        },
         { key: 'lokasi', label: 'Lokasi', kind: 'text', editable: true, required: true },
-        { key: 'jenis', label: 'Jenis', kind: 'status', editable: true, required: true, options: ['Kontrak', 'Penuh waktu'] },
+        {
+          key: 'jenis',
+          label: 'Jenis',
+          kind: 'status',
+          editable: true,
+          required: true,
+          options: ['Kontrak', 'Penuh waktu'],
+        },
         { key: 'ditutup', label: 'Ditutup', kind: 'date', editable: true, required: true },
         { key: 'pelamar', label: 'Pelamar', kind: 'number' },
-        { key: 'status', label: 'Status', kind: 'status', editable: true, required: true, options: ['Dibuka', 'Ditutup', 'Draft'] },
+        {
+          key: 'status',
+          label: 'Status',
+          kind: 'status',
+          editable: true,
+          required: true,
+          options: ['Dibuka', 'Ditutup', 'Draft'],
+        },
       ],
       vacancyRows,
-      { editable: true, filters: ['status', 'unit'], stats: (scoped) => [{ label: 'Lowongan dibuka', value: num(scoped.filter((item) => item.cells.status === 'Dibuka').length) }, { label: 'Total pelamar', value: num(sumBy(scoped, 'pelamar')) }] },
+      {
+        editable: true,
+        filters: ['status', 'unit'],
+        stats: (scoped) => [
+          {
+            label: 'Lowongan dibuka',
+            value: num(scoped.filter((item) => item.cells.status === 'Dibuka').length),
+          },
+          { label: 'Total pelamar', value: num(sumBy(scoped, 'pelamar')) },
+        ],
+      },
     );
   reg[`${a}/kelola-karir/lamaran`] = () => applications('a-lamaran');
   reg[`${a}/kelola-karir/status-tindak-lanjut`] = () =>
@@ -1644,14 +2175,39 @@ function buildRegistry(): Record<string, () => DatasetSpec> {
       [
         { key: 'pelamar', label: 'Pelamar', kind: 'text', editable: true, required: true },
         { key: 'posisi', label: 'Posisi', kind: 'text', editable: true, required: true },
-        { key: 'tahap', label: 'Tahap', kind: 'status', editable: true, required: true, options: ['Wawancara HR', 'Wawancara user', 'Tes lapangan', 'Penawaran kerja'] },
+        {
+          key: 'tahap',
+          label: 'Tahap',
+          kind: 'status',
+          editable: true,
+          required: true,
+          options: ['Wawancara HR', 'Wawancara user', 'Tes lapangan', 'Penawaran kerja'],
+        },
         { key: 'jadwal', label: 'Jadwal', kind: 'date', editable: true, required: true },
         { key: 'pic', label: 'PIC', kind: 'text', editable: true },
       ],
       [
-        { pelamar: 'Candra Wijaya', posisi: 'Salesforce Mobile', tahap: 'Wawancara HR', jadwal: '2026-11-18', pic: 'Teguh Santoso' },
-        { pelamar: 'Gita Ramadhani', posisi: 'Admin Data', tahap: 'Tes lapangan', jadwal: '2026-11-19', pic: 'Teguh Santoso' },
-        { pelamar: 'Hadi Susanto', posisi: 'Sales IndiHome', tahap: 'Wawancara user', jadwal: '2026-11-20', pic: 'Eko Prasetyo' },
+        {
+          pelamar: 'Candra Wijaya',
+          posisi: 'Salesforce Mobile',
+          tahap: 'Wawancara HR',
+          jadwal: '2026-11-18',
+          pic: 'Teguh Santoso',
+        },
+        {
+          pelamar: 'Gita Ramadhani',
+          posisi: 'Admin Data',
+          tahap: 'Tes lapangan',
+          jadwal: '2026-11-19',
+          pic: 'Teguh Santoso',
+        },
+        {
+          pelamar: 'Hadi Susanto',
+          posisi: 'Sales IndiHome',
+          tahap: 'Wawancara user',
+          jadwal: '2026-11-20',
+          pic: 'Eko Prasetyo',
+        },
       ],
       { editable: true, filters: ['tahap'] },
     );
@@ -1660,12 +2216,27 @@ function buildRegistry(): Record<string, () => DatasetSpec> {
       'Template pesan ke pelamar. Belum ada pesan yang dikirim otomatis.',
       [
         { key: 'nama', label: 'Template', kind: 'text', editable: true, required: true },
-        { key: 'kanal', label: 'Kanal', kind: 'status', editable: true, required: true, options: ['WhatsApp', 'Email'] },
+        {
+          key: 'kanal',
+          label: 'Kanal',
+          kind: 'status',
+          editable: true,
+          required: true,
+          options: ['WhatsApp', 'Email'],
+        },
         { key: 'isi', label: 'Isi', kind: 'longtext', editable: true, required: true },
       ],
       [
-        { nama: 'Undangan wawancara', kanal: 'WhatsApp', isi: 'Halo {nama}, kami mengundang Anda wawancara pada {jadwal} di {lokasi}.' },
-        { nama: 'Lamaran diterima', kanal: 'Email', isi: 'Terima kasih {nama}, lamaran Anda untuk {posisi} sudah kami terima.' },
+        {
+          nama: 'Undangan wawancara',
+          kanal: 'WhatsApp',
+          isi: 'Halo {nama}, kami mengundang Anda wawancara pada {jadwal} di {lokasi}.',
+        },
+        {
+          nama: 'Lamaran diterima',
+          kanal: 'Email',
+          isi: 'Terima kasih {nama}, lamaran Anda untuk {posisi} sudah kami terima.',
+        },
       ],
       { editable: true },
     );
@@ -1675,7 +2246,14 @@ function buildRegistry(): Record<string, () => DatasetSpec> {
       [
         { key: 'kategori', label: 'Kategori', kind: 'text', editable: true, required: true },
         { key: 'produk', label: 'Jumlah produk', kind: 'number' },
-        { key: 'status', label: 'Status', kind: 'status', editable: true, required: true, options: ['Terbit', 'Draft'] },
+        {
+          key: 'status',
+          label: 'Status',
+          kind: 'status',
+          editable: true,
+          required: true,
+          options: ['Terbit', 'Draft'],
+        },
       ],
       [
         { kategori: 'Perdana', produk: 3, status: 'Terbit' },
@@ -1694,18 +2272,45 @@ function buildRegistry(): Record<string, () => DatasetSpec> {
         { key: 'lama', label: 'Harga lama', kind: 'rupiah', editable: true },
         { key: 'baru', label: 'Harga baru', kind: 'rupiah', editable: true, required: true },
         { key: 'berlaku', label: 'Berlaku mulai', kind: 'date', editable: true, required: true },
-        { key: 'status', label: 'Status', kind: 'status', editable: true, required: true, options: ['Terjadwal', 'Berlaku'] },
+        {
+          key: 'status',
+          label: 'Status',
+          kind: 'status',
+          editable: true,
+          required: true,
+          options: ['Terjadwal', 'Berlaku'],
+        },
       ],
       [
-        { produk: 'Perdana Internet 15GB', lama: 32000, baru: 35000, berlaku: '2026-11-01', status: 'Berlaku' },
-        { produk: 'Voucher Data 25GB', lama: 52000, baru: 55000, berlaku: '2026-11-01', status: 'Berlaku' },
-        { produk: 'Modem Orbit 4G', lama: 649000, baru: 599000, berlaku: '2026-12-01', status: 'Terjadwal' },
+        {
+          produk: 'Perdana Internet 15GB',
+          lama: 32000,
+          baru: 35000,
+          berlaku: '2026-11-01',
+          status: 'Berlaku',
+        },
+        {
+          produk: 'Voucher Data 25GB',
+          lama: 52000,
+          baru: 55000,
+          berlaku: '2026-11-01',
+          status: 'Berlaku',
+        },
+        {
+          produk: 'Modem Orbit 4G',
+          lama: 649000,
+          baru: 599000,
+          berlaku: '2026-12-01',
+          status: 'Terjadwal',
+        },
       ],
       { editable: true, filters: ['status'] },
     );
   reg[`${a}/abkshop-pelanggan/media-produk`] = () => catalogProducts('a-cat-media', 'pelanggan');
-  reg[`${a}/abkshop-pelanggan/status-publikasi`] = () => catalogProducts('a-cat-status', 'pelanggan');
-  reg[`${a}/abkshop-outlet/kategori`] = () => reg[`${a}/abkshop-pelanggan/kategori`]?.() as DatasetSpec;
+  reg[`${a}/abkshop-pelanggan/status-publikasi`] = () =>
+    catalogProducts('a-cat-status', 'pelanggan');
+  reg[`${a}/abkshop-outlet/kategori`] = () =>
+    reg[`${a}/abkshop-pelanggan/kategori`]?.() as DatasetSpec;
   reg[`${a}/abkshop-outlet/paket`] = () => catalogProducts('a-cat-o', 'outlet');
   reg[`${a}/abkshop-outlet/harga-aturan-outlet`] = () =>
     staticList(
@@ -1740,12 +2345,34 @@ function buildRegistry(): Record<string, () => DatasetSpec> {
         { key: 'paket', label: 'Paket', kind: 'text', editable: true, required: true },
         { key: 'harga', label: 'Harga per bulan', kind: 'rupiah', editable: true },
         { key: 'isi', label: 'Isi', kind: 'longtext', editable: true },
-        { key: 'status', label: 'Status', kind: 'status', editable: true, required: true, options: ['Terbit', 'Draft'] },
+        {
+          key: 'status',
+          label: 'Status',
+          kind: 'status',
+          editable: true,
+          required: true,
+          options: ['Terbit', 'Draft'],
+        },
       ],
       [
-        { paket: 'IndiHome 30 Mbps', harga: 280000, isi: 'Internet 30 Mbps, telepon rumah', status: 'Terbit' },
-        { paket: 'IndiHome 50 Mbps', harga: 350000, isi: 'Internet 50 Mbps, telepon rumah', status: 'Terbit' },
-        { paket: 'IndiHome 100 Mbps + TV', harga: null, isi: 'Internet 100 Mbps, TV interaktif', status: 'Terbit' },
+        {
+          paket: 'IndiHome 30 Mbps',
+          harga: 280000,
+          isi: 'Internet 30 Mbps, telepon rumah',
+          status: 'Terbit',
+        },
+        {
+          paket: 'IndiHome 50 Mbps',
+          harga: 350000,
+          isi: 'Internet 50 Mbps, telepon rumah',
+          status: 'Terbit',
+        },
+        {
+          paket: 'IndiHome 100 Mbps + TV',
+          harga: null,
+          isi: 'Internet 100 Mbps, TV interaktif',
+          status: 'Terbit',
+        },
       ],
       { editable: true },
     );
@@ -1757,8 +2384,14 @@ function buildRegistry(): Record<string, () => DatasetSpec> {
         { key: 'jawaban', label: 'Jawaban', kind: 'longtext', editable: true, required: true },
       ],
       [
-        { pertanyaan: 'Berapa lama pemasangan setelah mendaftar?', jawaban: 'Petugas menghubungi dalam 1x24 jam untuk jadwal survei.' },
-        { pertanyaan: 'Bagaimana tahu alamat sudah tercakup jaringan?', jawaban: 'Kirim form minat, petugas mengecek ketersediaan jaringan.' },
+        {
+          pertanyaan: 'Berapa lama pemasangan setelah mendaftar?',
+          jawaban: 'Petugas menghubungi dalam 1x24 jam untuk jadwal survei.',
+        },
+        {
+          pertanyaan: 'Bagaimana tahu alamat sudah tercakup jaringan?',
+          jawaban: 'Kirim form minat, petugas mengecek ketersediaan jaringan.',
+        },
       ],
       { editable: true },
     );
@@ -1792,39 +2425,19 @@ function buildRegistry(): Record<string, () => DatasetSpec> {
         { key: 'syarat', label: 'Syarat', kind: 'longtext', editable: true, required: true },
       ],
       [
-        { program: 'Target Perdana November', syarat: 'Penjualan dihitung dari aktivasi 1–30 November 2026.' },
-        { program: 'Undian Voucher Akhir Tahun', syarat: 'Setiap pembelian 50 voucher fisik mendapat satu kupon.' },
+        {
+          program: 'Target Perdana November',
+          syarat: 'Penjualan dihitung dari aktivasi 1–30 November 2026.',
+        },
+        {
+          program: 'Undian Voucher Akhir Tahun',
+          syarat: 'Setiap pembelian 50 voucher fisik mendapat satu kupon.',
+        },
       ],
       { editable: true },
     );
-  reg[`${a}/promo-program/peserta-pencapaian`] = () => programParticipants('a-prog-peserta', 'Target Perdana November');
-  reg[`${a}/daftar-digipos/informasi-syarat`] = () =>
-    staticList(
-      'Syarat pendaftaran yang tampil di halaman Daftar Digipos.',
-      [{ key: 'syarat', label: 'Syarat', kind: 'text', editable: true, required: true }],
-      [
-        { syarat: 'Memiliki toko atau tempat usaha tetap.' },
-        { syarat: 'KTP pemilik dan foto tampak depan toko.' },
-        { syarat: 'Nomor HP aktif untuk akun Digipos.' },
-      ],
-      { editable: true },
-    );
-  reg[`${a}/daftar-digipos/form-field`] = () =>
-    staticList(
-      'Kolom form pendaftaran Digipos yang diizinkan.',
-      [
-        { key: 'kolom', label: 'Kolom', kind: 'text', editable: true, required: true },
-        { key: 'jenis', label: 'Jenis isian', kind: 'status', editable: true, required: true, options: ['Teks', 'Nomor HP', 'Alamat', 'Foto'] },
-        { key: 'wajib', label: 'Wajib', kind: 'status', editable: true, required: true, options: ['Ya', 'Tidak'] },
-      ],
-      [
-        { kolom: 'Nama outlet', jenis: 'Teks', wajib: 'Ya' },
-        { kolom: 'Nama pemilik', jenis: 'Teks', wajib: 'Ya' },
-        { kolom: 'Nomor HP', jenis: 'Nomor HP', wajib: 'Ya' },
-        { kolom: 'Alamat outlet', jenis: 'Alamat', wajib: 'Ya' },
-      ],
-      { editable: true },
-    );
+  reg[`${a}/promo-program/peserta-pencapaian`] = () =>
+    programParticipants('a-prog-peserta', 'Target Perdana November');
   reg[`${a}/daftar-digipos/pendaftaran`] = () => digiposRegistrations('a-dgp', 'pendaftaran');
   reg[`${a}/daftar-digipos/verifikasi`] = () => digiposRegistrations('a-dgp', 'verifikasi');
   reg[`${a}/daftar-digipos/status`] = () => digiposRegistrations('a-dgp', 'status');
@@ -1837,7 +2450,9 @@ function buildRegistry(): Record<string, () => DatasetSpec> {
         { key: 'periode', label: 'Periode', kind: 'text' },
         { key: 'poin', label: 'Poin', kind: 'number', editable: true, required: true },
       ],
-      outlets.slice(0, 10).map((outlet, index) => ({ outlet: outlet.name, periode: PERIOD, poin: 120 + index * 35 })),
+      outlets
+        .slice(0, 10)
+        .map((outlet, index) => ({ outlet: outlet.name, periode: PERIOD, poin: 120 + index * 35 })),
       { editable: true },
     );
   reg[`${a}/admin-input/kalkulator-cuan`] = () => {
@@ -1847,13 +2462,34 @@ function buildRegistry(): Record<string, () => DatasetSpec> {
       'Produk Kalkulator Cuan di aplikasi Outlet. Untung per unit = harga jual - harga modal + cashback. Harga contoh, bukan harga resmi.',
       [
         { key: 'produk', label: 'Produk', kind: 'text', editable: true, required: true },
-        { key: 'kategori', label: 'Kategori', kind: 'status', editable: true, required: true, options: categories },
-        { key: 'brand', label: 'Brand', kind: 'status', editable: true, required: true, options: brands },
+        {
+          key: 'kategori',
+          label: 'Kategori',
+          kind: 'status',
+          editable: true,
+          required: true,
+          options: categories,
+        },
+        {
+          key: 'brand',
+          label: 'Brand',
+          kind: 'status',
+          editable: true,
+          required: true,
+          options: brands,
+        },
         { key: 'modal', label: 'Harga modal', kind: 'rupiah', editable: true, required: true },
         { key: 'jual', label: 'Harga jual', kind: 'rupiah', editable: true, required: true },
         { key: 'cashback', label: 'Cashback', kind: 'rupiah', editable: true, required: true },
         { key: 'untung', label: 'Untung per unit', kind: 'rupiah' },
-        { key: 'unggulan', label: 'Unggulan', kind: 'status', editable: true, required: true, options: ['Ya', 'Tidak'] },
+        {
+          key: 'unggulan',
+          label: 'Unggulan',
+          kind: 'status',
+          editable: true,
+          required: true,
+          options: ['Ya', 'Tidak'],
+        },
       ],
       mockCuanProducts.map((item) => ({
         produk: item.name,
@@ -1870,20 +2506,25 @@ function buildRegistry(): Record<string, () => DatasetSpec> {
         filters: ['kategori', 'brand', 'unggulan'],
         stats: (scoped) => [
           { label: 'Produk', value: num(scoped.length) },
-          { label: 'Unggulan', value: num(scoped.filter((item) => item.cells.unggulan === 'Ya').length) },
+          {
+            label: 'Unggulan',
+            value: num(scoped.filter((item) => item.cells.unggulan === 'Ya').length),
+          },
           { label: 'Brand', value: num(new Set(scoped.map((item) => item.cells.brand)).size) },
         ],
       },
     );
   };
-  reg[`${a}/admin-input/upload-database`] = () => uploads('a-upload-db', 'Database Outlet', {
-    columns: ['id_digipos', 'nama_outlet', 'pemilik', 'kecamatan', 'tap'],
-    numericColumns: [],
-    requiredColumns: ['id_digipos', 'nama_outlet', 'tap'],
-    sample:
-      'id_digipos,nama_outlet,pemilik,kecamatan,tap\nCONTOH025,Cell Baru Contoh,Pemilik Contoh,Kejaksan,TAP Kota Cirebon\n007891,Pulsa Contoh,Pemilik Contoh,Sumber,TAP Sumber\nCONTOH027,,Pemilik Contoh,Kuningan,TAP Kuningan',
-  });
-  reg[`${a}/admin-input/data-telkomsel-indihome`] = () => uploads('a-upload-mix', 'Data Telkomsel dan IndiHome', mobileUpload);
+  reg[`${a}/admin-input/upload-database`] = () =>
+    uploads('a-upload-db', 'Database Outlet', {
+      columns: ['id_digipos', 'nama_outlet', 'pemilik', 'kecamatan', 'tap'],
+      numericColumns: [],
+      requiredColumns: ['id_digipos', 'nama_outlet', 'tap'],
+      sample:
+        'id_digipos,nama_outlet,pemilik,kecamatan,tap\nCONTOH025,Cell Baru Contoh,Pemilik Contoh,Kejaksan,TAP Kota Cirebon\n007891,Pulsa Contoh,Pemilik Contoh,Sumber,TAP Sumber\nCONTOH027,,Pemilik Contoh,Kuningan,TAP Kuningan',
+    });
+  reg[`${a}/admin-input/data-telkomsel-indihome`] = () =>
+    uploads('a-upload-mix', 'Data Telkomsel dan IndiHome', mobileUpload);
   reg[`${a}/pengaturan-operasional/target`] = () => targets('a-target', 'mobile');
   reg[`${a}/pengaturan-operasional/template-unggah`] = () =>
     staticList(
@@ -1896,7 +2537,11 @@ function buildRegistry(): Record<string, () => DatasetSpec> {
       [
         { template: 'Data Sellthru', kolom: mobileUpload.columns.join(', '), versi: 2 },
         { template: 'Data Performance', kolom: householdUpload.columns.join(', '), versi: 1 },
-        { template: 'Database Outlet', kolom: 'id_digipos, nama_outlet, pemilik, kecamatan, tap', versi: 1 },
+        {
+          template: 'Database Outlet',
+          kolom: 'id_digipos, nama_outlet, pemilik, kecamatan, tap',
+          versi: 1,
+        },
       ],
     );
   reg[`${a}/pengaturan-operasional/master-wilayah-tim`] = () =>
@@ -1904,7 +2549,14 @@ function buildRegistry(): Record<string, () => DatasetSpec> {
       'Tim, unit, dan supervisornya.',
       [
         { key: 'tim', label: 'Tim', kind: 'text', editable: true, required: true },
-        { key: 'unit', label: 'Unit', kind: 'status', editable: true, required: true, options: ['Mobile', 'Household', 'Direct Sales'] },
+        {
+          key: 'unit',
+          label: 'Unit',
+          kind: 'status',
+          editable: true,
+          required: true,
+          options: ['Mobile', 'Household', 'Direct Sales'],
+        },
         { key: 'supervisor', label: 'Supervisor', kind: 'text', editable: true, required: true },
         { key: 'anggota', label: 'Salesforce', kind: 'number' },
       ],
@@ -1912,7 +2564,9 @@ function buildRegistry(): Record<string, () => DatasetSpec> {
         tim: team.name,
         unit: unitLabels[team.unit],
         supervisor: personById(team.supervisorId)?.name ?? '-',
-        anggota: people.filter((person) => person.role === 'salesforce' && person.teamId === team.id).length,
+        anggota: people.filter(
+          (person) => person.role === 'salesforce' && person.teamId === team.id,
+        ).length,
       })),
       { editable: true, filters: ['unit'] },
     );

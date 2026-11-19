@@ -7,6 +7,7 @@ import { z } from 'zod';
  */
 const bool = z.enum(['true', 'false']).transform((value) => value === 'true');
 const positiveInt = z.coerce.number().int().positive();
+const emptyAsUnset = (value: unknown) => (value === '' ? undefined : value);
 
 const envSchema = z
   .object({
@@ -45,8 +46,34 @@ const envSchema = z
     QUOTE_TTL_MINUTES: positiveInt.default(15),
     /** Batas laju login, form, dan order. Hanya boleh `false` di tes otomatis. */
     RATE_LIMIT_ENABLED: bool.default(true),
+
+    /** WAHA dikelola operator; browser tidak boleh menetapkan host atau melihat kunci. */
+    /** Baris kosong di env file (`WAHA_BASE_URL=`) berarti tidak diisi, bukan URL salah. */
+    WAHA_BASE_URL: z.preprocess(emptyAsUnset, z.url({ protocol: /^https?$/ }).optional()),
+    WAHA_API_KEY: z.preprocess(emptyAsUnset, z.string().min(1).optional()),
+    WAHA_SESSION: z
+      .string()
+      .regex(/^[A-Za-z0-9_-]{1,80}$/)
+      .default('default'),
   })
   .superRefine((env, ctx) => {
+    if (Boolean(env.WAHA_BASE_URL) !== Boolean(env.WAHA_API_KEY)) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['WAHA_BASE_URL'],
+        message: 'Isi WAHA_BASE_URL dan WAHA_API_KEY bersamaan.',
+      });
+    }
+    if (env.WAHA_BASE_URL) {
+      const url = URL.parse(env.WAHA_BASE_URL);
+      if (url && (url.username || url.password || url.search || url.hash || url.pathname !== '/')) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['WAHA_BASE_URL'],
+          message: 'Isi origin WAHA saja, tanpa path, kredensial, query, atau fragmen.',
+        });
+      }
+    }
     if (env.DB_TLS === 'verify' && !env.DB_TLS_CA_FILE) {
       ctx.addIssue({
         code: 'custom',
